@@ -88,7 +88,7 @@ export default function NuevaSicForm({
     <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700">Planta</label>
+          <label className="block text-sm font-medium text-slate-700">¿Es para Taller o para un Proyecto?</label>
           <select
             value={plantId}
             onChange={(e) => setPlantId(e.target.value)}

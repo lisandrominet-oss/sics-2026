@@ -84,6 +84,39 @@ export type Database = {
         Update: { active?: boolean; created_at?: string; id?: string; name?: string };
         Relationships: [];
       };
+      user_provisioning: {
+        Row: {
+          active: boolean;
+          created_at: string;
+          department: string | null;
+          email: string;
+          full_name: string | null;
+          id: string;
+          plant_id: string | null;
+          role: Database["public"]["Enums"]["user_role"];
+        };
+        Insert: {
+          active?: boolean;
+          created_at?: string;
+          department?: string | null;
+          email: string;
+          full_name?: string | null;
+          id?: string;
+          plant_id?: string | null;
+          role: Database["public"]["Enums"]["user_role"];
+        };
+        Update: {
+          active?: boolean;
+          created_at?: string;
+          department?: string | null;
+          email?: string;
+          full_name?: string | null;
+          id?: string;
+          plant_id?: string | null;
+          role?: Database["public"]["Enums"]["user_role"];
+        };
+        Relationships: [];
+      };
       sic_counters: {
         Row: { last_seq: number; plant_id: string; year: number };
         Insert: { last_seq?: number; plant_id: string; year: number };

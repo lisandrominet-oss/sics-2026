@@ -36,7 +36,7 @@ export default async function NuevaSicPage() {
             plants={plants ?? []}
             projects={projects ?? []}
             defaultPlantId={profile.plant_id}
-            lockPlant={role === "area"}
+            lockPlant={false}
           />
         </div>
       </div>

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
 import UsersTable from "@/components/UsersTable";
+import ProvisioningManager from "@/components/ProvisioningManager";
 
 export default async function UsuariosPage() {
   const profile = await getCurrentProfile();
@@ -10,9 +11,10 @@ export default async function UsuariosPage() {
   if (profile.role !== "admin") redirect("/dashboard");
 
   const supabase = createClient();
-  const [{ data: profiles }, { data: plants }] = await Promise.all([
+  const [{ data: profiles }, { data: plants }, { data: provisioning }] = await Promise.all([
     supabase.from("profiles").select("*").order("created_at"),
     supabase.from("plants").select("id, name, prefix").order("name"),
+    supabase.from("user_provisioning").select("*").order("created_at"),
   ]);
 
   return (
@@ -31,6 +33,10 @@ export default async function UsuariosPage() {
         </p>
         <div className="mt-6">
           <UsersTable profiles={profiles ?? []} plants={plants ?? []} currentUserId={profile.id} />
+        </div>
+
+        <div className="mt-8">
+          <ProvisioningManager entries={provisioning ?? []} plants={plants ?? []} />
         </div>
       </div>
     </AppShell>
