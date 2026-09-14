@@ -383,7 +383,8 @@ export type Database = {
         | "aprobada"
         | "orden_emitida"
         | "recibida"
-        | "cerrada";
+        | "cerrada"
+        | "anulada";
       user_role: "admin" | "gerencia" | "compras" | "panol" | "area";
     };
     CompositeTypes: { [_ in never]: never };

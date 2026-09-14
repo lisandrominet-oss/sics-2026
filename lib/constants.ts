@@ -17,6 +17,7 @@ export const STATUS_LABELS: Record<SicStatus, string> = {
   orden_emitida: "Orden de compra emitida",
   recibida: "Recibida",
   cerrada: "Cerrada",
+  anulada: "Anulada",
 };
 
 export const STATUS_COLORS: Record<SicStatus, string> = {
@@ -31,6 +32,7 @@ export const STATUS_COLORS: Record<SicStatus, string> = {
   orden_emitida: "bg-blue-100 text-blue-700",
   recibida: "bg-blue-100 text-blue-700",
   cerrada: "bg-slate-200 text-slate-600",
+  anulada: "bg-red-200 text-red-800",
 };
 
 export const ROLE_LABELS: Record<UserRole, string> = {

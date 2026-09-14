@@ -109,6 +109,9 @@ export default function SicActions({
     />
   );
 
+  const canCancel = ["compras", "admin"].includes(role) && !["cerrada", "anulada"].includes(status);
+
+  function renderStatusPanel(): React.ReactNode {
   if (status === "enviada" && ["compras", "admin"].includes(role)) {
     return (
       <ActionCard title="Revisión de Compras">
@@ -298,6 +301,85 @@ export default function SicActions({
   }
 
   return null;
+  }
+
+  return (
+    <div className="space-y-4">
+      {renderStatusPanel()}
+      {canCancel && <CancelSicCard sicId={sicId} onDone={() => router.refresh()} />}
+    </div>
+  );
+}
+
+function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleCancel() {
+    if (!reason.trim()) return;
+    if (!confirm("¿Confirmás que querés anular esta SIC? Esta acción no se puede deshacer.")) return;
+    setLoading(true);
+    setError(null);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("cancel_sic", { p_sic_id: sicId, p_note: reason.trim() });
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    onDone();
+  }
+
+  if (!open) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="text-sm font-medium text-red-700 hover:underline"
+        >
+          Anular esta SIC
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-red-200 bg-red-50 p-5">
+      <h2 className="text-sm font-semibold text-red-800">Anular SIC</h2>
+      <p className="mt-1 text-xs text-red-700">
+        Usalo para dar de baja una SIC por error, duplicado u otro motivo. Queda registrada en el historial,
+        no se elimina.
+      </p>
+      <textarea
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        placeholder="Motivo — obligatorio, ej: Duplicado de SIC"
+        rows={2}
+        className="mt-3 w-full rounded-lg border border-red-300 px-3 py-2 text-sm"
+      />
+      <div className="mt-3 flex gap-2">
+        <button
+          type="button"
+          onClick={handleCancel}
+          disabled={loading || !reason.trim()}
+          className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
+        >
+          {loading ? "Anulando…" : "Confirmar anulación"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-white"
+        >
+          Cancelar
+        </button>
+      </div>
+      {error && <Err>{error}</Err>}
+    </div>
+  );
 }
 
 function RecepcionEditor({
