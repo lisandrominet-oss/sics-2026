@@ -27,7 +27,9 @@ export default async function SicDetailPage({ params }: { params: { id: string }
 
   const { data: sic, error: sicError } = await supabase
     .from("sics")
-    .select("*, plants(name, prefix), project:projects(id, name), requester:profiles(full_name, email, department)")
+    .select(
+      "*, plants(name, prefix), project:projects(id, name), requester:profiles!sics_requester_id_fkey(full_name, email, department)"
+    )
     .eq("id", params.id)
     .maybeSingle();
 
