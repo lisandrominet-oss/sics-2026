@@ -78,6 +78,7 @@ export default function NotificationsBell({ userId }: { userId: string }) {
               <Link
                 key={item.id}
                 href={`/sic/${item.id}`}
+                prefetch={false}
                 onClick={() => dismiss(item.id)}
                 className="block border-b border-slate-50 px-4 py-3 last:border-0 hover:bg-slate-50"
               >

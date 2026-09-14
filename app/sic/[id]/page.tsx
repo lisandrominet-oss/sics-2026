@@ -15,6 +15,9 @@ import {
   type SicFileType,
 } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function SicDetailPage({ params }: { params: { id: string } }) {
   const profile = await getCurrentProfile();
   if (!profile || !profile.role) redirect("/login");
@@ -22,12 +25,13 @@ export default async function SicDetailPage({ params }: { params: { id: string }
 
   const supabase = createClient();
 
-  const { data: sic } = await supabase
+  const { data: sic, error: sicError } = await supabase
     .from("sics")
     .select("*, plants(name, prefix), project:projects(id, name), requester:profiles(full_name, email, department)")
     .eq("id", params.id)
     .maybeSingle();
 
+  if (sicError) throw new Error(sicError.message);
   if (!sic) notFound();
 
   const [{ data: events }, { data: files }, { data: items }, { data: projects }] = await Promise.all([
