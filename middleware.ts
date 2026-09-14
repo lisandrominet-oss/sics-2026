@@ -34,12 +34,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  let profile: Database["public"]["Tables"]["profiles"]["Row"] | null = null;
+
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, active")
-      .eq("id", user.id)
-      .maybeSingle();
+    const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+    profile = data;
 
     const hasRole = !!profile?.role && profile.active;
 
@@ -60,6 +59,17 @@ export async function middleware(request: NextRequest) {
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);
     }
+  }
+
+  // Reenviamos el perfil ya validado al Server Component vía header, para que
+  // getCurrentProfile() no tenga que repetir la validación de sesión + consulta
+  // por cada navegación (esa duplicación era la causa principal de la lentitud).
+  if (profile) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-profile", encodeURIComponent(JSON.stringify(profile)));
+    const headeredResponse = NextResponse.next({ request: { headers: requestHeaders } });
+    response.cookies.getAll().forEach((cookie) => headeredResponse.cookies.set(cookie));
+    return headeredResponse;
   }
 
   return response;
