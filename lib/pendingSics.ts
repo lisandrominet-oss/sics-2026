@@ -24,3 +24,33 @@ export async function getPendingSicsCount(
   const { count } = await query;
   return count ?? 0;
 }
+
+export type PendingSicSummary = {
+  id: string;
+  code: string;
+  subject: string;
+  status: SicStatus;
+  updated_at: string;
+};
+
+export async function getPendingSicsList(
+  supabase: SupabaseClient<Database>,
+  role: UserRole,
+  profileId: string,
+  limit = 8
+): Promise<PendingSicSummary[]> {
+  const statuses = PENDING_STATUSES_BY_ROLE[role];
+  if (!statuses || statuses.length === 0) return [];
+
+  let query = supabase
+    .from("sics")
+    .select("id, code, subject, status, updated_at")
+    .in("status", statuses)
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+  if (role === "area") {
+    query = query.eq("requester_id", profileId);
+  }
+  const { data } = await query;
+  return data ?? [];
+}

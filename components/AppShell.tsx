@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SignOutButton from "@/components/SignOutButton";
 import RoleSwitcher from "@/components/RoleSwitcher";
+import NotificationsBell from "@/components/NotificationsBell";
 import {
-  IconBell,
   IconBuilding,
   IconFolder,
   IconGrid,
@@ -79,20 +79,9 @@ export default function AppShell({
           </span>
         </Link>
 
-        <Link
-          href="/dashboard?filter=mia"
-          className="mt-6 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white"
-        >
-          <span className="relative flex h-5 w-5 items-center justify-center">
-            <IconBell />
-            {pendingCount > 0 && (
-              <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
-                {pendingCount > 9 ? "9+" : pendingCount}
-              </span>
-            )}
-          </span>
-          Notificaciones
-        </Link>
+        <div className="mt-6">
+          <NotificationsBell role={role} userId={userId} pendingCount={pendingCount} />
+        </div>
 
         <nav className="mt-6 flex-1 space-y-1">
           <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
