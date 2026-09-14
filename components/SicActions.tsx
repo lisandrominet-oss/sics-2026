@@ -54,7 +54,6 @@ export default function SicActions({
   const [finalAmount, setFinalAmount] = useState("");
   const [poNumber, setPoNumber] = useState("");
   const comparacionInput = useRef<HTMLInputElement>(null);
-  const facturaInput = useRef<HTMLInputElement>(null);
   const ordenInput = useRef<HTMLInputElement>(null);
 
   const findFile = (type: SicFileType) => existingFiles.find((f) => f.file_type === type);
@@ -268,8 +267,8 @@ export default function SicActions({
       <RecepcionEditor
         sicId={sicId}
         items={editData.items}
-        remitoFile={findFile("remito")}
-        facturaFile={findFile("factura")}
+        remitoFiles={existingFiles.filter((f) => f.file_type === "remito")}
+        facturaFiles={existingFiles.filter((f) => f.file_type === "factura")}
         onUploadRemito={(f) => run(() => uploadFile(f, "remito").then(() => ({ error: null })))}
         onUploadFactura={(f) => run(() => uploadFile(f, "factura").then(() => ({ error: null })))}
         onDeleteFile={(f) => run(() => deleteFile(f))}
@@ -281,10 +280,9 @@ export default function SicActions({
   if (status === "recibida" && ["compras", "admin"].includes(role)) {
     return (
       <ActionCard title="Cierre de la SIC">
-        <FileRow
-          label="Factura (obligatoria)"
-          inputRef={facturaInput}
-          file={findFile("factura")}
+        <MultiFileRow
+          label="Facturas (obligatoria al menos una)"
+          files={existingFiles.filter((f) => f.file_type === "factura")}
           onUpload={(f) => run(() => uploadFile(f, "factura").then(() => ({ error: null })))}
           onDelete={(f) => run(() => deleteFile(f))}
         />
@@ -385,8 +383,8 @@ function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void })
 function RecepcionEditor({
   sicId,
   items,
-  remitoFile,
-  facturaFile,
+  remitoFiles,
+  facturaFiles,
   onUploadRemito,
   onUploadFactura,
   onDeleteFile,
@@ -394,15 +392,13 @@ function RecepcionEditor({
 }: {
   sicId: string;
   items: EditItem[];
-  remitoFile?: SicFile;
-  facturaFile?: SicFile;
+  remitoFiles: SicFile[];
+  facturaFiles: SicFile[];
   onUploadRemito: (file: File) => void;
   onUploadFactura: (file: File) => void;
   onDeleteFile: (file: SicFile) => void;
   onDone: () => void;
 }) {
-  const remitoInput = useRef<HTMLInputElement>(null);
-  const facturaInput = useRef<HTMLInputElement>(null);
   const [qty, setQty] = useState<Record<string, string>>(
     Object.fromEntries(items.map((it) => [it.id, String(Math.max(it.quantity - it.receivedQuantity, 0))]))
   );
@@ -433,18 +429,16 @@ function RecepcionEditor({
 
   return (
     <ActionCard title="Recepción de mercadería">
-      <FileRow
-        label="Remito (obligatorio al menos uno)"
-        inputRef={remitoInput}
-        file={remitoFile}
+      <MultiFileRow
+        label="Remitos (obligatorio al menos uno)"
+        files={remitoFiles}
         onUpload={onUploadRemito}
         onDelete={onDeleteFile}
       />
       <div className="mt-2">
-        <FileRow
-          label="Factura (opcional en este paso)"
-          inputRef={facturaInput}
-          file={facturaFile}
+        <MultiFileRow
+          label="Facturas (opcional en este paso)"
+          files={facturaFiles}
           onUpload={onUploadFactura}
           onDelete={onDeleteFile}
         />
@@ -486,11 +480,13 @@ function RecepcionEditor({
       />
 
       <div className="mt-3">
-        <Btn onClick={handleSubmit} loading={loading || !remitoFile}>
+        <Btn onClick={handleSubmit} loading={loading || remitoFiles.length === 0}>
           Registrar recepción
         </Btn>
       </div>
-      {!remitoFile && <p className="mt-2 text-xs text-amber-600">Subí el remito antes de registrar la recepción.</p>}
+      {remitoFiles.length === 0 && (
+        <p className="mt-2 text-xs text-amber-600">Subí al menos un remito antes de registrar la recepción.</p>
+      )}
       <p className="mt-2 text-xs text-slate-400">
         Si llega menos de lo pedido, dejá cargada solo la cantidad que llegó ahora — la SIC queda abierta hasta
         recibir el resto.
