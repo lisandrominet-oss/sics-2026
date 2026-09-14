@@ -84,6 +84,12 @@ export type Database = {
         Update: { active?: boolean; created_at?: string; id?: string; name?: string };
         Relationships: [];
       };
+      notification_reads: {
+        Row: { profile_id: string; read_at: string; sic_id: string };
+        Insert: { profile_id: string; read_at?: string; sic_id: string };
+        Update: { profile_id?: string; read_at?: string; sic_id?: string };
+        Relationships: [];
+      };
       user_provisioning: {
         Row: {
           active: boolean;
@@ -288,6 +294,20 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      cancel_sic: {
+        Args: { p_note: string; p_sic_id: string };
+        Returns: Database["public"]["Tables"]["sics"]["Row"];
+      };
+      get_pending_notifications: {
+        Args: { p_limit?: number };
+        Returns: {
+          id: string;
+          code: string;
+          subject: string;
+          status: Database["public"]["Enums"]["sic_status"];
+          updated_at: string;
+        }[];
+      };
       attach_file: {
         Args: {
           p_file_name: string;

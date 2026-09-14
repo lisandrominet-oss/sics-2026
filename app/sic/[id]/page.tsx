@@ -14,7 +14,6 @@ import {
   formatDate,
   type SicFileType,
 } from "@/lib/constants";
-import { getPendingSicsCount } from "@/lib/pendingSics";
 
 export default async function SicDetailPage({ params }: { params: { id: string } }) {
   const profile = await getCurrentProfile();
@@ -31,18 +30,16 @@ export default async function SicDetailPage({ params }: { params: { id: string }
 
   if (!sic) notFound();
 
-  const [{ data: events }, { data: files }, { data: items }, { data: projects }, pendingCount] =
-    await Promise.all([
-      supabase
-        .from("sic_events")
-        .select("*, actor:profiles(full_name)")
-        .eq("sic_id", params.id)
-        .order("created_at", { ascending: true }),
-      supabase.from("sic_files").select("*").eq("sic_id", params.id).order("created_at", { ascending: true }),
-      supabase.from("sic_items").select("*").eq("sic_id", params.id).order("position", { ascending: true }),
-      supabase.from("projects").select("id, name").eq("active", true).order("name"),
-      getPendingSicsCount(supabase, role, profile.id),
-    ]);
+  const [{ data: events }, { data: files }, { data: items }, { data: projects }] = await Promise.all([
+    supabase
+      .from("sic_events")
+      .select("*, actor:profiles(full_name)")
+      .eq("sic_id", params.id)
+      .order("created_at", { ascending: true }),
+    supabase.from("sic_files").select("*").eq("sic_id", params.id).order("created_at", { ascending: true }),
+    supabase.from("sic_items").select("*").eq("sic_id", params.id).order("position", { ascending: true }),
+    supabase.from("projects").select("id, name").eq("active", true).order("name"),
+  ]);
 
   const filesWithUrls = await Promise.all(
     (files ?? []).map(async (f) => {
@@ -62,7 +59,6 @@ export default async function SicDetailPage({ params }: { params: { id: string }
       userId={profile.id}
       actingAsRole={profile.acting_as_role}
       fullName={profile.full_name}
-      pendingCount={pendingCount}
     >
       <div className="mx-auto max-w-3xl">
         <Link

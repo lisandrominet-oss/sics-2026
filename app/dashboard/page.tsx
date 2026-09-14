@@ -64,7 +64,6 @@ export default async function DashboardPage({
       userId={profile.id}
       actingAsRole={profile.acting_as_role}
       fullName={profile.full_name}
-      pendingCount={pendingCount}
     >
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-wrap items-center justify-between gap-4">

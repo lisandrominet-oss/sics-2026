@@ -4,7 +4,6 @@ import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
 import NuevaSicForm from "@/components/NuevaSicForm";
 import { CAN_CREATE_SIC, effectiveRole } from "@/lib/constants";
-import { getPendingSicsCount } from "@/lib/pendingSics";
 
 export default async function NuevaSicPage() {
   const profile = await getCurrentProfile();
@@ -13,10 +12,9 @@ export default async function NuevaSicPage() {
   if (!CAN_CREATE_SIC.includes(role)) redirect("/dashboard");
 
   const supabase = createClient();
-  const [{ data: plants }, { data: projects }, pendingCount] = await Promise.all([
+  const [{ data: plants }, { data: projects }] = await Promise.all([
     supabase.from("plants").select("id, name, prefix").eq("active", true).order("name"),
     supabase.from("projects").select("id, name").eq("active", true).order("name"),
-    getPendingSicsCount(supabase, role, profile.id),
   ]);
 
   return (
@@ -26,7 +24,6 @@ export default async function NuevaSicPage() {
       userId={profile.id}
       actingAsRole={profile.acting_as_role}
       fullName={profile.full_name}
-      pendingCount={pendingCount}
     >
       <div className="mx-auto max-w-2xl">
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Sistema de Compras</p>

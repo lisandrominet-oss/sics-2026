@@ -54,7 +54,6 @@ export default function AppShell({
   userId,
   actingAsRole,
   fullName,
-  pendingCount = 0,
   children,
 }: {
   role: UserRole;
@@ -62,7 +61,6 @@ export default function AppShell({
   userId: string;
   actingAsRole: UserRole | null;
   fullName: string | null;
-  pendingCount?: number;
   children: React.ReactNode;
 }) {
   return (
@@ -80,7 +78,7 @@ export default function AppShell({
         </Link>
 
         <div className="mt-6">
-          <NotificationsBell role={role} userId={userId} pendingCount={pendingCount} />
+          <NotificationsBell userId={userId} />
         </div>
 
         <nav className="mt-6 flex-1 space-y-1">
