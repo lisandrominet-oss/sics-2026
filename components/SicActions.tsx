@@ -53,7 +53,6 @@ export default function SicActions({
   const [note, setNote] = useState("");
   const [finalAmount, setFinalAmount] = useState("");
   const [poNumber, setPoNumber] = useState("");
-  const cotizacionInput = useRef<HTMLInputElement>(null);
   const comparacionInput = useRef<HTMLInputElement>(null);
   const facturaInput = useRef<HTMLInputElement>(null);
   const ordenInput = useRef<HTMLInputElement>(null);
@@ -155,10 +154,9 @@ export default function SicActions({
     return (
       <ActionCard title="Cotización y comparación de proveedores">
         <div className="space-y-2 text-sm">
-          <FileRow
-            label="Cotización"
-            inputRef={cotizacionInput}
-            file={findFile("cotizacion")}
+          <MultiFileRow
+            label="Cotizaciones (una por proveedor)"
+            files={existingFiles.filter((f) => f.file_type === "cotizacion")}
             onUpload={(f) => run(() => uploadFile(f, "cotizacion").then(() => ({ error: null })))}
             onDelete={(f) => run(() => deleteFile(f))}
           />
@@ -609,6 +607,65 @@ function Btn({
 
 function Err({ children }: { children: React.ReactNode }) {
   return <p className="mt-2 text-sm text-red-600">{children}</p>;
+}
+
+function MultiFileRow({
+  label,
+  files,
+  onUpload,
+  onDelete,
+}: {
+  label: string;
+  files: SicFile[];
+  onUpload: (file: File) => void;
+  onDelete: (file: SicFile) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <div className="rounded-lg border border-slate-200 px-3 py-2">
+      <div className="flex items-center justify-between">
+        <span className="text-slate-700">{label}</span>
+        <div>
+          <input
+            ref={inputRef}
+            type="file"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (!f) return;
+              onUpload(f);
+              e.target.value = "";
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          >
+            + Agregar
+          </button>
+        </div>
+      </div>
+      {files.length > 0 ? (
+        <ul className="mt-2 space-y-1">
+          {files.map((f) => (
+            <li key={f.id} className="flex items-center justify-between text-sm">
+              <span className="text-emerald-600">✓ {f.file_name}</span>
+              <button
+                type="button"
+                onClick={() => onDelete(f)}
+                className="text-xs font-medium text-red-600 underline"
+              >
+                Eliminar
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-1 text-xs text-slate-400">Todavía no hay archivos.</p>
+      )}
+    </div>
+  );
 }
 
 function FileRow({
