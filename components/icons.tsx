@@ -71,3 +71,11 @@ export function IconArrowRight({ className = "h-4 w-4" }: { className?: string }
     </svg>
   );
 }
+
+export function IconArrowLeft({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className}>
+      <path d="M19 12H6M11 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

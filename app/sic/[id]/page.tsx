@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
 import StatusBadge from "@/components/StatusBadge";
 import SicActions from "@/components/SicActions";
+import { IconArrowLeft } from "@/components/icons";
 import {
   FILE_TYPE_LABELS,
   STATUS_LABELS,
@@ -59,7 +61,15 @@ export default async function SicDetailPage({ params }: { params: { id: string }
       fullName={profile.full_name}
     >
       <div className="mx-auto max-w-3xl">
-        <div className="flex items-start justify-between">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900"
+        >
+          <IconArrowLeft />
+          Volver al tablero
+        </Link>
+
+        <div className="mt-4 flex items-start justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{sic.code}</p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">{sic.subject}</h1>
