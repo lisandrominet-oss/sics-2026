@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
-import Nav from "@/components/Nav";
+import AppShell from "@/components/AppShell";
 import UsersTable from "@/components/UsersTable";
 
 export default async function UsuariosPage() {
@@ -16,23 +16,23 @@ export default async function UsuariosPage() {
   ]);
 
   return (
-    <div>
-      <Nav
-        role={profile.role}
-        realRole={profile.role}
-        userId={profile.id}
-        actingAsRole={profile.acting_as_role}
-        fullName={profile.full_name}
-      />
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <h1 className="text-lg font-semibold text-slate-900">Usuarios</h1>
-        <p className="mt-1 text-sm text-slate-500">
+    <AppShell
+      role={profile.role}
+      realRole={profile.role}
+      userId={profile.id}
+      actingAsRole={profile.acting_as_role}
+      fullName={profile.full_name}
+    >
+      <div className="mx-auto max-w-5xl">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Administración</p>
+        <h1 className="mt-1 text-2xl font-bold text-slate-900">Usuarios</h1>
+        <p className="mt-2 text-sm text-slate-500">
           Asigná rol, área/departamento y planta a cada usuario que inició sesión.
         </p>
         <div className="mt-6">
           <UsersTable profiles={profiles ?? []} plants={plants ?? []} currentUserId={profile.id} />
         </div>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

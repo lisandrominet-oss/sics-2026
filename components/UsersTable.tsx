@@ -135,7 +135,7 @@ function UserRow({
         <button
           onClick={save}
           disabled={saving}
-          className="rounded-md bg-slate-900 px-3 py-1 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+          className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
         >
           Guardar
         </button>

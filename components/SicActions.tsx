@@ -561,7 +561,7 @@ function ObservacionEditor({
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
         >
           {loading ? "Guardando…" : "Guardar y reenviar a Compras"}
         </button>
@@ -595,7 +595,7 @@ function Btn({
       ? "bg-red-600 hover:bg-red-500"
       : variant === "warning"
         ? "bg-amber-600 hover:bg-amber-500"
-        : "bg-slate-900 hover:bg-slate-700";
+        : "bg-indigo-600 hover:bg-indigo-500";
   return (
     <button
       onClick={onClick}

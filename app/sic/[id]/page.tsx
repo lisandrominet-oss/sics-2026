@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
-import Nav from "@/components/Nav";
+import AppShell from "@/components/AppShell";
 import StatusBadge from "@/components/StatusBadge";
 import SicActions from "@/components/SicActions";
 import {
@@ -51,24 +51,23 @@ export default async function SicDetailPage({ params }: { params: { id: string }
   const project = sic.project as { id: string; name: string } | null;
 
   return (
-    <div>
-      <Nav
-        role={role}
-        realRole={profile.role}
-        userId={profile.id}
-        actingAsRole={profile.acting_as_role}
-        fullName={profile.full_name}
-      />
-      <main className="mx-auto max-w-3xl px-4 py-8">
+    <AppShell
+      role={role}
+      realRole={profile.role}
+      userId={profile.id}
+      actingAsRole={profile.acting_as_role}
+      fullName={profile.full_name}
+    >
+      <div className="mx-auto max-w-3xl">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-lg font-semibold text-slate-900">{sic.code}</h1>
-            <p className="text-sm text-slate-500">{sic.subject}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{sic.code}</p>
+            <h1 className="mt-1 text-2xl font-bold text-slate-900">{sic.subject}</h1>
           </div>
           <StatusBadge status={sic.status} />
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+        <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm">
           <Info label="Planta" value={plant ? `${plant.name} (${plant.prefix})` : "-"} />
           <Info label="Proyecto" value={project?.name ?? "-"} />
           <Info label="Solicitante" value={requester?.full_name ?? requester?.email ?? "-"} />
@@ -80,7 +79,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           <Info label="Última actualización" value={formatDate(sic.updated_at)} />
         </div>
 
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm">
           <h2 className="font-semibold text-slate-900">Artículos solicitados</h2>
           <div className="mt-3 space-y-3">
             {(items ?? []).map((item, i) => {
@@ -114,7 +113,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           </div>
         </div>
 
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm">
           <h2 className="font-semibold text-slate-900">Archivos de la SIC</h2>
           {filesWithUrls.filter((f) => !f.item_id).length === 0 ? (
             <p className="mt-2 text-slate-400">Todavía no hay archivos adjuntos.</p>
@@ -170,7 +169,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           />
         </div>
 
-        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 text-sm">
           <h2 className="font-semibold text-slate-900">Historial</h2>
           <ul className="mt-3 space-y-3">
             {events?.map((ev) => (
@@ -185,8 +184,8 @@ export default async function SicDetailPage({ params }: { params: { id: string }
             ))}
           </ul>
         </div>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 

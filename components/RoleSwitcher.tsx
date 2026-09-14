@@ -27,7 +27,7 @@ export default function RoleSwitcher({
       value={actingAsRole ?? "admin"}
       onChange={(e) => handleChange(e.target.value)}
       title="Modo de prueba: actuar como otro rol"
-      className="rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800"
+      className="w-full rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-800"
     >
       <option value="admin">Ver como: Administrador</option>
       {IMPERSONATABLE_ROLES.map((r) => (
