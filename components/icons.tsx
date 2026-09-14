@@ -72,6 +72,19 @@ export function IconArrowRight({ className = "h-4 w-4" }: { className?: string }
   );
 }
 
+export function IconBell({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className}>
+      <path
+        d="M6 10.5a6 6 0 1 1 12 0c0 3.4.8 5 1.5 6H4.5c.7-1 1.5-2.6 1.5-6Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M10 19.5a2 2 0 0 0 4 0" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function IconArrowLeft({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className}>

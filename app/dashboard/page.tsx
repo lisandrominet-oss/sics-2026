@@ -7,21 +7,8 @@ import AppShell from "@/components/AppShell";
 import StatusBadge from "@/components/StatusBadge";
 import DashboardControls from "@/components/DashboardControls";
 import { IconArrowRight, IconPlusCircle } from "@/components/icons";
-import {
-  CAN_CREATE_SIC,
-  SORT_OPTIONS,
-  effectiveRole,
-  formatAmount,
-  formatDate,
-  type SicStatus,
-} from "@/lib/constants";
-
-const PENDING_STATUSES_BY_ROLE: Record<string, SicStatus[]> = {
-  compras: ["enviada", "cotizando", "aprobada", "recibida"],
-  gerencia: ["pendiente_aprobacion_gerencia"],
-  panol: ["orden_emitida"],
-  area: ["pendiente_validacion_tecnica", "en_observacion"],
-};
+import { CAN_CREATE_SIC, SORT_OPTIONS, effectiveRole, formatAmount, formatDate } from "@/lib/constants";
+import { PENDING_STATUSES_BY_ROLE, getPendingSicsCount } from "@/lib/pendingSics";
 
 const SORT_COLUMNS = new Set(SORT_OPTIONS.map((o) => o.value));
 
@@ -62,19 +49,11 @@ export default async function DashboardPage({
     }
   }
 
-  let pendingCountQuery = supabase.from("sics").select("*", { count: "exact", head: true });
-  if (pendingStatuses.length > 0) {
-    pendingCountQuery = pendingCountQuery.in("status", pendingStatuses);
-  }
-  if (role === "area") {
-    pendingCountQuery = pendingCountQuery.eq("requester_id", profile.id);
-  }
-
-  const [{ data: sics, error }, { count: totalCount }, { count: pendingCount }, { count: closedCount }] =
+  const [{ data: sics, error }, { count: totalCount }, pendingCount, { count: closedCount }] =
     await Promise.all([
       query.limit(100),
       supabase.from("sics").select("*", { count: "exact", head: true }),
-      pendingCountQuery,
+      getPendingSicsCount(supabase, role, profile.id),
       supabase.from("sics").select("*", { count: "exact", head: true }).eq("status", "cerrada"),
     ]);
 
@@ -85,6 +64,7 @@ export default async function DashboardPage({
       userId={profile.id}
       actingAsRole={profile.acting_as_role}
       fullName={profile.full_name}
+      pendingCount={pendingCount}
     >
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -107,14 +87,19 @@ export default async function DashboardPage({
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatCard label="SICs totales" value={totalCount ?? 0} caption="Vista general" />
-          <StatCard label="Pendientes de mi acción" value={pendingCount ?? 0} caption="Requieren revisión" accent />
+          <StatCard label="Pendientes de mi acción" value={pendingCount} caption="Requieren revisión" accent />
           <StatCard label="Cerradas" value={closedCount ?? 0} caption="Historial completo" />
         </div>
 
         <div className="mt-8 flex gap-2 text-sm">
           <FilterTab href="/dashboard" active={!showPending} label="Todas" />
           {role !== "admin" && (
-            <FilterTab href="/dashboard?filter=mia" active={showPending} label="Pendientes de mi acción" />
+            <FilterTab
+              href="/dashboard?filter=mia"
+              active={showPending}
+              label="Pendientes de mi acción"
+              dot={pendingCount > 0}
+            />
           )}
         </div>
 
@@ -200,15 +185,26 @@ function StatCard({
   );
 }
 
-function FilterTab({ href, active, label }: { href: string; active: boolean; label: string }) {
+function FilterTab({
+  href,
+  active,
+  label,
+  dot,
+}: {
+  href: string;
+  active: boolean;
+  label: string;
+  dot?: boolean;
+}) {
   return (
     <Link
       href={href}
-      className={`rounded-full px-3.5 py-1.5 font-medium transition-colors ${
+      className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-colors ${
         active ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"
       }`}
     >
       {label}
+      {dot && <span className="h-1.5 w-1.5 rounded-full bg-red-500" />}
     </Link>
   );
 }
