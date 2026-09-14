@@ -1,11 +1,20 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
 import StatusBadge from "@/components/StatusBadge";
+import DashboardControls from "@/components/DashboardControls";
 import { IconArrowRight, IconPlusCircle } from "@/components/icons";
-import { CAN_CREATE_SIC, effectiveRole, formatAmount, formatDate, type SicStatus } from "@/lib/constants";
+import {
+  CAN_CREATE_SIC,
+  SORT_OPTIONS,
+  effectiveRole,
+  formatAmount,
+  formatDate,
+  type SicStatus,
+} from "@/lib/constants";
 
 const PENDING_STATUSES_BY_ROLE: Record<string, SicStatus[]> = {
   compras: ["enviada", "cotizando", "aprobada", "recibida"],
@@ -14,10 +23,12 @@ const PENDING_STATUSES_BY_ROLE: Record<string, SicStatus[]> = {
   area: ["pendiente_validacion_tecnica", "en_observacion"],
 };
 
+const SORT_COLUMNS = new Set(SORT_OPTIONS.map((o) => o.value));
+
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: { filter?: string };
+  searchParams: { filter?: string; q?: string; sort?: string; dir?: string };
 }) {
   const profile = await getCurrentProfile();
   if (!profile || !profile.role) redirect("/login");
@@ -27,16 +38,28 @@ export default async function DashboardPage({
   const showPending = searchParams.filter === "mia";
   const pendingStatuses = PENDING_STATUSES_BY_ROLE[role] ?? [];
 
+  const searchQuery = (searchParams.q ?? "").trim();
+  const sortColumn = SORT_COLUMNS.has(searchParams.sort ?? "") ? searchParams.sort! : "updated_at";
+  const sortDir: "asc" | "desc" = searchParams.dir === "asc" ? "asc" : "desc";
+
   let query = supabase
     .from("sics")
-    .select("id, code, subject, status, currency, final_amount, estimated_amount, updated_at, requester_id, plants(name, prefix)")
-    .order("updated_at", { ascending: false });
+    .select(
+      "id, code, subject, status, currency, final_amount, estimated_amount, created_at, updated_at, needed_by_date, department, requester_id, plants(name, prefix)"
+    )
+    .order(sortColumn, { ascending: sortDir === "asc", nullsFirst: false });
 
   if (showPending && pendingStatuses.length > 0) {
     query = query.in("status", pendingStatuses);
   }
   if (showPending && role === "area") {
     query = query.eq("requester_id", profile.id);
+  }
+  if (searchQuery) {
+    const safeQuery = searchQuery.replace(/[,()%_]/g, " ").trim();
+    if (safeQuery) {
+      query = query.or(`code.ilike.%${safeQuery}%,subject.ilike.%${safeQuery}%`);
+    }
   }
 
   let pendingCountQuery = supabase.from("sics").select("*", { count: "exact", head: true });
@@ -95,6 +118,10 @@ export default async function DashboardPage({
           )}
         </div>
 
+        <Suspense fallback={null}>
+          <DashboardControls defaultQuery={searchQuery} sort={sortColumn} dir={sortDir} />
+        </Suspense>
+
         {error && <p className="mt-4 text-sm text-red-600">{error.message}</p>}
 
         <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -118,9 +145,15 @@ export default async function DashboardPage({
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-slate-900">{sic.code}</p>
                         <p className="truncate text-xs text-slate-500">{sic.subject}</p>
+                        {sic.department && (
+                          <p className="truncate text-xs text-slate-400">{sic.department}</p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
+                      <span className="hidden text-xs text-slate-400 lg:block">
+                        {sic.needed_by_date ? `Necesaria: ${formatDate(sic.needed_by_date)}` : ""}
+                      </span>
                       <span className="hidden text-sm text-slate-500 sm:block">
                         {formatAmount(sic.final_amount ?? sic.estimated_amount, sic.currency)}
                       </span>

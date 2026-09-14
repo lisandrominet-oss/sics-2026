@@ -43,6 +43,15 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   area: "Área",
 };
 
+export const SORT_OPTIONS = [
+  { value: "updated_at", label: "Última actualización" },
+  { value: "created_at", label: "Fecha de ingreso" },
+  { value: "needed_by_date", label: "Fecha exigida" },
+  { value: "final_amount", label: "Monto" },
+  { value: "department", label: "Área" },
+  { value: "status", label: "Estado" },
+] as const;
+
 export const FILE_TYPE_LABELS: Record<SicFileType, string> = {
   cotizacion: "Cotización",
   comparacion: "Comparación de precios",
