@@ -5,6 +5,12 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 
 const PUBLIC_PATHS = ["/login", "/auth/callback"];
 
+// Cierre de sesión por inactividad: se guarda la marca de tiempo de la última
+// actividad en una cookie no-httpOnly (la actualiza también InactivityGuard en
+// el cliente ante mouse/teclado) y acá se valida en cada request.
+const INACTIVITY_COOKIE = "sc_last_activity";
+const INACTIVITY_LIMIT_MS = 30 * 60 * 1000;
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -27,6 +33,30 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
   const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p));
+
+  if (user && !isPublic) {
+    const lastActivityRaw = request.cookies.get(INACTIVITY_COOKIE)?.value;
+    const lastActivity = lastActivityRaw ? Number(lastActivityRaw) : null;
+    const inactiveTooLong =
+      !!lastActivity && !Number.isNaN(lastActivity) && Date.now() - lastActivity > INACTIVITY_LIMIT_MS;
+
+    if (inactiveTooLong) {
+      await supabase.auth.signOut();
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("motivo", "inactividad");
+      const redirectResponse = NextResponse.redirect(url);
+      response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
+      redirectResponse.cookies.delete(INACTIVITY_COOKIE);
+      return redirectResponse;
+    }
+
+    response.cookies.set(INACTIVITY_COOKIE, String(Date.now()), {
+      path: "/",
+      maxAge: INACTIVITY_LIMIT_MS / 1000,
+      sameSite: "lax",
+    });
+  }
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();

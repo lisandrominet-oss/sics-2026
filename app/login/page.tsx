@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { IconGoogle } from "@/components/icons";
 
-export default function LoginPage() {
+function LoginForm() {
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    searchParams.get("motivo") === "inactividad"
+      ? "Tu sesión se cerró por 30 minutos de inactividad. Volvé a ingresar."
+      : null
+  );
 
   async function signInWithGoogle() {
     setLoading(true);
@@ -24,6 +30,26 @@ export default function LoginPage() {
     }
   }
 
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <h1 className="text-xl font-bold text-slate-900">Bienvenido</h1>
+      <p className="mt-2 text-sm text-slate-500">
+        Ingresá con tu cuenta de Google corporativa para continuar.
+      </p>
+      <button
+        onClick={signInWithGoogle}
+        disabled={loading}
+        className="mt-6 flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+      >
+        <IconGoogle />
+        {loading ? "Redirigiendo…" : "Ingresar con Google"}
+      </button>
+      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       <div className="hidden w-1/2 flex-col justify-between bg-slate-900 p-12 lg:flex">
@@ -54,21 +80,9 @@ export default function LoginPage() {
             <span className="text-sm font-semibold text-slate-900">Sistema de Compras</span>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-            <h1 className="text-xl font-bold text-slate-900">Bienvenido</h1>
-            <p className="mt-2 text-sm text-slate-500">
-              Ingresá con tu cuenta de Google corporativa para continuar.
-            </p>
-            <button
-              onClick={signInWithGoogle}
-              disabled={loading}
-              className="mt-6 flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
-            >
-              <IconGoogle />
-              {loading ? "Redirigiendo…" : "Ingresar con Google"}
-            </button>
-            {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-          </div>
+          <Suspense fallback={null}>
+            <LoginForm />
+          </Suspense>
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import SignOutButton from "@/components/SignOutButton";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import NotificationsBell from "@/components/NotificationsBell";
+import InactivityGuard from "@/components/InactivityGuard";
 import {
   IconBuilding,
   IconFolder,
@@ -65,6 +66,7 @@ export default function AppShell({
 }) {
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
+      <InactivityGuard />
       <aside className="flex w-full shrink-0 flex-col bg-slate-900 px-4 py-6 lg:min-h-screen lg:w-64">
         <Link href="/dashboard" className="flex items-center gap-2.5 px-2">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500 text-sm font-bold text-white">
