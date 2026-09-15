@@ -5,6 +5,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
 import StatusBadge from "@/components/StatusBadge";
 import SicActions from "@/components/SicActions";
+import FilePreview from "@/components/FilePreview";
 import { IconArrowLeft } from "@/components/icons";
 import {
   FILE_TYPE_LABELS,
@@ -117,10 +118,8 @@ export default async function SicDetailPage({ params }: { params: { id: string }
                         Link de referencia
                       </a>
                     )}
-                    {itemFile?.url && (
-                      <a href={itemFile.url} target="_blank" className="text-slate-900 underline">
-                        {itemFile.file_name}
-                      </a>
+                    {itemFile && (
+                      <FilePreview url={itemFile.url} fileName={itemFile.file_name} />
                     )}
                   </div>
                 </div>
@@ -138,15 +137,11 @@ export default async function SicDetailPage({ params }: { params: { id: string }
               {filesWithUrls
                 .filter((f) => !f.item_id)
                 .map((f) => (
-                  <li key={f.id} className="flex items-center justify-between">
+                  <li key={f.id} className="flex items-center justify-between gap-3">
                     <span className="text-slate-600">
                       {FILE_TYPE_LABELS[f.file_type as SicFileType]}: {f.file_name}
                     </span>
-                    {f.url && (
-                      <a href={f.url} target="_blank" className="text-slate-900 underline">
-                        Descargar
-                      </a>
-                    )}
+                    <FilePreview url={f.url} fileName={f.file_name} label="Ver" />
                   </li>
                 ))}
             </ul>

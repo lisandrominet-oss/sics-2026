@@ -62,7 +62,9 @@ export default function SicActions({
   async function uploadFile(file: File, fileType: SicFileType) {
     const supabase = createClient();
     const path = `${sicId}/${fileType}/${Date.now()}-${file.name}`;
-    const { error: upErr } = await supabase.storage.from("sic-files").upload(path, file);
+    const { error: upErr } = await supabase.storage
+      .from("sic-files")
+      .upload(path, file, { contentType: file.type || "application/octet-stream" });
     if (upErr) throw upErr;
     const { error: rpcErr } = await supabase.rpc("attach_file", {
       p_sic_id: sicId,
@@ -564,7 +566,9 @@ function ObservacionEditor({
         const itemRow = newItems[i];
         if (!file || !itemRow) continue;
         const path = `${sicId}/referencia/${itemRow.id}/${file.name}`;
-        const { error: upErr } = await supabase.storage.from("sic-files").upload(path, file);
+        const { error: upErr } = await supabase.storage
+          .from("sic-files")
+          .upload(path, file, { contentType: file.type || "application/octet-stream" });
         if (upErr) continue;
         await supabase.rpc("attach_file", {
           p_sic_id: sicId,

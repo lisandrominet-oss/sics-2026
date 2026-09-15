@@ -69,7 +69,9 @@ export default function NuevaSicForm({
         const itemRow = createdItems[i];
         if (!file || !itemRow) continue;
         const path = `${sic.id}/referencia/${itemRow.id}/${file.name}`;
-        const { error: upErr } = await supabase.storage.from("sic-files").upload(path, file);
+        const { error: upErr } = await supabase.storage
+          .from("sic-files")
+          .upload(path, file, { contentType: file.type || "application/octet-stream" });
         if (upErr) continue;
         await supabase.rpc("attach_file", {
           p_sic_id: sic.id,
