@@ -4,10 +4,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
-import StatusBadge from "@/components/StatusBadge";
 import DashboardControls from "@/components/DashboardControls";
-import { IconArrowRight, IconPlusCircle } from "@/components/icons";
-import { CAN_CREATE_SIC, SORT_OPTIONS, effectiveRole, formatAmount, formatDate } from "@/lib/constants";
+import SicsList, { type SicRow } from "@/components/SicsList";
+import { IconPlusCircle } from "@/components/icons";
+import { CAN_CREATE_SIC, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
 import { PENDING_STATUSES_BY_ROLE, getPendingSicsCount } from "@/lib/pendingSics";
 
 const SORT_COLUMNS = new Set(SORT_OPTIONS.map((o) => o.value));
@@ -32,7 +32,7 @@ export default async function DashboardPage({
   let query = supabase
     .from("sics")
     .select(
-      "id, code, subject, status, currency, final_amount, estimated_amount, created_at, updated_at, needed_by_date, department, requester_id, plants(name, prefix)"
+      "id, code, subject, status, currency, final_amount, estimated_amount, created_at, updated_at, needed_by_date, department, requester_id, plants(name, prefix), project:projects(name), requester:profiles!sics_requester_id_fkey(full_name, email)"
     )
     .order(sortColumn, { ascending: sortDir === "asc", nullsFirst: false });
 
@@ -113,51 +113,7 @@ export default async function DashboardPage({
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Actividad</p>
             <h2 className="text-base font-semibold text-slate-900">Solicitudes recientes</h2>
           </div>
-          <ul className="divide-y divide-slate-100">
-            {sics?.map((sic) => {
-              const plant = sic.plants as { name: string; prefix: string } | null;
-              return (
-                <li key={sic.id}>
-                  <Link
-                    href={`/sic/${sic.id}`}
-                    className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 hover:bg-slate-50"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-xs font-bold text-indigo-600">
-                        {plant?.prefix ?? "SIC"}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-slate-900">{sic.code}</p>
-                        <p className="truncate text-xs text-slate-500">{sic.subject}</p>
-                        {sic.department && (
-                          <p className="truncate text-xs text-slate-400">{sic.department}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="hidden text-xs text-slate-400 lg:block">
-                        {sic.needed_by_date ? `Necesaria: ${formatDate(sic.needed_by_date)}` : ""}
-                      </span>
-                      <span className="hidden text-sm text-slate-500 sm:block">
-                        {formatAmount(sic.final_amount ?? sic.estimated_amount, sic.currency)}
-                      </span>
-                      <span className="hidden text-xs text-slate-400 md:block">{formatDate(sic.updated_at)}</span>
-                      <StatusBadge status={sic.status} />
-                      <span className="flex items-center gap-1 text-sm font-medium text-indigo-600">
-                        Ver
-                        <IconArrowRight />
-                      </span>
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-            {sics?.length === 0 && (
-              <li className="px-6 py-10 text-center text-sm text-slate-400">
-                No hay solicitudes para mostrar.
-              </li>
-            )}
-          </ul>
+          <SicsList sics={(sics ?? []) as unknown as SicRow[]} role={role} />
         </div>
       </div>
     </AppShell>

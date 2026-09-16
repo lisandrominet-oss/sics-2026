@@ -64,6 +64,8 @@ export const FILE_TYPE_LABELS: Record<SicFileType, string> = {
 
 export const MAX_SIC_ITEMS = 50;
 
+export const COMPRAS_EXPORTABLE_STATUSES: SicStatus[] = ["enviada", "en_observacion", "cotizando"];
+
 export const CAN_CREATE_SIC: UserRole[] = ["area", "gerencia", "compras", "admin"];
 
 export const IMPERSONATABLE_ROLES: UserRole[] = ["gerencia", "compras", "panol", "area"];

@@ -6,8 +6,10 @@ import AppShell from "@/components/AppShell";
 import StatusBadge from "@/components/StatusBadge";
 import SicActions from "@/components/SicActions";
 import FilePreview from "@/components/FilePreview";
+import ExportSicButton from "@/components/ExportSicButton";
 import { IconArrowLeft } from "@/components/icons";
 import {
+  COMPRAS_EXPORTABLE_STATUSES,
   FILE_TYPE_LABELS,
   STATUS_LABELS,
   effectiveRole,
@@ -15,6 +17,7 @@ import {
   formatDate,
   type SicFileType,
 } from "@/lib/constants";
+import type { SicExportRow } from "@/lib/exportSics";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -59,6 +62,20 @@ export default async function SicDetailPage({ params }: { params: { id: string }
   const plant = sic.plants as { name: string; prefix: string } | null;
   const project = sic.project as { id: string; name: string } | null;
 
+  const canExport = (role === "compras" || role === "admin") && COMPRAS_EXPORTABLE_STATUSES.includes(sic.status);
+  const exportRows: SicExportRow[] = (items ?? []).map((it) => ({
+    codigo: sic.code,
+    asunto: sic.subject,
+    planta: plant ? `${plant.name} (${plant.prefix})` : "-",
+    proyecto: project?.name ?? "-",
+    solicitante: requester?.full_name ?? requester?.email ?? "-",
+    area: sic.department ?? "-",
+    fechaNecesaria: sic.needed_by_date ? formatDate(sic.needed_by_date) : "-",
+    articulo: it.description,
+    cantidad: it.quantity,
+    especificaciones: it.specs ?? "",
+  }));
+
   return (
     <AppShell
       role={role}
@@ -81,7 +98,12 @@ export default async function SicDetailPage({ params }: { params: { id: string }
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{sic.code}</p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">{sic.subject}</h1>
           </div>
-          <StatusBadge status={sic.status} />
+          <div className="flex items-center gap-3">
+            {canExport && (
+              <ExportSicButton rows={exportRows} filename={`${sic.code}.xlsx`} label="Exportar a Excel" />
+            )}
+            <StatusBadge status={sic.status} />
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm">
