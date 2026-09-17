@@ -12,6 +12,7 @@ import {
   IconGrid,
   IconPlusCircle,
   IconSettings,
+  IconTruck,
   IconUsers,
 } from "@/components/icons";
 import { CAN_CREATE_SIC, ROLE_LABELS, type UserRole } from "@/lib/constants";
@@ -90,6 +91,15 @@ export default function AppShell({
           <NavLink href="/dashboard" label="Tablero" icon={<IconGrid />} />
           {CAN_CREATE_SIC.includes(role) && (
             <NavLink href="/sic/nueva" label="Nueva SIC" icon={<IconPlusCircle />} />
+          )}
+
+          {(role === "compras" || role === "admin") && (
+            <>
+              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Compras
+              </p>
+              <NavLink href="/proveedores" label="Proveedores" icon={<IconTruck />} />
+            </>
           )}
 
           {role === "admin" && (
