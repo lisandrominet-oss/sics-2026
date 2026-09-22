@@ -59,6 +59,7 @@ export const FILE_TYPE_LABELS: Record<SicFileType, string> = {
   remito: "Remito",
   factura: "Factura",
   referencia: "Referencia",
+  certificado_calidad: "Certificado de calidad",
   otro: "Otro",
 };
 

@@ -471,6 +471,7 @@ export type Database = {
           quantity: number
           received_quantity: number
           reference_link: string | null
+          requires_quality_cert: boolean
           sic_id: string
           specs: string | null
         }
@@ -482,6 +483,7 @@ export type Database = {
           quantity: number
           received_quantity?: number
           reference_link?: string | null
+          requires_quality_cert?: boolean
           sic_id: string
           specs?: string | null
         }
@@ -493,6 +495,7 @@ export type Database = {
           quantity?: number
           received_quantity?: number
           reference_link?: string | null
+          requires_quality_cert?: boolean
           sic_id?: string
           specs?: string | null
         }
@@ -833,6 +836,18 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_pending_quality_certificates: {
+        Args: never
+        Returns: {
+          code: string
+          item_description: string
+          item_id: string
+          sic_id: string
+          status: Database["public"]["Enums"]["sic_status"]
+          subject: string
+          updated_at: string
+        }[]
+      }
       issue_po: {
         Args: { p_note?: string; p_po_number?: string; p_sic_id: string }
         Returns: {
@@ -1000,6 +1015,7 @@ export type Database = {
         | "factura"
         | "otro"
         | "referencia"
+        | "certificado_calidad"
       sic_status:
         | "enviada"
         | "en_observacion"
@@ -1151,6 +1167,7 @@ export const Constants = {
         "factura",
         "otro",
         "referencia",
+        "certificado_calidad",
       ],
       sic_status: [
         "enviada",

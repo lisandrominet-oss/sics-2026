@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import ItemsEditor, { type ItemDraft } from "@/components/ItemsEditor";
+import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
 import type { SicFileType, SicStatus, UserRole } from "@/lib/constants";
 
 type SicFile = {
@@ -21,6 +21,8 @@ type EditItem = {
   specs: string | null;
   referenceLink: string | null;
   existingFileName: string | null;
+  requiresQualityCert: boolean;
+  certFiles: SicFile[];
 };
 
 type EditData = {
@@ -59,7 +61,7 @@ export default function SicActions({
   const findFile = (type: SicFileType) => existingFiles.find((f) => f.file_type === type);
   const hasFactura = !!findFile("factura");
 
-  async function uploadFile(file: File, fileType: SicFileType) {
+  async function uploadFile(file: File, fileType: SicFileType, itemId?: string) {
     const supabase = createClient();
     const path = `${sicId}/${fileType}/${Date.now()}-${file.name}`;
     const { error: upErr } = await supabase.storage
@@ -71,6 +73,7 @@ export default function SicActions({
       p_file_type: fileType,
       p_storage_path: path,
       p_file_name: file.name,
+      ...(itemId ? { p_item_id: itemId } : {}),
     });
     if (rpcErr) throw rpcErr;
   }
@@ -111,6 +114,8 @@ export default function SicActions({
   );
 
   const canCancel = ["compras", "admin"].includes(role) && !["cerrada", "anulada"].includes(status);
+  const itemsRequiringCert = editData.items.filter((it) => it.requiresQualityCert);
+  const canManageCerts = ["compras", "admin"].includes(role) && itemsRequiringCert.length > 0;
 
   function renderStatusPanel(): React.ReactNode {
   if (status === "enviada" && ["compras", "admin"].includes(role)) {
@@ -306,6 +311,27 @@ export default function SicActions({
   return (
     <div className="space-y-4">
       {renderStatusPanel()}
+      {canManageCerts && (
+        <ActionCard title="Certificados de calidad">
+          <p className="mb-3 text-xs text-slate-500">
+            Se pueden subir en cualquier momento, aunque la SIC ya esté cerrada — no hace falta esperar a
+            que llegue el certificado para avanzar con el resto del pedido.
+          </p>
+          <div className="space-y-2">
+            {itemsRequiringCert.map((item) => (
+              <MultiFileRow
+                key={item.id}
+                label={item.description}
+                files={item.certFiles}
+                onUpload={(f) =>
+                  run(() => uploadFile(f, "certificado_calidad", item.id).then(() => ({ error: null })))
+                }
+                onDelete={(f) => run(() => deleteFile(f))}
+              />
+            ))}
+          </div>
+        </ActionCard>
+      )}
       {canCancel && <CancelSicCard sicId={sicId} onDone={() => router.refresh()} />}
     </div>
   );
@@ -521,8 +547,9 @@ function ObservacionEditor({
           referenceLink: it.referenceLink ?? "",
           file: null,
           existingFileName: it.existingFileName,
+          requiresQualityCert: it.requiresQualityCert,
         }))
-      : [{ description: "", quantity: "", specs: "", referenceLink: "", file: null }]
+      : [{ ...EMPTY_ITEM }]
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -538,6 +565,7 @@ function ObservacionEditor({
       quantity: Number(it.quantity),
       specs: it.specs || null,
       reference_link: it.referenceLink || null,
+      requires_quality_cert: it.requiresQualityCert,
     }));
 
     const { data: sic, error: updateError } = await supabase.rpc("update_sic_details", {

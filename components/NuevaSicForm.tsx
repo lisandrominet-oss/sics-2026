@@ -40,6 +40,7 @@ export default function NuevaSicForm({
       quantity: Number(it.quantity),
       specs: it.specs || null,
       reference_link: it.referenceLink || null,
+      requires_quality_cert: it.requiresQualityCert,
     }));
 
     const { data: sic, error: createError } = await supabase.rpc("create_sic", {

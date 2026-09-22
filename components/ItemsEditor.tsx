@@ -9,6 +9,7 @@ export type ItemDraft = {
   referenceLink: string;
   file: File | null;
   existingFileName?: string | null;
+  requiresQualityCert: boolean;
 };
 
 export const EMPTY_ITEM: ItemDraft = {
@@ -17,6 +18,7 @@ export const EMPTY_ITEM: ItemDraft = {
   specs: "",
   referenceLink: "",
   file: null,
+  requiresQualityCert: false,
 };
 
 export default function ItemsEditor({
@@ -124,6 +126,15 @@ export default function ItemsEditor({
               )}
             </div>
           </div>
+
+          <label className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-700">
+            <input
+              type="checkbox"
+              checked={item.requiresQualityCert}
+              onChange={(e) => updateItem(index, { requiresQualityCert: e.target.checked })}
+            />
+            Requiere certificado de calidad
+          </label>
         </div>
       ))}
 

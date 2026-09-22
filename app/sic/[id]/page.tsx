@@ -122,7 +122,10 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           <h2 className="font-semibold text-slate-900">Artículos solicitados</h2>
           <div className="mt-3 space-y-3">
             {(items ?? []).map((item, i) => {
-              const itemFile = filesWithUrls.find((f) => f.item_id === item.id);
+              const itemFile = filesWithUrls.find((f) => f.item_id === item.id && f.file_type === "referencia");
+              const itemCertFiles = filesWithUrls.filter(
+                (f) => f.item_id === item.id && f.file_type === "certificado_calidad"
+              );
               return (
                 <div key={item.id} className="rounded-lg border border-slate-200 p-3">
                   <p className="font-medium text-slate-800">
@@ -134,7 +137,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
                     )}
                   </p>
                   {item.specs && <p className="mt-1 text-slate-500">{item.specs}</p>}
-                  <div className="mt-1 flex gap-3 text-xs">
+                  <div className="mt-1 flex flex-wrap gap-3 text-xs">
                     {item.reference_link && (
                       <a href={item.reference_link} target="_blank" className="text-slate-900 underline">
                         Link de referencia
@@ -144,6 +147,18 @@ export default async function SicDetailPage({ params }: { params: { id: string }
                       <FilePreview url={itemFile.url} fileName={itemFile.file_name} />
                     )}
                   </div>
+                  {item.requires_quality_cert && (
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+                      <span className="font-medium text-slate-500">Certificado de calidad:</span>
+                      {itemCertFiles.length === 0 ? (
+                        <span className="text-amber-600">Pendiente</span>
+                      ) : (
+                        itemCertFiles.map((f) => (
+                          <FilePreview key={f.id} url={f.url} fileName={f.file_name} label="Ver" />
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -195,7 +210,18 @@ export default async function SicDetailPage({ params }: { params: { id: string }
                 receivedQuantity: it.received_quantity,
                 specs: it.specs,
                 referenceLink: it.reference_link,
-                existingFileName: filesWithUrls.find((f) => f.item_id === it.id)?.file_name ?? null,
+                existingFileName:
+                  filesWithUrls.find((f) => f.item_id === it.id && f.file_type === "referencia")?.file_name ??
+                  null,
+                requiresQualityCert: it.requires_quality_cert,
+                certFiles: (files ?? [])
+                  .filter((f) => f.item_id === it.id && f.file_type === "certificado_calidad")
+                  .map((f) => ({
+                    id: f.id,
+                    file_type: f.file_type as SicFileType,
+                    storage_path: f.storage_path,
+                    file_name: f.file_name,
+                  })),
               })),
             }}
             projects={projects ?? []}

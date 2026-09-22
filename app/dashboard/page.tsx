@@ -22,12 +22,19 @@ export default async function DashboardPage({
   const role = effectiveRole(profile)!;
 
   const supabase = createClient();
+  const canSeeCerts = role === "compras" || role === "admin";
   const showPending = searchParams.filter === "mia";
+  const showPendingCerts = searchParams.filter === "certificados" && canSeeCerts;
   const pendingStatuses = PENDING_STATUSES_BY_ROLE[role] ?? [];
 
   const searchQuery = (searchParams.q ?? "").trim();
   const sortColumn = SORT_COLUMNS.has(searchParams.sort ?? "") ? searchParams.sort! : "updated_at";
   const sortDir: "asc" | "desc" = searchParams.dir === "asc" ? "asc" : "desc";
+
+  const { data: certRows } = canSeeCerts
+    ? await supabase.rpc("get_pending_quality_certificates")
+    : { data: [] as { sic_id: string }[] | null };
+  const certSicIds = Array.from(new Set((certRows ?? []).map((r) => r.sic_id)));
 
   let query = supabase
     .from("sics")
@@ -41,6 +48,9 @@ export default async function DashboardPage({
   }
   if (showPending && role === "area") {
     query = query.eq("requester_id", profile.id);
+  }
+  if (showPendingCerts) {
+    query = query.in("id", certSicIds.length > 0 ? certSicIds : ["00000000-0000-0000-0000-000000000000"]);
   }
   if (searchQuery) {
     const safeQuery = searchQuery.replace(/[,()%_]/g, " ").trim();
@@ -90,14 +100,22 @@ export default async function DashboardPage({
           <StatCard label="Cerradas" value={closedCount ?? 0} caption="Historial completo" />
         </div>
 
-        <div className="mt-8 flex gap-2 text-sm">
-          <FilterTab href="/dashboard" active={!showPending} label="Todas" />
+        <div className="mt-8 flex flex-wrap gap-2 text-sm">
+          <FilterTab href="/dashboard" active={!showPending && !showPendingCerts} label="Todas" />
           {role !== "admin" && (
             <FilterTab
               href="/dashboard?filter=mia"
               active={showPending}
               label="Pendientes de mi acción"
               dot={pendingCount > 0}
+            />
+          )}
+          {canSeeCerts && (
+            <FilterTab
+              href="/dashboard?filter=certificados"
+              active={showPendingCerts}
+              label="Certificados pendientes"
+              dot={certSicIds.length > 0}
             />
           )}
         </div>
