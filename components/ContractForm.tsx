@@ -1,0 +1,355 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { CONTRACT_ITEM_TYPE_LABELS, CONTRACT_RENEWAL_TYPE_LABELS, type ContractItemType, type ContractRenewalType } from "@/lib/contracts";
+
+type Provider = { id: string; name: string };
+type Plant = { id: string; name: string; prefix: string };
+type Project = { id: string; name: string };
+
+type ItemDraft = {
+  type: ContractItemType;
+  description: string;
+  identifier: string;
+  monthlyRateUsd: string;
+  includedHours: string;
+  overageRateUsd: string;
+  excessRule: "franquicia_hora" | "manual";
+};
+
+const EMPTY_ITEM: ItemDraft = {
+  type: "maquina",
+  description: "",
+  identifier: "",
+  monthlyRateUsd: "",
+  includedHours: "",
+  overageRateUsd: "",
+  excessRule: "franquicia_hora",
+};
+
+export default function ContractForm({
+  providers,
+  plants,
+  projects,
+}: {
+  providers: Provider[];
+  plants: Plant[];
+  projects: Project[];
+}) {
+  const router = useRouter();
+  const [providerId, setProviderId] = useState(providers[0]?.id ?? "");
+  const [plantId, setPlantId] = useState("");
+  const [projectId, setProjectId] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [renewalType, setRenewalType] = useState<ContractRenewalType>("expresa");
+  const [renewalMonths, setRenewalMonths] = useState("");
+  const [noticeDays, setNoticeDays] = useState("30");
+  const [notes, setNotes] = useState("");
+  const [items, setItems] = useState<ItemDraft[]>([{ ...EMPTY_ITEM }]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function updateItem(index: number, patch: Partial<ItemDraft>) {
+    setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
+  }
+
+  function addItem() {
+    setItems((prev) => [...prev, { ...EMPTY_ITEM }]);
+  }
+
+  function removeItem(index: number) {
+    setItems((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== index)));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const supabase = createClient();
+    const payloadItems = items.map((it) => ({
+      type: it.type,
+      description: it.description,
+      identifier: it.identifier || null,
+      monthly_rate_usd: Number(it.monthlyRateUsd),
+      included_hours: it.includedHours || null,
+      overage_rate_usd: it.overageRateUsd || null,
+      excess_rule: it.excessRule,
+    }));
+
+    const { data: contract, error: createError } = await supabase.rpc("create_contract", {
+      p_provider_id: providerId,
+      p_plant_id: plantId || null,
+      p_project_id: projectId || null,
+      p_sic_id: null,
+      p_start_date: startDate,
+      p_end_date: endDate,
+      p_renewal_type: renewalType,
+      p_renewal_months: renewalMonths ? Number(renewalMonths) : null,
+      p_notice_days: Number(noticeDays || 0),
+      p_notes: notes || null,
+      p_items: payloadItems,
+    });
+
+    if (createError || !contract) {
+      setError(createError?.message ?? "No se pudo crear el contrato");
+      setLoading(false);
+      return;
+    }
+
+    router.push(`/contratos/${contract.id}`);
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+      <div>
+        <label className="block text-sm font-medium text-slate-700">Proveedor</label>
+        <select
+          value={providerId}
+          onChange={(e) => setProviderId(e.target.value)}
+          required
+          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        >
+          {providers.length === 0 && <option value="">No hay proveedores activos</option>}
+          {providers.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Planta (opcional)</label>
+          <select
+            value={plantId}
+            onChange={(e) => setPlantId(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="">Sin planta</option>
+            {plants.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} ({p.prefix})
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Proyecto (opcional)</label>
+          <select
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="">Sin proyecto</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Inicio</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            required
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Vencimiento</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            required
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Renovación</label>
+          <select
+            value={renewalType}
+            onChange={(e) => setRenewalType(e.target.value as ContractRenewalType)}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            {(Object.keys(CONTRACT_RENEWAL_TYPE_LABELS) as ContractRenewalType[]).map((t) => (
+              <option key={t} value={t}>
+                {CONTRACT_RENEWAL_TYPE_LABELS[t]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Plazo renovación (meses)</label>
+          <input
+            type="number"
+            min="0"
+            value={renewalMonths}
+            onChange={(e) => setRenewalMonths(e.target.value)}
+            disabled={renewalType === "sin_renovacion"}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Días de preaviso</label>
+          <input
+            type="number"
+            min="0"
+            value={noticeDays}
+            onChange={(e) => setNoticeDays(e.target.value)}
+            disabled={renewalType === "sin_renovacion"}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700">Notas (opcional)</label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={2}
+          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700">Equipos</label>
+        <div className="mt-2 space-y-3">
+          {items.map((item, index) => (
+            <div key={index} className="rounded-lg border border-slate-200 p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase text-slate-400">Equipo {index + 1}</span>
+                {items.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeItem(index)}
+                    className="text-xs font-medium text-red-600 hover:underline"
+                  >
+                    Quitar
+                  </button>
+                )}
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700">Tipo</label>
+                  <select
+                    value={item.type}
+                    onChange={(e) => updateItem(index, { type: e.target.value as ContractItemType })}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  >
+                    {(Object.keys(CONTRACT_ITEM_TYPE_LABELS) as ContractItemType[]).map((t) => (
+                      <option key={t} value={t}>
+                        {CONTRACT_ITEM_TYPE_LABELS[t]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium text-slate-700">Descripción</label>
+                  <input
+                    value={item.description}
+                    onChange={(e) => updateItem(index, { description: e.target.value })}
+                    required
+                    placeholder="Ej: Retroexcavadora JCB 3CX"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+              <div className="mt-3">
+                <label className="block text-xs font-medium text-slate-700">Número interno / patente / serie (opcional)</label>
+                <input
+                  value={item.identifier}
+                  onChange={(e) => updateItem(index, { identifier: e.target.value })}
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700">Regla de exceso</label>
+                  <select
+                    value={item.excessRule}
+                    onChange={(e) => updateItem(index, { excessRule: e.target.value as ItemDraft["excessRule"] })}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  >
+                    <option value="franquicia_hora">Franquicia + hora excedida</option>
+                    <option value="manual">Manual (monto cargado a mano)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700">Tarifa fija mensual (USD, neta de IVA)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={item.monthlyRateUsd}
+                    onChange={(e) => updateItem(index, { monthlyRateUsd: e.target.value })}
+                    required
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+              {item.excessRule === "franquicia_hora" && (
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700">Horas incluidas por mes</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={item.includedHours}
+                      onChange={(e) => updateItem(index, { includedHours: e.target.value })}
+                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700">Tarifa por hora excedida (USD)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={item.overageRateUsd}
+                      onChange={(e) => updateItem(index, { overageRateUsd: e.target.value })}
+                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={addItem}
+          className="mt-3 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+        >
+          + Agregar equipo
+        </button>
+      </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <button
+        type="submit"
+        disabled={loading || providers.length === 0}
+        className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+      >
+        {loading ? "Creando…" : "Crear contrato"}
+      </button>
+    </form>
+  );
+}

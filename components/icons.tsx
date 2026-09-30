@@ -119,6 +119,15 @@ export function IconTruck({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
+export function IconFileText({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className}>
+      <path d="M6 3.5h8l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z" strokeLinejoin="round" />
+      <path d="M14 3.5v4h4M8.5 12.5h7M8.5 16h7M8.5 9h3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function IconArrowLeft({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className}>

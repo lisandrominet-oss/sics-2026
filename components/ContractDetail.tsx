@@ -1,0 +1,1068 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import FilePreview from "@/components/FilePreview";
+import {
+  CONTRACT_DISPLAY_STATUS_COLORS,
+  CONTRACT_DISPLAY_STATUS_LABELS,
+  CONTRACT_DOCUMENT_TYPE_LABELS,
+  CONTRACT_INSTALLMENT_STATUS_COLORS,
+  CONTRACT_INSTALLMENT_STATUS_LABELS,
+  CONTRACT_ITEM_TYPE_LABELS,
+  CONTRACT_RENEWAL_TYPE_LABELS,
+  PROVIDER_INVOICE_KIND_LABELS,
+  contractDisplayStatus,
+  formatArs,
+  formatDateOnly,
+  formatUsd,
+  type ContractDocumentType,
+  type ProviderInvoiceKind,
+} from "@/lib/contracts";
+import type { Database } from "@/lib/database.types";
+
+type Contract = Database["public"]["Tables"]["contracts"]["Row"] & {
+  provider: { id: string; name: string; email: string | null; phone: string | null } | null;
+  plant: { name: string; prefix: string } | null;
+  project: { name: string } | null;
+  owner: { full_name: string | null } | null;
+};
+type ContractItem = Database["public"]["Tables"]["contract_items"]["Row"];
+type ContractItemRate = Database["public"]["Tables"]["contract_item_rates"]["Row"];
+type ContractUsage = Database["public"]["Tables"]["contract_usage"]["Row"];
+type Installment = Database["public"]["Tables"]["contract_installments"]["Row"];
+type ContractDocument = Database["public"]["Tables"]["contract_documents"]["Row"] & { url: string | null };
+type ContractEvent = Database["public"]["Tables"]["contract_events"]["Row"] & {
+  actor: { full_name: string | null } | null;
+};
+type ProviderInvoice = Database["public"]["Tables"]["provider_invoices"]["Row"];
+type InvoiceLine = Database["public"]["Tables"]["provider_invoice_lines"]["Row"] & { invoice: ProviderInvoice };
+
+type Tab = "datos" | "items" | "documentos" | "cuotas" | "historial";
+
+export default function ContractDetail({
+  contract,
+  items,
+  rates,
+  usage,
+  installments,
+  expectedByPeriod,
+  documents,
+  events,
+  invoiceLines,
+  providerInvoices,
+}: {
+  contract: Contract;
+  items: ContractItem[];
+  rates: ContractItemRate[];
+  usage: ContractUsage[];
+  installments: Installment[];
+  expectedByPeriod: Record<string, number>;
+  documents: ContractDocument[];
+  events: ContractEvent[];
+  invoiceLines: InvoiceLine[];
+  providerInvoices: ProviderInvoice[];
+}) {
+  const router = useRouter();
+  const [tab, setTab] = useState<Tab>("datos");
+  const [error, setError] = useState<string | null>(null);
+  const status = contractDisplayStatus(contract);
+
+  function refresh() {
+    router.refresh();
+  }
+
+  const paid = installments.filter((i) => i.status === "pagada").length;
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            {contract.provider?.name ?? "Proveedor"}
+          </p>
+          <h1 className="mt-1 text-2xl font-bold text-slate-900">
+            {items.map((i) => i.description).join(", ") || "Contrato"}
+          </h1>
+        </div>
+        <span
+          className={`inline-block whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${CONTRACT_DISPLAY_STATUS_COLORS[status]}`}
+        >
+          {CONTRACT_DISPLAY_STATUS_LABELS[status]}
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm sm:grid-cols-4">
+        <Info label="Inicio" value={formatDateOnly(contract.start_date)} />
+        <Info label="Vencimiento" value={formatDateOnly(contract.end_date)} />
+        <Info label="Cuotas" value={`${paid}/${installments.length} pagadas`} />
+        <Info label="Responsable" value={contract.owner?.full_name ?? "-"} />
+      </div>
+
+      <div className="mt-6 flex gap-2 border-b border-slate-200 text-sm">
+        {(
+          [
+            ["datos", "Datos"],
+            ["items", "Ítems y tarifas"],
+            ["documentos", "Documentos"],
+            ["cuotas", "Cuotas"],
+            ["historial", "Historial"],
+          ] as [Tab, string][]
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`border-b-2 px-3 py-2 font-medium ${
+              tab === key ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+
+      <div className="mt-4">
+        {tab === "datos" && <DatosTab contract={contract} onDone={refresh} onError={setError} />}
+        {tab === "items" && (
+          <ItemsTab contractId={contract.id} items={items} rates={rates} usage={usage} installments={installments} onDone={refresh} onError={setError} />
+        )}
+        {tab === "documentos" && (
+          <DocumentosTab contractId={contract.id} documents={documents} onDone={refresh} onError={setError} />
+        )}
+        {tab === "cuotas" && (
+          <CuotasTab
+            contract={contract}
+            installments={installments}
+            expectedByPeriod={expectedByPeriod}
+            invoiceLines={invoiceLines}
+            providerInvoices={providerInvoices}
+            items={items}
+            onDone={refresh}
+            onError={setError}
+          />
+        )}
+        {tab === "historial" && <HistorialTab events={events} />}
+      </div>
+    </div>
+  );
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs uppercase text-slate-400">{label}</p>
+      <p className="text-slate-700">{value}</p>
+    </div>
+  );
+}
+
+function Card({ title, children }: { title?: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
+      {title && <h2 className="text-sm font-semibold text-slate-900">{title}</h2>}
+      <div className={title ? "mt-3" : ""}>{children}</div>
+    </div>
+  );
+}
+
+// ---------- Datos ----------
+
+function DatosTab({
+  contract,
+  onDone,
+  onError,
+}: {
+  contract: Contract;
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const [renewOpen, setRenewOpen] = useState(false);
+  const [returnOpen, setReturnOpen] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      <Card title="Detalle">
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <Info label="Planta" value={contract.plant ? `${contract.plant.name} (${contract.plant.prefix})` : "-"} />
+          <Info label="Proyecto" value={contract.project?.name ?? "-"} />
+          <Info label="Contacto proveedor" value={contract.provider?.email ?? contract.provider?.phone ?? "-"} />
+          <Info label="Renovación" value={CONTRACT_RENEWAL_TYPE_LABELS[contract.renewal_type]} />
+          <Info label="Días de preaviso" value={String(contract.notice_days)} />
+          <Info label="Plazo de renovación" value={contract.renewal_months ? `${contract.renewal_months} meses` : "-"} />
+        </div>
+        {contract.notes && (
+          <p className="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-600">{contract.notes}</p>
+        )}
+        {contract.returned && (
+          <p className="mt-3 border-t border-slate-100 pt-3 text-sm text-emerald-700">
+            Devuelto el {contract.returned_at ? formatDateOnly(contract.returned_at) : "-"}
+            {contract.return_note ? ` — ${contract.return_note}` : ""}
+          </p>
+        )}
+      </Card>
+
+      {!contract.returned && (
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => setRenewOpen((v) => !v)}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            {renewOpen ? "Cancelar" : "Renovar"}
+          </button>
+          <button
+            onClick={() => setReturnOpen((v) => !v)}
+            className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+          >
+            {returnOpen ? "Cancelar" : "Devolver equipo y finalizar contrato"}
+          </button>
+        </div>
+      )}
+
+      {renewOpen && <RenewForm contractId={contract.id} onDone={() => { setRenewOpen(false); onDone(); }} onError={onError} />}
+      {returnOpen && <ReturnForm contractId={contract.id} onDone={() => { setReturnOpen(false); onDone(); }} onError={onError} />}
+    </div>
+  );
+}
+
+function RenewForm({ contractId, onDone, onError }: { contractId: string; onDone: () => void; onError: (e: string | null) => void }) {
+  const [newEndDate, setNewEndDate] = useState("");
+  const [note, setNote] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function submit() {
+    setLoading(true);
+    onError(null);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("renew_contract", { p_contract_id: contractId, p_new_end_date: newEndDate, p_note: note || null });
+    setLoading(false);
+    if (error) { onError(error.message); return; }
+    onDone();
+  }
+
+  return (
+    <Card title="Renovar contrato">
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Nuevo vencimiento</label>
+          <input type="date" value={newEndDate} onChange={(e) => setNewEndDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Nota (opcional)</label>
+          <input value={note} onChange={(e) => setNote(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+      </div>
+      <button onClick={submit} disabled={loading || !newEndDate} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+        {loading ? "Guardando…" : "Confirmar renovación"}
+      </button>
+    </Card>
+  );
+}
+
+function ReturnForm({ contractId, onDone, onError }: { contractId: string; onDone: () => void; onError: (e: string | null) => void }) {
+  const [returnDate, setReturnDate] = useState("");
+  const [note, setNote] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function submit() {
+    if (!file) { onError("Hace falta adjuntar el acta de devolución"); return; }
+    setLoading(true);
+    onError(null);
+    const supabase = createClient();
+    const path = `${contractId}/acta_devolucion/${Date.now()}-${file.name}`;
+    const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
+    if (upErr) { setLoading(false); onError(upErr.message); return; }
+    const { error } = await supabase.rpc("return_contract", {
+      p_contract_id: contractId,
+      p_return_date: returnDate,
+      p_note: note || null,
+      p_act_storage_path: path,
+      p_act_file_name: file.name,
+    });
+    setLoading(false);
+    if (error) { onError(error.message); return; }
+    onDone();
+  }
+
+  return (
+    <Card title="Devolver equipo y finalizar contrato">
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Fecha de devolución</label>
+          <input type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Acta de devolución (obligatoria)</label>
+          <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+        </div>
+      </div>
+      <div className="mt-3">
+        <label className="block text-xs font-medium text-slate-700">Nota (opcional)</label>
+        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+      <p className="mt-2 text-xs text-slate-500">Esto cancela las cuotas futuras que todavía no fueron facturadas.</p>
+      <button onClick={submit} disabled={loading || !returnDate || !file} className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50">
+        {loading ? "Guardando…" : "Confirmar devolución"}
+      </button>
+    </Card>
+  );
+}
+
+// ---------- Ítems y tarifas ----------
+
+function ItemsTab({
+  contractId,
+  items,
+  rates,
+  usage,
+  installments,
+  onDone,
+  onError,
+}: {
+  contractId: string;
+  items: ContractItem[];
+  rates: ContractItemRate[];
+  usage: ContractUsage[];
+  installments: Installment[];
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      {items.map((item) => (
+        <ItemCard
+          key={item.id}
+          item={item}
+          rates={rates.filter((r) => r.item_id === item.id).sort((a, b) => b.valid_from.localeCompare(a.valid_from))}
+          usage={usage.filter((u) => u.item_id === item.id).sort((a, b) => b.period_start.localeCompare(a.period_start))}
+          installments={installments}
+          onDone={onDone}
+          onError={onError}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ItemCard({
+  item,
+  rates,
+  usage,
+  installments,
+  onDone,
+  onError,
+}: {
+  item: ContractItem;
+  rates: ContractItemRate[];
+  usage: ContractUsage[];
+  installments: Installment[];
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const [rateFormOpen, setRateFormOpen] = useState(false);
+  const [usageFormOpen, setUsageFormOpen] = useState(false);
+  const current = rates[0];
+
+  return (
+    <Card>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <p className="text-sm font-semibold text-slate-900">
+            {CONTRACT_ITEM_TYPE_LABELS[item.type]} — {item.description}
+          </p>
+          {item.identifier && <p className="text-xs text-slate-500">{item.identifier}</p>}
+        </div>
+        <div className="flex gap-2">
+          <button onClick={() => setUsageFormOpen((v) => !v)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Cargar horas del mes
+          </button>
+          <button onClick={() => setRateFormOpen((v) => !v)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Ajustar tarifa
+          </button>
+        </div>
+      </div>
+
+      {current && (
+        <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+          <Info label="Tarifa mensual" value={formatUsd(current.monthly_rate_usd)} />
+          <Info label="Horas incluidas" value={current.included_hours ? String(current.included_hours) : "-"} />
+          <Info label="Hora excedida" value={current.overage_rate_usd ? formatUsd(current.overage_rate_usd) : "-"} />
+          <Info label="Regla" value={current.excess_rule === "manual" ? "Manual" : "Franquicia + hora excedida"} />
+        </div>
+      )}
+
+      {rates.length > 1 && (
+        <details className="mt-3 text-xs text-slate-500">
+          <summary className="cursor-pointer">Historial de tarifas ({rates.length})</summary>
+          <ul className="mt-2 space-y-1">
+            {rates.map((r) => (
+              <li key={r.id}>
+                Desde {formatDateOnly(r.valid_from)}: {formatUsd(r.monthly_rate_usd)}/mes
+                {r.included_hours ? `, ${r.included_hours} hs incluidas` : ""}
+                {r.overage_rate_usd ? `, ${formatUsd(r.overage_rate_usd)}/hora excedida` : ""}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
+      {usage.length > 0 && (
+        <details className="mt-3 text-xs text-slate-500">
+          <summary className="cursor-pointer">Horas cargadas ({usage.length})</summary>
+          <ul className="mt-2 space-y-1">
+            {usage.map((u) => (
+              <li key={u.id}>
+                {formatDateOnly(u.period_start)}: {u.hours} hs
+                {u.report_file_name ? ` — ${u.report_file_name}` : ""}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
+      {rateFormOpen && (
+        <RateForm
+          itemId={item.id}
+          onDone={() => { setRateFormOpen(false); onDone(); }}
+          onError={onError}
+        />
+      )}
+      {usageFormOpen && (
+        <UsageForm
+          itemId={item.id}
+          installments={installments}
+          onDone={() => { setUsageFormOpen(false); onDone(); }}
+          onError={onError}
+        />
+      )}
+    </Card>
+  );
+}
+
+function RateForm({ itemId, onDone, onError }: { itemId: string; onDone: () => void; onError: (e: string | null) => void }) {
+  const [validFrom, setValidFrom] = useState("");
+  const [monthlyRate, setMonthlyRate] = useState("");
+  const [includedHours, setIncludedHours] = useState("");
+  const [overageRate, setOverageRate] = useState("");
+  const [excessRule, setExcessRule] = useState<"franquicia_hora" | "manual">("franquicia_hora");
+  const [note, setNote] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function submit() {
+    setLoading(true);
+    onError(null);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("add_contract_item_rate", {
+      p_item_id: itemId,
+      p_valid_from: validFrom,
+      p_monthly_rate_usd: Number(monthlyRate),
+      p_included_hours: includedHours ? Number(includedHours) : null,
+      p_overage_rate_usd: overageRate ? Number(overageRate) : null,
+      p_excess_rule: excessRule,
+      p_note: note || null,
+    });
+    setLoading(false);
+    if (error) { onError(error.message); return; }
+    onDone();
+  }
+
+  return (
+    <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <p className="text-xs font-semibold text-slate-700">Nuevo ajuste de tarifa</p>
+      <div className="mt-2 grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Vigente desde</label>
+          <input type="date" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Regla</label>
+          <select value={excessRule} onChange={(e) => setExcessRule(e.target.value as typeof excessRule)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <option value="franquicia_hora">Franquicia + hora excedida</option>
+            <option value="manual">Manual</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Tarifa mensual (USD)</label>
+          <input type="number" step="0.01" value={monthlyRate} onChange={(e) => setMonthlyRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        {excessRule === "franquicia_hora" && (
+          <>
+            <div>
+              <label className="block text-xs font-medium text-slate-700">Horas incluidas</label>
+              <input type="number" step="0.01" value={includedHours} onChange={(e) => setIncludedHours(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-700">Tarifa hora excedida (USD)</label>
+              <input type="number" step="0.01" value={overageRate} onChange={(e) => setOverageRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            </div>
+          </>
+        )}
+        <div className="col-span-2">
+          <label className="block text-xs font-medium text-slate-700">Nota</label>
+          <input value={note} onChange={(e) => setNote(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+      </div>
+      <button onClick={submit} disabled={loading || !validFrom || !monthlyRate} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+        {loading ? "Guardando…" : "Guardar tarifa"}
+      </button>
+    </div>
+  );
+}
+
+function UsageForm({
+  itemId,
+  installments,
+  onDone,
+  onError,
+}: {
+  itemId: string;
+  installments: Installment[];
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const [periodStart, setPeriodStart] = useState(installments[0]?.period_start ?? "");
+  const [hours, setHours] = useState("");
+  const [manualExpected, setManualExpected] = useState("");
+  const [manualNote, setManualNote] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  async function submit() {
+    const installment = installments.find((i) => i.period_start === periodStart);
+    if (!installment) { onError("Elegí un período"); return; }
+    setLoading(true);
+    onError(null);
+    const supabase = createClient();
+
+    let reportPath: string | null = null;
+    let reportName: string | null = null;
+    if (file) {
+      const path = `${installment.contract_id}/informe_horas/${itemId}/${Date.now()}-${file.name}`;
+      const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
+      if (upErr) { setLoading(false); onError(upErr.message); return; }
+      reportPath = path;
+      reportName = file.name;
+    }
+
+    const { error } = await supabase.rpc("record_contract_usage", {
+      p_item_id: itemId,
+      p_period_start: installment.period_start,
+      p_period_end: installment.period_end,
+      p_hours: Number(hours),
+      p_report_storage_path: reportPath,
+      p_report_file_name: reportName,
+      p_manual_expected_usd: manualExpected ? Number(manualExpected) : null,
+      p_manual_note: manualNote || null,
+    });
+    setLoading(false);
+    if (error) { onError(error.message); return; }
+    if (fileInput.current) fileInput.current.value = "";
+    onDone();
+  }
+
+  return (
+    <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <p className="text-xs font-semibold text-slate-700">Cargar horas del mes</p>
+      <div className="mt-2 grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Período</label>
+          <select value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            {installments.map((i) => (
+              <option key={i.id} value={i.period_start}>
+                {formatDateOnly(i.period_start)} — {formatDateOnly(i.period_end)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Horas usadas</label>
+          <input type="number" step="0.01" value={hours} onChange={(e) => setHours(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-xs font-medium text-slate-700">Informe del sector (opcional)</label>
+          <input ref={fileInput} type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Monto esperado manual (USD, si aplica)</label>
+          <input type="number" step="0.01" value={manualExpected} onChange={(e) => setManualExpected(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Nota (obligatoria en modo manual)</label>
+          <input value={manualNote} onChange={(e) => setManualNote(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+      </div>
+      <button onClick={submit} disabled={loading || !periodStart || !hours} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+        {loading ? "Guardando…" : "Guardar horas"}
+      </button>
+    </div>
+  );
+}
+
+// ---------- Documentos ----------
+
+function DocumentosTab({
+  contractId,
+  documents,
+  onDone,
+  onError,
+}: {
+  contractId: string;
+  documents: ContractDocument[];
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const [docType, setDocType] = useState<ContractDocumentType>("contrato");
+  const [expiresAt, setExpiresAt] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  const uploadableTypes: ContractDocumentType[] = ["contrato", "adenda", "condiciones", "seguro", "otro"];
+
+  async function submit() {
+    if (!file) { onError("Elegí un archivo"); return; }
+    setLoading(true);
+    onError(null);
+    const supabase = createClient();
+    const path = `${contractId}/${docType}/${Date.now()}-${file.name}`;
+    const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
+    if (upErr) { setLoading(false); onError(upErr.message); return; }
+    const { error } = await supabase.from("contract_documents").insert({
+      contract_id: contractId,
+      doc_type: docType,
+      storage_path: path,
+      file_name: file.name,
+      expires_at: expiresAt || null,
+    });
+    setLoading(false);
+    if (error) { onError(error.message); return; }
+    if (fileInput.current) fileInput.current.value = "";
+    setFile(null);
+    setExpiresAt("");
+    onDone();
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card title="Agregar documento">
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-700">Tipo</label>
+            <select value={docType} onChange={(e) => setDocType(e.target.value as ContractDocumentType)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              {uploadableTypes.map((t) => (
+                <option key={t} value={t}>
+                  {CONTRACT_DOCUMENT_TYPE_LABELS[t]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700">Vencimiento (opcional)</label>
+            <input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700">Archivo</label>
+            <input ref={fileInput} type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+          </div>
+        </div>
+        <button onClick={submit} disabled={loading || !file} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+          {loading ? "Subiendo…" : "Agregar"}
+        </button>
+      </Card>
+
+      <Card title={`Documentos (${documents.length})`}>
+        {documents.length === 0 ? (
+          <p className="text-sm text-slate-400">Sin documentos todavía.</p>
+        ) : (
+          <ul className="space-y-2">
+            {documents.map((d) => (
+              <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span className="text-slate-600">
+                  {CONTRACT_DOCUMENT_TYPE_LABELS[d.doc_type]}
+                  {d.expires_at ? ` — vence ${formatDateOnly(d.expires_at)}` : ""}
+                </span>
+                <FilePreview url={d.url} fileName={d.file_name} label="Ver" />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+// ---------- Cuotas ----------
+
+function CuotasTab({
+  contract,
+  installments,
+  expectedByPeriod,
+  invoiceLines,
+  providerInvoices,
+  items,
+  onDone,
+  onError,
+}: {
+  contract: Contract;
+  installments: Installment[];
+  expectedByPeriod: Record<string, number>;
+  invoiceLines: InvoiceLine[];
+  providerInvoices: ProviderInvoice[];
+  items: ContractItem[];
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
+
+  function linesFor(periodStart: string) {
+    return invoiceLines.filter((l) => l.period_start === periodStart && l.invoice.status === "vigente");
+  }
+
+  const contractInvoices = Array.from(new Map(invoiceLines.map((l) => [l.invoice.id, l.invoice])).values());
+
+  async function voidInvoice(invoiceId: string) {
+    const reason = prompt("Motivo de la anulación:");
+    if (!reason) return;
+    const supabase = createClient();
+    const { error } = await supabase.rpc("void_provider_invoice", { p_invoice_id: invoiceId, p_reason: reason });
+    if (error) { onError(error.message); return; }
+    onDone();
+  }
+
+  async function acceptDifference(installmentId: string) {
+    const note = prompt("Motivo para aceptar la diferencia:");
+    if (!note) return;
+    const amountStr = prompt("Monto de la diferencia (ARS):");
+    setAcceptingId(installmentId);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("accept_installment_difference", {
+      p_installment_id: installmentId,
+      p_amount: amountStr ? Number(amountStr) : null,
+      p_note: note,
+    });
+    setAcceptingId(null);
+    if (error) { onError(error.message); return; }
+    onDone();
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <button
+          onClick={() => setInvoiceFormOpen((v) => !v)}
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+        >
+          {invoiceFormOpen ? "Cancelar" : "Cargar factura / nota de crédito / pago"}
+        </button>
+      </div>
+
+      {invoiceFormOpen && (
+        <InvoiceForm
+          contract={contract}
+          items={items}
+          installments={installments}
+          providerInvoices={providerInvoices}
+          onDone={() => { setInvoiceFormOpen(false); onDone(); }}
+          onError={onError}
+        />
+      )}
+
+      <Card title="Cuotas">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="text-xs uppercase text-slate-400">
+              <tr>
+                <th className="py-2 pr-3">Período</th>
+                <th className="py-2 pr-3">Esperado (USD)</th>
+                <th className="py-2 pr-3">Facturado (ARS)</th>
+                <th className="py-2 pr-3">Estado</th>
+                <th className="py-2 pr-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {installments.map((inst) => {
+                const lines = linesFor(inst.period_start);
+                const invoicedArs = lines.reduce((sum, l) => sum + l.net_amount, 0);
+                return (
+                  <tr key={inst.id}>
+                    <td className="py-2 pr-3 text-slate-700">
+                      {formatDateOnly(inst.period_start)} — {formatDateOnly(inst.period_end)}
+                    </td>
+                    <td className="py-2 pr-3 text-slate-600">{formatUsd(expectedByPeriod[inst.period_start] ?? 0)}</td>
+                    <td className="py-2 pr-3 text-slate-600">{lines.length > 0 ? formatArs(invoicedArs) : "-"}</td>
+                    <td className="py-2 pr-3">
+                      <span
+                        className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${CONTRACT_INSTALLMENT_STATUS_COLORS[inst.status]}`}
+                      >
+                        {CONTRACT_INSTALLMENT_STATUS_LABELS[inst.status]}
+                      </span>
+                    </td>
+                    <td className="py-2 pr-3">
+                      {inst.status === "con_diferencia" && (
+                        <button
+                          onClick={() => acceptDifference(inst.id)}
+                          disabled={acceptingId === inst.id}
+                          className="text-xs font-medium text-amber-700 underline disabled:opacity-50"
+                        >
+                          Aceptar diferencia
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Card title="Comprobantes cargados">
+        {contractInvoices.length === 0 ? (
+          <p className="text-sm text-slate-400">Sin comprobantes todavía.</p>
+        ) : (
+          <ul className="space-y-2 text-sm">
+            {contractInvoices.map((inv) => (
+              <li key={inv.id} className="flex flex-wrap items-center justify-between gap-2">
+                <span className={inv.status === "anulado" ? "text-slate-400 line-through" : "text-slate-700"}>
+                  {PROVIDER_INVOICE_KIND_LABELS[inv.kind]} {inv.number ?? ""} — {formatDateOnly(inv.issue_date)} — {formatArs(inv.total_amount)}
+                </span>
+                {inv.status === "vigente" && (
+                  <button onClick={() => voidInvoice(inv.id)} className="text-xs font-medium text-red-600 underline">
+                    Anular
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+function InvoiceForm({
+  contract,
+  items,
+  installments,
+  providerInvoices,
+  onDone,
+  onError,
+}: {
+  contract: Contract;
+  items: ContractItem[];
+  installments: Installment[];
+  providerInvoices: ProviderInvoice[];
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const [kind, setKind] = useState<ProviderInvoiceKind>("factura");
+  const [number, setNumber] = useState("");
+  const [issueDate, setIssueDate] = useState("");
+  const [fxRate, setFxRate] = useState("");
+  const [netAmount, setNetAmount] = useState("");
+  const [vatAmount, setVatAmount] = useState("");
+  const [totalAmount, setTotalAmount] = useState("");
+  const [paidInvoiceId, setPaidInvoiceId] = useState(providerInvoices[0]?.id ?? "");
+  const [file, setFile] = useState<File | null>(null);
+  const [lines, setLines] = useState<{ itemId: string; periodStart: string; netAmount: string }[]>([
+    { itemId: "", periodStart: installments[0]?.period_start ?? "", netAmount: "" },
+  ]);
+  const [loading, setLoading] = useState(false);
+
+  function updateLine(index: number, patch: Partial<(typeof lines)[number]>) {
+    setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
+  }
+
+  async function submit() {
+    setLoading(true);
+    onError(null);
+    const supabase = createClient();
+
+    let storagePath: string | null = null;
+    let fileName: string | null = null;
+    if (file) {
+      const path = `${contract.id}/comprobantes/${Date.now()}-${file.name}`;
+      const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
+      if (upErr) { setLoading(false); onError(upErr.message); return; }
+      storagePath = path;
+      fileName = file.name;
+    }
+
+    const payloadLines =
+      kind === "pago"
+        ? []
+        : lines.map((l) => ({
+            contract_id: contract.id,
+            item_id: l.itemId || null,
+            period_start: l.periodStart,
+            net_amount: Number(l.netAmount),
+          }));
+
+    const { error } = await supabase.rpc("record_provider_invoice", {
+      p_provider_id: contract.provider!.id,
+      p_kind: kind,
+      p_number: number || null,
+      p_issue_date: issueDate,
+      p_fx_rate: fxRate ? Number(fxRate) : null,
+      p_net_amount: netAmount ? Number(netAmount) : null,
+      p_vat_amount: vatAmount ? Number(vatAmount) : null,
+      p_total_amount: Number(totalAmount),
+      p_storage_path: storagePath,
+      p_file_name: fileName,
+      p_paid_invoice_id: kind === "pago" ? paidInvoiceId || null : null,
+      p_lines: payloadLines,
+    });
+    setLoading(false);
+    if (error) { onError(error.message); return; }
+    onDone();
+  }
+
+  return (
+    <Card title="Cargar comprobante">
+      <div className="grid grid-cols-3 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Tipo</label>
+          <select value={kind} onChange={(e) => setKind(e.target.value as ProviderInvoiceKind)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            {(Object.keys(PROVIDER_INVOICE_KIND_LABELS) as ProviderInvoiceKind[]).map((k) => (
+              <option key={k} value={k}>
+                {PROVIDER_INVOICE_KIND_LABELS[k]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Número</label>
+          <input value={number} onChange={(e) => setNumber(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Fecha</label>
+          <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+      </div>
+
+      {kind === "pago" ? (
+        <div className="mt-3">
+          <label className="block text-xs font-medium text-slate-700">Factura que cancela</label>
+          <select value={paidInvoiceId} onChange={(e) => setPaidInvoiceId(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            {providerInvoices.length === 0 && <option value="">Sin facturas vigentes de este proveedor</option>}
+            {providerInvoices.map((inv) => (
+              <option key={inv.id} value={inv.id}>
+                {inv.number ?? inv.id.slice(0, 8)} — {formatDateOnly(inv.issue_date)} — {formatArs(inv.total_amount)}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : (
+        <div className="mt-3 grid grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-700">Dólar venta BNA de la factura</label>
+            <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700">Neto</label>
+            <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700">IVA</label>
+            <input type="number" step="0.01" value={vatAmount} onChange={(e) => setVatAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        </div>
+      )}
+
+      <div className="mt-3">
+        <label className="block text-xs font-medium text-slate-700">Total (ARS)</label>
+        <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className="mt-1 w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+
+      <div className="mt-3">
+        <label className="block text-xs font-medium text-slate-700">Archivo</label>
+        <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+      </div>
+
+      {kind !== "pago" && (
+        <div className="mt-4">
+          <p className="text-xs font-medium text-slate-700">Líneas por equipo y período</p>
+          <div className="mt-2 space-y-2">
+            {lines.map((line, index) => (
+              <div key={index} className="grid grid-cols-4 gap-2">
+                <select value={line.itemId} onChange={(e) => updateLine(index, { itemId: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
+                  <option value="">Total del contrato</option>
+                  {items.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.description}
+                    </option>
+                  ))}
+                </select>
+                <select value={line.periodStart} onChange={(e) => updateLine(index, { periodStart: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
+                  {installments.map((i) => (
+                    <option key={i.id} value={i.period_start}>
+                      {formatDateOnly(i.period_start)}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Neto"
+                  value={line.netAmount}
+                  onChange={(e) => updateLine(index, { netAmount: e.target.value })}
+                  className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+                />
+                {lines.length > 1 && (
+                  <button onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))} className="text-xs text-red-600 underline">
+                    Quitar
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => setLines((prev) => [...prev, { itemId: "", periodStart: installments[0]?.period_start ?? "", netAmount: "" }])}
+            className="mt-2 rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          >
+            + Agregar línea
+          </button>
+        </div>
+      )}
+
+      <button onClick={submit} disabled={loading || !issueDate || !totalAmount} className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+        {loading ? "Guardando…" : "Guardar comprobante"}
+      </button>
+    </Card>
+  );
+}
+
+// ---------- Historial ----------
+
+function HistorialTab({ events }: { events: ContractEvent[] }) {
+  const labels: Record<string, string> = {
+    renovacion: "Renovación",
+    cambio_tarifa: "Cambio de tarifa",
+    aceptar_diferencia: "Diferencia aceptada",
+    anulacion: "Comprobante anulado",
+  };
+  return (
+    <Card>
+      {events.length === 0 ? (
+        <p className="text-sm text-slate-400">Sin eventos todavía.</p>
+      ) : (
+        <ul className="space-y-3">
+          {events.map((ev) => (
+            <li key={ev.id} className="border-l-2 border-slate-200 pl-3 text-sm">
+              <p className="text-slate-700">
+                {ev.actor?.full_name ?? "Sistema"} — <span className="font-medium">{labels[ev.event_type] ?? ev.event_type}</span>
+              </p>
+              {ev.note && <p className="text-slate-500">{ev.note}</p>}
+              <p className="text-xs text-slate-400">{new Date(ev.created_at).toLocaleString("es-AR")}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}

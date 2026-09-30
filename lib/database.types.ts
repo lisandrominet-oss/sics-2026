@@ -29,6 +29,457 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_alerts: {
+        Row: {
+          attended_at: string
+          attended_by: string | null
+          kind: string
+          target_id: string
+        }
+        Insert: {
+          attended_at?: string
+          attended_by?: string | null
+          kind: string
+          target_id: string
+        }
+        Update: {
+          attended_at?: string
+          attended_by?: string | null
+          kind?: string
+          target_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_alerts_attended_by_fkey"
+            columns: ["attended_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_documents: {
+        Row: {
+          contract_id: string | null
+          created_at: string
+          doc_type: Database["public"]["Enums"]["contract_document_type"]
+          expires_at: string | null
+          file_name: string
+          id: string
+          installment_id: string | null
+          provider_id: string | null
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string
+          doc_type: Database["public"]["Enums"]["contract_document_type"]
+          expires_at?: string | null
+          file_name: string
+          id?: string
+          installment_id?: string | null
+          provider_id?: string | null
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string
+          doc_type?: Database["public"]["Enums"]["contract_document_type"]
+          expires_at?: string | null
+          file_name?: string
+          id?: string
+          installment_id?: string | null
+          provider_id?: string | null
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_documents_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_documents_installment_id_fkey"
+            columns: ["installment_id"]
+            isOneToOne: false
+            referencedRelation: "contract_installments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_documents_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_events: {
+        Row: {
+          actor_id: string | null
+          contract_id: string
+          created_at: string
+          event_type: string
+          id: string
+          new_value: Json | null
+          note: string | null
+          old_value: Json | null
+        }
+        Insert: {
+          actor_id?: string | null
+          contract_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          new_value?: Json | null
+          note?: string | null
+          old_value?: Json | null
+        }
+        Update: {
+          actor_id?: string | null
+          contract_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          new_value?: Json | null
+          note?: string | null
+          old_value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_installments: {
+        Row: {
+          contract_id: string
+          created_at: string
+          difference_accepted_amount: number | null
+          difference_accepted_at: string | null
+          difference_accepted_by: string | null
+          difference_accepted_note: string | null
+          id: string
+          period_end: string
+          period_start: string
+          status: Database["public"]["Enums"]["contract_installment_status"]
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          difference_accepted_amount?: number | null
+          difference_accepted_at?: string | null
+          difference_accepted_by?: string | null
+          difference_accepted_note?: string | null
+          id?: string
+          period_end: string
+          period_start: string
+          status?: Database["public"]["Enums"]["contract_installment_status"]
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          difference_accepted_amount?: number | null
+          difference_accepted_at?: string | null
+          difference_accepted_by?: string | null
+          difference_accepted_note?: string | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          status?: Database["public"]["Enums"]["contract_installment_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_installments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_installments_difference_accepted_by_fkey"
+            columns: ["difference_accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_item_rates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          excess_rule: string
+          id: string
+          included_hours: number | null
+          item_id: string
+          monthly_rate_usd: number
+          note: string | null
+          overage_rate_usd: number | null
+          valid_from: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          excess_rule?: string
+          id?: string
+          included_hours?: number | null
+          item_id: string
+          monthly_rate_usd: number
+          note?: string | null
+          overage_rate_usd?: number | null
+          valid_from: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          excess_rule?: string
+          id?: string
+          included_hours?: number | null
+          item_id?: string
+          monthly_rate_usd?: number
+          note?: string | null
+          overage_rate_usd?: number | null
+          valid_from?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_item_rates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_item_rates_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "contract_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_items: {
+        Row: {
+          contract_id: string
+          created_at: string
+          description: string
+          id: string
+          identifier: string | null
+          type: Database["public"]["Enums"]["contract_item_type"]
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          description: string
+          id?: string
+          identifier?: string | null
+          type: Database["public"]["Enums"]["contract_item_type"]
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          identifier?: string | null
+          type?: Database["public"]["Enums"]["contract_item_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_items_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_usage: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          hours: number
+          id: string
+          item_id: string
+          manual_expected_usd: number | null
+          manual_note: string | null
+          period_end: string
+          period_start: string
+          report_file_name: string | null
+          report_storage_path: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          hours: number
+          id?: string
+          item_id: string
+          manual_expected_usd?: number | null
+          manual_note?: string | null
+          period_end: string
+          period_start: string
+          report_file_name?: string | null
+          report_storage_path?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          hours?: number
+          id?: string
+          item_id?: string
+          manual_expected_usd?: number | null
+          manual_note?: string | null
+          period_end?: string
+          period_start?: string
+          report_file_name?: string | null
+          report_storage_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_usage_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_usage_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "contract_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          notes: string | null
+          notice_days: number
+          owner_id: string
+          plant_id: string | null
+          project_id: string | null
+          provider_id: string
+          renewal_months: number | null
+          renewal_type: Database["public"]["Enums"]["contract_renewal_type"]
+          return_note: string | null
+          returned: boolean
+          returned_at: string | null
+          sic_id: string | null
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          end_date: string
+          id?: string
+          notes?: string | null
+          notice_days?: number
+          owner_id: string
+          plant_id?: string | null
+          project_id?: string | null
+          provider_id: string
+          renewal_months?: number | null
+          renewal_type: Database["public"]["Enums"]["contract_renewal_type"]
+          return_note?: string | null
+          returned?: boolean
+          returned_at?: string | null
+          sic_id?: string | null
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          end_date?: string
+          id?: string
+          notes?: string | null
+          notice_days?: number
+          owner_id?: string
+          plant_id?: string | null
+          project_id?: string | null
+          provider_id?: string
+          renewal_months?: number | null
+          renewal_type?: Database["public"]["Enums"]["contract_renewal_type"]
+          return_note?: string | null
+          returned?: boolean
+          returned_at?: string | null
+          sic_id?: string | null
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_plant_id_fkey"
+            columns: ["plant_id"]
+            isOneToOne: false
+            referencedRelation: "plants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_sic_id_fkey"
+            columns: ["sic_id"]
+            isOneToOne: false
+            referencedRelation: "sics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_reads: {
         Row: {
           profile_id: string
@@ -277,6 +728,150 @@ export type Database = {
           {
             foreignKeyName: "provider_files_uploaded_by_fkey"
             columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_invoice_lines: {
+        Row: {
+          contract_id: string
+          created_at: string
+          id: string
+          invoice_id: string
+          item_id: string | null
+          net_amount: number
+          period_start: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          id?: string
+          invoice_id: string
+          item_id?: string | null
+          net_amount: number
+          period_start: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          item_id?: string | null
+          net_amount?: number
+          period_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_invoice_lines_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_invoice_lines_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "provider_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_invoice_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "contract_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_invoices: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          file_name: string | null
+          fx_rate: number | null
+          id: string
+          issue_date: string
+          kind: Database["public"]["Enums"]["provider_invoice_kind"]
+          net_amount: number | null
+          number: string | null
+          paid_invoice_id: string | null
+          provider_id: string
+          status: Database["public"]["Enums"]["provider_invoice_status"]
+          storage_path: string | null
+          total_amount: number
+          vat_amount: number | null
+          voided_at: string | null
+          voided_by: string | null
+          voided_reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          fx_rate?: number | null
+          id?: string
+          issue_date: string
+          kind: Database["public"]["Enums"]["provider_invoice_kind"]
+          net_amount?: number | null
+          number?: string | null
+          paid_invoice_id?: string | null
+          provider_id: string
+          status?: Database["public"]["Enums"]["provider_invoice_status"]
+          storage_path?: string | null
+          total_amount: number
+          vat_amount?: number | null
+          voided_at?: string | null
+          voided_by?: string | null
+          voided_reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          fx_rate?: number | null
+          id?: string
+          issue_date?: string
+          kind?: Database["public"]["Enums"]["provider_invoice_kind"]
+          net_amount?: number | null
+          number?: string | null
+          paid_invoice_id?: string | null
+          provider_id?: string
+          status?: Database["public"]["Enums"]["provider_invoice_status"]
+          storage_path?: string | null
+          total_amount?: number
+          vat_amount?: number | null
+          voided_at?: string | null
+          voided_by?: string | null
+          voided_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_invoices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_invoices_paid_invoice_id_fkey"
+            columns: ["paid_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "provider_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_invoices_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_invoices_voided_by_fkey"
+            columns: ["voided_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -640,6 +1235,56 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_installment_difference: {
+        Args: { p_amount: number; p_installment_id: string; p_note: string }
+        Returns: {
+          contract_id: string
+          created_at: string
+          difference_accepted_amount: number | null
+          difference_accepted_at: string | null
+          difference_accepted_by: string | null
+          difference_accepted_note: string | null
+          id: string
+          period_end: string
+          period_start: string
+          status: Database["public"]["Enums"]["contract_installment_status"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contract_installments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      add_contract_item_rate: {
+        Args: {
+          p_excess_rule: string
+          p_included_hours: number
+          p_item_id: string
+          p_monthly_rate_usd: number
+          p_note: string
+          p_overage_rate_usd: number
+          p_valid_from: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          excess_rule: string
+          id: string
+          included_hours: number | null
+          item_id: string
+          monthly_rate_usd: number
+          note: string | null
+          overage_rate_usd: number | null
+          valid_from: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contract_item_rates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       attach_file: {
         Args: {
           p_file_name: string
@@ -756,6 +1401,47 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_contract: {
+        Args: {
+          p_end_date: string
+          p_items?: Json
+          p_notes: string
+          p_notice_days: number
+          p_plant_id: string
+          p_project_id: string
+          p_provider_id: string
+          p_renewal_months: number
+          p_renewal_type: Database["public"]["Enums"]["contract_renewal_type"]
+          p_sic_id: string
+          p_start_date: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          notes: string | null
+          notice_days: number
+          owner_id: string
+          plant_id: string | null
+          project_id: string | null
+          provider_id: string
+          renewal_months: number | null
+          renewal_type: Database["public"]["Enums"]["contract_renewal_type"]
+          return_note: string | null
+          returned: boolean
+          returned_at: string | null
+          sic_id: string | null
+          start_date: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contracts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_sic: {
         Args: {
           p_currency?: Database["public"]["Enums"]["currency_code"]
@@ -826,6 +1512,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_contract_installment_expected_usd: {
+        Args: { p_contract_id: string; p_period_start: string }
+        Returns: number
+      }
       get_pending_notifications: {
         Args: { p_limit?: number }
         Returns: {
@@ -881,6 +1571,37 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      record_contract_usage: {
+        Args: {
+          p_hours: number
+          p_item_id: string
+          p_manual_expected_usd?: number
+          p_manual_note?: string
+          p_period_end: string
+          p_period_start: string
+          p_report_file_name: string
+          p_report_storage_path: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          hours: number
+          id: string
+          item_id: string
+          manual_expected_usd: number | null
+          manual_note: string | null
+          period_end: string
+          period_start: string
+          report_file_name: string | null
+          report_storage_path: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contract_usage"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       record_delivery: {
         Args: { p_deliveries: Json; p_note?: string; p_sic_id: string }
         Returns: {
@@ -909,6 +1630,116 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      record_provider_invoice: {
+        Args: {
+          p_file_name: string
+          p_fx_rate: number
+          p_issue_date: string
+          p_kind: Database["public"]["Enums"]["provider_invoice_kind"]
+          p_lines?: Json
+          p_net_amount: number
+          p_number: string
+          p_paid_invoice_id: string
+          p_provider_id: string
+          p_storage_path: string
+          p_total_amount: number
+          p_vat_amount: number
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          file_name: string | null
+          fx_rate: number | null
+          id: string
+          issue_date: string
+          kind: Database["public"]["Enums"]["provider_invoice_kind"]
+          net_amount: number | null
+          number: string | null
+          paid_invoice_id: string | null
+          provider_id: string
+          status: Database["public"]["Enums"]["provider_invoice_status"]
+          storage_path: string | null
+          total_amount: number
+          vat_amount: number | null
+          voided_at: string | null
+          voided_by: string | null
+          voided_reason: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "provider_invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      renew_contract: {
+        Args: { p_contract_id: string; p_new_end_date: string; p_note?: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          notes: string | null
+          notice_days: number
+          owner_id: string
+          plant_id: string | null
+          project_id: string | null
+          provider_id: string
+          renewal_months: number | null
+          renewal_type: Database["public"]["Enums"]["contract_renewal_type"]
+          return_note: string | null
+          returned: boolean
+          returned_at: string | null
+          sic_id: string | null
+          start_date: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contracts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      return_contract: {
+        Args: {
+          p_act_file_name: string
+          p_act_storage_path: string
+          p_contract_id: string
+          p_note: string
+          p_return_date: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          notes: string | null
+          notice_days: number
+          owner_id: string
+          plant_id: string | null
+          project_id: string | null
+          provider_id: string
+          renewal_months: number | null
+          renewal_type: Database["public"]["Enums"]["contract_renewal_type"]
+          return_note: string | null
+          returned: boolean
+          returned_at: string | null
+          sic_id: string | null
+          start_date: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contracts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_contract_alert_attended: {
+        Args: { p_attended: boolean; p_kind: string; p_target_id: string }
+        Returns: undefined
       }
       submit_quotes: {
         Args: { p_final_amount: number; p_note?: string; p_sic_id: string }
@@ -1003,10 +1834,57 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      void_provider_invoice: {
+        Args: { p_invoice_id: string; p_reason: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          file_name: string | null
+          fx_rate: number | null
+          id: string
+          issue_date: string
+          kind: Database["public"]["Enums"]["provider_invoice_kind"]
+          net_amount: number | null
+          number: string | null
+          paid_invoice_id: string | null
+          provider_id: string
+          status: Database["public"]["Enums"]["provider_invoice_status"]
+          storage_path: string | null
+          total_amount: number
+          vat_amount: number | null
+          voided_at: string | null
+          voided_by: string | null
+          voided_reason: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "provider_invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       compras_decision: "aceptar" | "rechazar" | "observar"
+      contract_document_type:
+        | "contrato"
+        | "adenda"
+        | "condiciones"
+        | "seguro"
+        | "acta_devolucion"
+        | "informe_horas"
+        | "otro"
+      contract_installment_status:
+        | "pendiente_de_factura"
+        | "facturada"
+        | "pagada"
+        | "con_diferencia"
+        | "diferencia_aceptada"
+      contract_item_type: "maquina" | "camioneta" | "herramienta"
+      contract_renewal_type: "automatica" | "expresa" | "sin_renovacion"
       currency_code: "ARS" | "USD"
+      provider_invoice_kind: "factura" | "nota_credito" | "pago"
+      provider_invoice_status: "vigente" | "anulado"
       sic_file_type:
         | "cotizacion"
         | "comparacion"
@@ -1158,7 +2036,27 @@ export const Constants = {
   public: {
     Enums: {
       compras_decision: ["aceptar", "rechazar", "observar"],
+      contract_document_type: [
+        "contrato",
+        "adenda",
+        "condiciones",
+        "seguro",
+        "acta_devolucion",
+        "informe_horas",
+        "otro",
+      ],
+      contract_installment_status: [
+        "pendiente_de_factura",
+        "facturada",
+        "pagada",
+        "con_diferencia",
+        "diferencia_aceptada",
+      ],
+      contract_item_type: ["maquina", "camioneta", "herramienta"],
+      contract_renewal_type: ["automatica", "expresa", "sin_renovacion"],
       currency_code: ["ARS", "USD"],
+      provider_invoice_kind: ["factura", "nota_credito", "pago"],
+      provider_invoice_status: ["vigente", "anulado"],
       sic_file_type: [
         "cotizacion",
         "comparacion",

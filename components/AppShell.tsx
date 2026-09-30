@@ -8,6 +8,7 @@ import NotificationsBell from "@/components/NotificationsBell";
 import InactivityGuard from "@/components/InactivityGuard";
 import {
   IconBuilding,
+  IconFileText,
   IconFolder,
   IconGrid,
   IconPlusCircle,
@@ -99,6 +100,7 @@ export default function AppShell({
                 Compras
               </p>
               <NavLink href="/proveedores" label="Proveedores" icon={<IconTruck />} />
+              <NavLink href="/contratos" label="Contratos" icon={<IconFileText />} />
             </>
           )}
 
