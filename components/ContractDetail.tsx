@@ -1051,6 +1051,7 @@ function CuotasTab({
                 <th className="py-2 pr-3">Diferencia pago</th>
                 <th className="py-2 pr-3">Estado</th>
                 <th className="py-2 pr-3"></th>
+                <th className="py-2 pr-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -1086,12 +1087,6 @@ function CuotasTab({
                       <td className="py-2 pr-3">
                         <div className="flex flex-wrap items-center gap-2">
                           <button
-                            onClick={() => { setInvoiceFormFor(null); setPaymentFormFor(null); setDetailFor((v) => (v === inst.id ? null : inst.id)); }}
-                            className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                          >
-                            {detailFor === inst.id ? "Cancelar" : "Ver cuota"}
-                          </button>
-                          <button
                             onClick={() => { setPaymentFormFor(null); setDetailFor(null); setInvoiceFormFor((v) => (v === inst.id ? null : inst.id)); }}
                             className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
                           >
@@ -1114,10 +1109,18 @@ function CuotasTab({
                           )}
                         </div>
                       </td>
+                      <td className="py-2 pr-3">
+                        <button
+                          onClick={() => { setInvoiceFormFor(null); setPaymentFormFor(null); setDetailFor((v) => (v === inst.id ? null : inst.id)); }}
+                          className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                          {detailFor === inst.id ? "Cancelar" : "Ver más"}
+                        </button>
+                      </td>
                     </tr>
                     {detailFor === inst.id && (
                       <tr>
-                        <td colSpan={7} className="bg-slate-50 py-3">
+                        <td colSpan={8} className="bg-slate-50 py-3">
                           <InstallmentDetail
                             contractId={contract.id}
                             periodStart={inst.period_start}
@@ -1132,7 +1135,7 @@ function CuotasTab({
                     )}
                     {invoiceFormFor === inst.id && (
                       <tr>
-                        <td colSpan={7} className="bg-slate-50 py-3">
+                        <td colSpan={8} className="bg-slate-50 py-3">
                           <InvoiceForm
                             contract={contract}
                             items={items}
@@ -1145,7 +1148,7 @@ function CuotasTab({
                     )}
                     {paymentFormFor === inst.id && (
                       <tr>
-                        <td colSpan={7} className="bg-slate-50 py-3">
+                        <td colSpan={8} className="bg-slate-50 py-3">
                           <RegisterPaymentForm
                             contract={contract}
                             items={items}
