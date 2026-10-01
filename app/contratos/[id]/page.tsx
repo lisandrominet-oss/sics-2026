@@ -99,6 +99,12 @@ export default async function ContratoDetailPage({ params }: { params: { id: str
         .order("issue_date", { ascending: false })
     : { data: [] as never[] };
 
+  const facturaIds = Array.from(new Set((invoiceLines ?? []).map((l) => l.invoice.id)));
+  const { data: payments } =
+    facturaIds.length > 0
+      ? await supabase.from("provider_invoices").select("*").eq("kind", "pago").in("paid_invoice_id", facturaIds)
+      : { data: [] as never[] };
+
   return (
     <AppShell
       role={role}
@@ -128,6 +134,7 @@ export default async function ContratoDetailPage({ params }: { params: { id: str
             events={events ?? []}
             invoiceLines={invoiceLines ?? []}
             providerInvoices={providerInvoices ?? []}
+            payments={payments ?? []}
           />
         </div>
       </div>

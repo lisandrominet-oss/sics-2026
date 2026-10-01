@@ -53,6 +53,7 @@ export default function ContractDetail({
   events,
   invoiceLines,
   providerInvoices,
+  payments,
 }: {
   contract: Contract;
   items: ContractItem[];
@@ -64,6 +65,7 @@ export default function ContractDetail({
   events: ContractEvent[];
   invoiceLines: InvoiceLine[];
   providerInvoices: ProviderInvoice[];
+  payments: ProviderInvoice[];
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("datos");
@@ -140,6 +142,7 @@ export default function ContractDetail({
             expectedByPeriod={expectedByPeriod}
             invoiceLines={invoiceLines}
             providerInvoices={providerInvoices}
+            payments={payments}
             items={items}
             onDone={refresh}
             onError={setError}
@@ -965,6 +968,7 @@ function CuotasTab({
   expectedByPeriod,
   invoiceLines,
   providerInvoices,
+  payments,
   items,
   onDone,
   onError,
@@ -974,11 +978,13 @@ function CuotasTab({
   expectedByPeriod: Record<string, number>;
   invoiceLines: InvoiceLine[];
   providerInvoices: ProviderInvoice[];
+  payments: ProviderInvoice[];
   items: ContractItem[];
   onDone: () => void;
   onError: (e: string | null) => void;
 }) {
   const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
+  const [paymentFormOpen, setPaymentFormOpen] = useState(false);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
 
   function linesFor(periodStart: string) {
@@ -986,6 +992,7 @@ function CuotasTab({
   }
 
   const contractInvoices = Array.from(new Map(invoiceLines.map((l) => [l.invoice.id, l.invoice])).values());
+  const paidFacturaIds = new Set(payments.filter((p) => p.status === "vigente").map((p) => p.paid_invoice_id));
 
   async function voidInvoice(invoiceId: string) {
     const reason = prompt("Motivo de la anulación:");
@@ -1014,12 +1021,18 @@ function CuotasTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
         <button
-          onClick={() => setInvoiceFormOpen((v) => !v)}
+          onClick={() => { setPaymentFormOpen(false); setInvoiceFormOpen((v) => !v); }}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
         >
-          {invoiceFormOpen ? "Cancelar" : "Cargar factura / nota de crédito / pago"}
+          {invoiceFormOpen ? "Cancelar" : "Cargar factura / nota de crédito"}
+        </button>
+        <button
+          onClick={() => { setInvoiceFormOpen(false); setPaymentFormOpen((v) => !v); }}
+          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          {paymentFormOpen ? "Cancelar" : "Registrar pago"}
         </button>
       </div>
 
@@ -1028,8 +1041,16 @@ function CuotasTab({
           contract={contract}
           items={items}
           installments={installments}
-          providerInvoices={providerInvoices}
           onDone={() => { setInvoiceFormOpen(false); onDone(); }}
+          onError={onError}
+        />
+      )}
+
+      {paymentFormOpen && (
+        <RegisterPaymentForm
+          contract={contract}
+          providerInvoices={providerInvoices}
+          onDone={() => { setPaymentFormOpen(false); onDone(); }}
           onError={onError}
         />
       )}
@@ -1084,7 +1105,7 @@ function CuotasTab({
       </Card>
 
       <Card title="Comprobantes cargados">
-        {contractInvoices.length === 0 ? (
+        {contractInvoices.length === 0 && payments.length === 0 ? (
           <p className="text-sm text-slate-400">Sin comprobantes todavía.</p>
         ) : (
           <ul className="space-y-2 text-sm">
@@ -1092,9 +1113,26 @@ function CuotasTab({
               <li key={inv.id} className="flex flex-wrap items-center justify-between gap-2">
                 <span className={inv.status === "anulado" ? "text-slate-400 line-through" : "text-slate-700"}>
                   {PROVIDER_INVOICE_KIND_LABELS[inv.kind]} {inv.number ?? ""} — {formatDateOnly(inv.issue_date)} — {formatArs(inv.total_amount)}
+                  {inv.kind === "factura" && inv.status === "vigente" && !paidFacturaIds.has(inv.id) && (
+                    <span className="ml-2 inline-block whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700">
+                      Pendiente de pago
+                    </span>
+                  )}
                 </span>
                 {inv.status === "vigente" && (
                   <button onClick={() => voidInvoice(inv.id)} className="text-xs font-medium text-red-600 underline">
+                    Anular
+                  </button>
+                )}
+              </li>
+            ))}
+            {payments.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center justify-between gap-2">
+                <span className={p.status === "anulado" ? "text-slate-400 line-through" : "text-emerald-700"}>
+                  Pago {p.number ?? ""} — {formatDateOnly(p.issue_date)} — {formatArs(p.total_amount)}
+                </span>
+                {p.status === "vigente" && (
+                  <button onClick={() => voidInvoice(p.id)} className="text-xs font-medium text-red-600 underline">
                     Anular
                   </button>
                 )}
@@ -1111,30 +1149,31 @@ function InvoiceForm({
   contract,
   items,
   installments,
-  providerInvoices,
   onDone,
   onError,
 }: {
   contract: Contract;
   items: ContractItem[];
   installments: Installment[];
-  providerInvoices: ProviderInvoice[];
   onDone: () => void;
   onError: (e: string | null) => void;
 }) {
-  const [kind, setKind] = useState<ProviderInvoiceKind>("factura");
+  const [kind, setKind] = useState<Extract<ProviderInvoiceKind, "factura" | "nota_credito">>("factura");
   const [number, setNumber] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [fxRate, setFxRate] = useState("");
+  const [currency, setCurrency] = useState<"ars" | "usd">("ars");
   const [netAmount, setNetAmount] = useState("");
-  const [vatAmount, setVatAmount] = useState("");
-  const [totalAmount, setTotalAmount] = useState("");
-  const [paidInvoiceId, setPaidInvoiceId] = useState(providerInvoices[0]?.id ?? "");
+  const [vatPct, setVatPct] = useState("21");
   const [file, setFile] = useState<File | null>(null);
   const [lines, setLines] = useState<{ itemId: string; periodStart: string; netAmount: string }[]>([
     { itemId: "", periodStart: installments[0]?.period_start ?? "", netAmount: "" },
   ]);
   const [loading, setLoading] = useState(false);
+
+  const netArs = currency === "usd" ? Number(netAmount || 0) * Number(fxRate || 0) : Number(netAmount || 0);
+  const vatArs = netArs * (Number(vatPct || 0) / 100);
+  const totalArs = netArs + vatArs;
 
   function updateLine(index: number, patch: Partial<(typeof lines)[number]>) {
     setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
@@ -1155,28 +1194,25 @@ function InvoiceForm({
       fileName = file.name;
     }
 
-    const payloadLines =
-      kind === "pago"
-        ? []
-        : lines.map((l) => ({
-            contract_id: contract.id,
-            item_id: l.itemId || null,
-            period_start: l.periodStart,
-            net_amount: Number(l.netAmount),
-          }));
+    const payloadLines = lines.map((l) => ({
+      contract_id: contract.id,
+      item_id: l.itemId || null,
+      period_start: l.periodStart,
+      net_amount: Number(l.netAmount),
+    }));
 
     const { error } = await supabase.rpc("record_provider_invoice", {
       p_provider_id: contract.provider!.id,
       p_kind: kind,
       p_number: number || null,
       p_issue_date: issueDate,
-      p_fx_rate: fxRate ? Number(fxRate) : null,
-      p_net_amount: netAmount ? Number(netAmount) : null,
-      p_vat_amount: vatAmount ? Number(vatAmount) : null,
-      p_total_amount: Number(totalAmount),
+      p_fx_rate: Number(fxRate),
+      p_net_amount: netArs,
+      p_vat_amount: vatArs,
+      p_total_amount: totalArs,
       p_storage_path: storagePath,
       p_file_name: fileName,
-      p_paid_invoice_id: kind === "pago" ? paidInvoiceId || null : null,
+      p_paid_invoice_id: null,
       p_lines: payloadLines,
     });
     setLoading(false);
@@ -1185,16 +1221,17 @@ function InvoiceForm({
   }
 
   return (
-    <Card title="Cargar comprobante">
+    <Card title="Cargar factura / nota de crédito">
       <div className="grid grid-cols-3 gap-3">
         <div>
           <label className="block text-xs font-medium text-slate-700">Tipo</label>
-          <select value={kind} onChange={(e) => setKind(e.target.value as ProviderInvoiceKind)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-            {(Object.keys(PROVIDER_INVOICE_KIND_LABELS) as ProviderInvoiceKind[]).map((k) => (
-              <option key={k} value={k}>
-                {PROVIDER_INVOICE_KIND_LABELS[k]}
-              </option>
-            ))}
+          <select
+            value={kind}
+            onChange={(e) => setKind(e.target.value as "factura" | "nota_credito")}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="factura">{PROVIDER_INVOICE_KIND_LABELS.factura}</option>
+            <option value="nota_credito">{PROVIDER_INVOICE_KIND_LABELS.nota_credito}</option>
           </select>
         </div>
         <div>
@@ -1207,38 +1244,32 @@ function InvoiceForm({
         </div>
       </div>
 
-      {kind === "pago" ? (
-        <div className="mt-3">
-          <label className="block text-xs font-medium text-slate-700">Factura que cancela</label>
-          <select value={paidInvoiceId} onChange={(e) => setPaidInvoiceId(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-            {providerInvoices.length === 0 && <option value="">Sin facturas vigentes de este proveedor</option>}
-            {providerInvoices.map((inv) => (
-              <option key={inv.id} value={inv.id}>
-                {inv.number ?? inv.id.slice(0, 8)} — {formatDateOnly(inv.issue_date)} — {formatArs(inv.total_amount)}
-              </option>
-            ))}
+      <div className="mt-3 grid grid-cols-4 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Dólar venta BNA de la factura</label>
+          <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Moneda de la factura</label>
+          <select value={currency} onChange={(e) => setCurrency(e.target.value as "ars" | "usd")} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <option value="ars">ARS</option>
+            <option value="usd">USD</option>
           </select>
         </div>
-      ) : (
-        <div className="mt-3 grid grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-slate-700">Dólar venta BNA de la factura</label>
-            <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-700">Neto</label>
-            <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-700">IVA</label>
-            <input type="number" step="0.01" value={vatAmount} onChange={(e) => setVatAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-          </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Neto ({currency === "usd" ? "USD" : "ARS"})</label>
+          <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         </div>
-      )}
+        <div>
+          <label className="block text-xs font-medium text-slate-700">% IVA</label>
+          <input type="number" step="0.01" value={vatPct} onChange={(e) => setVatPct(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+      </div>
 
-      <div className="mt-3">
-        <label className="block text-xs font-medium text-slate-700">Total (ARS)</label>
-        <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className="mt-1 w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
+        <Info label="Neto (ARS)" value={formatArs(netArs)} />
+        <Info label="IVA (ARS)" value={formatArs(vatArs)} />
+        <Info label="Total (ARS)" value={formatArs(totalArs)} />
       </div>
 
       <div className="mt-3">
@@ -1246,54 +1277,156 @@ function InvoiceForm({
         <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
       </div>
 
-      {kind !== "pago" && (
-        <div className="mt-4">
-          <p className="text-xs font-medium text-slate-700">Líneas por equipo y período</p>
-          <div className="mt-2 space-y-2">
-            {lines.map((line, index) => (
-              <div key={index} className="grid grid-cols-4 gap-2">
-                <select value={line.itemId} onChange={(e) => updateLine(index, { itemId: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
-                  <option value="">Total del contrato</option>
-                  {items.map((i) => (
-                    <option key={i.id} value={i.id}>
-                      {i.description}
-                    </option>
-                  ))}
-                </select>
-                <select value={line.periodStart} onChange={(e) => updateLine(index, { periodStart: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
-                  {installments.map((i) => (
-                    <option key={i.id} value={i.period_start}>
-                      {formatDateOnly(i.period_start)}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="Neto"
-                  value={line.netAmount}
-                  onChange={(e) => updateLine(index, { netAmount: e.target.value })}
-                  className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
-                />
-                {lines.length > 1 && (
-                  <button onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))} className="text-xs text-red-600 underline">
-                    Quitar
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={() => setLines((prev) => [...prev, { itemId: "", periodStart: installments[0]?.period_start ?? "", netAmount: "" }])}
-            className="mt-2 rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-          >
-            + Agregar línea
-          </button>
+      <div className="mt-4">
+        <p className="text-xs font-medium text-slate-700">Líneas por equipo y período</p>
+        <div className="mt-2 space-y-2">
+          {lines.map((line, index) => (
+            <div key={index} className="grid grid-cols-4 gap-2">
+              <select value={line.itemId} onChange={(e) => updateLine(index, { itemId: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
+                <option value="">Total del contrato</option>
+                {items.map((i) => (
+                  <option key={i.id} value={i.id}>
+                    {i.description}
+                  </option>
+                ))}
+              </select>
+              <select value={line.periodStart} onChange={(e) => updateLine(index, { periodStart: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
+                {installments.map((i) => (
+                  <option key={i.id} value={i.period_start}>
+                    {formatDateOnly(i.period_start)}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Neto"
+                value={line.netAmount}
+                onChange={(e) => updateLine(index, { netAmount: e.target.value })}
+                className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+              />
+              {lines.length > 1 && (
+                <button onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))} className="text-xs text-red-600 underline">
+                  Quitar
+                </button>
+              )}
+            </div>
+          ))}
         </div>
-      )}
+        <button
+          onClick={() => setLines((prev) => [...prev, { itemId: "", periodStart: installments[0]?.period_start ?? "", netAmount: "" }])}
+          className="mt-2 rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+        >
+          + Agregar línea
+        </button>
+      </div>
 
-      <button onClick={submit} disabled={loading || !issueDate || !totalAmount} className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+      <button
+        onClick={submit}
+        disabled={loading || !issueDate || !netAmount || !fxRate}
+        className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+      >
         {loading ? "Guardando…" : "Guardar comprobante"}
+      </button>
+    </Card>
+  );
+}
+
+function RegisterPaymentForm({
+  contract,
+  providerInvoices,
+  onDone,
+  onError,
+}: {
+  contract: Contract;
+  providerInvoices: ProviderInvoice[];
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const [paidInvoiceId, setPaidInvoiceId] = useState(providerInvoices[0]?.id ?? "");
+  const [number, setNumber] = useState("");
+  const [issueDate, setIssueDate] = useState("");
+  const [totalAmount, setTotalAmount] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  function selectInvoice(id: string) {
+    setPaidInvoiceId(id);
+    const inv = providerInvoices.find((i) => i.id === id);
+    if (inv) setTotalAmount(String(inv.total_amount));
+  }
+
+  async function submit() {
+    setLoading(true);
+    onError(null);
+    const supabase = createClient();
+
+    let storagePath: string | null = null;
+    let fileName: string | null = null;
+    if (file) {
+      const path = `${contract.id}/comprobantes/${Date.now()}-${file.name}`;
+      const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
+      if (upErr) { setLoading(false); onError(upErr.message); return; }
+      storagePath = path;
+      fileName = file.name;
+    }
+
+    const { error } = await supabase.rpc("record_provider_invoice", {
+      p_provider_id: contract.provider!.id,
+      p_kind: "pago",
+      p_number: number || null,
+      p_issue_date: issueDate,
+      p_fx_rate: null,
+      p_net_amount: null,
+      p_vat_amount: null,
+      p_total_amount: Number(totalAmount),
+      p_storage_path: storagePath,
+      p_file_name: fileName,
+      p_paid_invoice_id: paidInvoiceId || null,
+      p_lines: [],
+    });
+    setLoading(false);
+    if (error) { onError(error.message); return; }
+    onDone();
+  }
+
+  return (
+    <Card title="Registrar pago">
+      <div>
+        <label className="block text-xs font-medium text-slate-700">Factura que cancela</label>
+        <select value={paidInvoiceId} onChange={(e) => selectInvoice(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          {providerInvoices.length === 0 && <option value="">Sin facturas vigentes de este proveedor</option>}
+          {providerInvoices.map((inv) => (
+            <option key={inv.id} value={inv.id}>
+              {inv.number ?? inv.id.slice(0, 8)} — {formatDateOnly(inv.issue_date)} — {formatArs(inv.total_amount)}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Número de recibo (opcional)</label>
+          <input value={number} onChange={(e) => setNumber(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Fecha de pago</label>
+          <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Monto pagado (ARS)</label>
+          <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+      </div>
+      <div className="mt-3">
+        <label className="block text-xs font-medium text-slate-700">Comprobante de pago (opcional)</label>
+        <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+      </div>
+      <button
+        onClick={submit}
+        disabled={loading || !issueDate || !totalAmount || !paidInvoiceId}
+        className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+      >
+        {loading ? "Guardando…" : "Registrar pago"}
       </button>
     </Card>
   );
