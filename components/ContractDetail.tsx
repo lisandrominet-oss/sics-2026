@@ -1005,9 +1005,6 @@ function CuotasTab({
     );
   }
 
-  const contractInvoices = Array.from(
-    new Map(invoiceLines.filter((l) => l.invoice.kind !== "pago").map((l) => [l.invoice.id, l.invoice])).values()
-  );
   const paidFacturaIds = new Set(payments.filter((p) => p.status === "vigente").map((p) => p.paid_invoice_id));
 
   async function voidInvoice(invoiceId: string) {
@@ -1127,6 +1124,8 @@ function CuotasTab({
                             invoices={lines.map((l) => l.invoice)}
                             payLines={payLines.map((l) => l.invoice)}
                             invoiceFileUrls={invoiceFileUrls}
+                            paidFacturaIds={paidFacturaIds}
+                            onVoid={voidInvoice}
                             onDone={onDone}
                             onError={onError}
                           />
@@ -1168,44 +1167,6 @@ function CuotasTab({
           </table>
         </div>
       </Card>
-
-      <Card title="Comprobantes cargados">
-        {contractInvoices.length === 0 && payments.length === 0 ? (
-          <p className="text-sm text-slate-400">Sin comprobantes todavía.</p>
-        ) : (
-          <ul className="space-y-2 text-sm">
-            {contractInvoices.map((inv) => (
-              <li key={inv.id} className="flex flex-wrap items-center justify-between gap-2">
-                <span className={inv.status === "anulado" ? "text-slate-400 line-through" : "text-slate-700"}>
-                  {PROVIDER_INVOICE_KIND_LABELS[inv.kind]} {inv.number ?? ""} — {formatDateOnly(inv.issue_date)} — {formatArs(inv.total_amount)}
-                  {inv.kind === "factura" && inv.status === "vigente" && !paidFacturaIds.has(inv.id) && (
-                    <span className="ml-2 inline-block whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700">
-                      Pendiente de pago
-                    </span>
-                  )}
-                </span>
-                {inv.status === "vigente" && (
-                  <button onClick={() => voidInvoice(inv.id)} className="text-xs font-medium text-red-600 underline">
-                    Anular
-                  </button>
-                )}
-              </li>
-            ))}
-            {payments.map((p) => (
-              <li key={p.id} className="flex flex-wrap items-center justify-between gap-2">
-                <span className={p.status === "anulado" ? "text-slate-400 line-through" : "text-emerald-700"}>
-                  Pago {p.number ?? ""} — {formatDateOnly(p.issue_date)} — {formatArs(p.total_amount)}
-                </span>
-                {p.status === "vigente" && (
-                  <button onClick={() => voidInvoice(p.id)} className="text-xs font-medium text-red-600 underline">
-                    Anular
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
     </div>
   );
 }
@@ -1216,6 +1177,8 @@ function InstallmentDetail({
   invoices,
   payLines,
   invoiceFileUrls,
+  paidFacturaIds,
+  onVoid,
   onDone,
   onError,
 }: {
@@ -1224,6 +1187,8 @@ function InstallmentDetail({
   invoices: ProviderInvoice[];
   payLines: ProviderInvoice[];
   invoiceFileUrls: Record<string, string | null>;
+  paidFacturaIds: Set<string | null>;
+  onVoid: (id: string) => void;
   onDone: () => void;
   onError: (e: string | null) => void;
 }) {
@@ -1239,17 +1204,27 @@ function InstallmentDetail({
             <span className={inv.status === "anulado" ? "text-slate-400 line-through" : "text-slate-700"}>
               {PROVIDER_INVOICE_KIND_LABELS[inv.kind]} {inv.number ?? ""} — {formatDateOnly(inv.issue_date)} — {formatArs(inv.total_amount)}
             </span>
+            {inv.kind === "factura" && inv.status === "vigente" && !paidFacturaIds.has(inv.id) && (
+              <span className="inline-block whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700">
+                Pendiente de pago
+              </span>
+            )}
             {inv.storage_path && (
               <FilePreview url={invoiceFileUrls[inv.storage_path] ?? null} fileName={inv.file_name ?? "archivo"} label="Ver archivo" />
             )}
           </div>
           {inv.status === "vigente" && (
-            <button
-              onClick={() => setEditingId((v) => (v === inv.id ? null : inv.id))}
-              className="text-xs font-medium text-indigo-600 underline"
-            >
-              {editingId === inv.id ? "Cancelar" : "Editar"}
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setEditingId((v) => (v === inv.id ? null : inv.id))}
+                className="text-xs font-medium text-indigo-600 underline"
+              >
+                {editingId === inv.id ? "Cancelar" : "Editar"}
+              </button>
+              <button onClick={() => onVoid(inv.id)} className="text-xs font-medium text-red-600 underline">
+                Anular
+              </button>
+            </div>
           )}
         </div>
         {editingId === inv.id && (
