@@ -284,27 +284,39 @@ export type Database = {
       }
       contract_items: {
         Row: {
+          chassis_number: string | null
           contract_id: string
           created_at: string
           description: string
+          domain: string | null
+          engine_number: string | null
           id: string
           identifier: string | null
+          internal_number: string | null
           type: Database["public"]["Enums"]["contract_item_type"]
         }
         Insert: {
+          chassis_number?: string | null
           contract_id: string
           created_at?: string
           description: string
+          domain?: string | null
+          engine_number?: string | null
           id?: string
           identifier?: string | null
+          internal_number?: string | null
           type: Database["public"]["Enums"]["contract_item_type"]
         }
         Update: {
+          chassis_number?: string | null
           contract_id?: string
           created_at?: string
           description?: string
+          domain?: string | null
+          engine_number?: string | null
           id?: string
           identifier?: string | null
+          internal_number?: string | null
           type?: Database["public"]["Enums"]["contract_item_type"]
         }
         Relationships: [
@@ -1448,82 +1460,44 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      create_sic:
-        | {
-            Args: {
-              p_currency?: Database["public"]["Enums"]["currency_code"]
-              p_items?: Json
-              p_needed_by_date: string
-              p_plant_id?: string
-              p_project_id: string
-              p_subject: string
-            }
-            Returns: {
-              code: string
-              created_at: string
-              currency: Database["public"]["Enums"]["currency_code"]
-              department: string | null
-              description: string | null
-              estimated_amount: number | null
-              final_amount: number | null
-              id: string
-              needed_by_date: string | null
-              on_behalf_of: string | null
-              plant_id: string
-              po_number: string | null
-              project_id: string | null
-              requester_id: string
-              sequence: number
-              status: Database["public"]["Enums"]["sic_status"]
-              subject: string
-              updated_at: string
-              year: number
-            }
-            SetofOptions: {
-              from: "*"
-              to: "sics"
-              isOneToOne: true
-              isSetofReturn: false
-            }
-          }
-        | {
-            Args: {
-              p_currency?: Database["public"]["Enums"]["currency_code"]
-              p_items?: Json
-              p_needed_by_date: string
-              p_on_behalf_of?: string
-              p_plant_id?: string
-              p_project_id: string
-              p_subject: string
-            }
-            Returns: {
-              code: string
-              created_at: string
-              currency: Database["public"]["Enums"]["currency_code"]
-              department: string | null
-              description: string | null
-              estimated_amount: number | null
-              final_amount: number | null
-              id: string
-              needed_by_date: string | null
-              on_behalf_of: string | null
-              plant_id: string
-              po_number: string | null
-              project_id: string | null
-              requester_id: string
-              sequence: number
-              status: Database["public"]["Enums"]["sic_status"]
-              subject: string
-              updated_at: string
-              year: number
-            }
-            SetofOptions: {
-              from: "*"
-              to: "sics"
-              isOneToOne: true
-              isSetofReturn: false
-            }
-          }
+      create_sic: {
+        Args: {
+          p_currency?: Database["public"]["Enums"]["currency_code"]
+          p_items?: Json
+          p_needed_by_date: string
+          p_on_behalf_of?: string
+          p_plant_id?: string
+          p_project_id: string
+          p_subject: string
+        }
+        Returns: {
+          code: string
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
+          department: string | null
+          description: string | null
+          estimated_amount: number | null
+          final_amount: number | null
+          id: string
+          needed_by_date: string | null
+          on_behalf_of: string | null
+          plant_id: string
+          po_number: string | null
+          project_id: string | null
+          requester_id: string
+          sequence: number
+          status: Database["public"]["Enums"]["sic_status"]
+          subject: string
+          updated_at: string
+          year: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "sics"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_sic_file: { Args: { p_file_id: string }; Returns: undefined }
       effective_role: {
         Args: never
@@ -1789,6 +1763,27 @@ export type Database = {
       set_contract_alert_attended: {
         Args: { p_attended: boolean; p_kind: string; p_target_id: string }
         Returns: undefined
+      }
+      set_contract_item_internal_number: {
+        Args: { p_internal_number: string; p_item_id: string }
+        Returns: {
+          chassis_number: string | null
+          contract_id: string
+          created_at: string
+          description: string
+          domain: string | null
+          engine_number: string | null
+          id: string
+          identifier: string | null
+          internal_number: string | null
+          type: Database["public"]["Enums"]["contract_item_type"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contract_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       submit_quotes: {
         Args: { p_final_amount: number; p_note?: string; p_sic_id: string }

@@ -13,6 +13,9 @@ type ItemDraft = {
   type: ContractItemType;
   description: string;
   identifier: string;
+  chassisNumber: string;
+  domain: string;
+  engineNumber: string;
   monthlyRateUsd: string;
   includedHours: string;
   overageRateUsd: string;
@@ -23,6 +26,9 @@ const EMPTY_ITEM: ItemDraft = {
   type: "maquina",
   description: "",
   identifier: "",
+  chassisNumber: "",
+  domain: "",
+  engineNumber: "",
   monthlyRateUsd: "",
   includedHours: "",
   overageRateUsd: "",
@@ -74,6 +80,9 @@ export default function ContractForm({
       type: it.type,
       description: it.description,
       identifier: it.identifier || null,
+      chassis_number: it.chassisNumber || null,
+      domain: it.domain || null,
+      engine_number: it.engineNumber || null,
       monthly_rate_usd: Number(it.monthlyRateUsd),
       included_hours: it.includedHours || null,
       overage_rate_usd: it.overageRateUsd || null,
@@ -271,13 +280,41 @@ export default function ContractForm({
                 </div>
               </div>
               <div className="mt-3">
-                <label className="block text-xs font-medium text-slate-700">Número interno / patente / serie (opcional)</label>
+                <label className="block text-xs font-medium text-slate-700">Número de serie / identificador (opcional)</label>
                 <input
                   value={item.identifier}
                   onChange={(e) => updateItem(index, { identifier: e.target.value })}
                   className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>
+              {(item.type === "maquina" || item.type === "camioneta") && (
+                <div className="mt-3 grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700">N° de chasis (opcional)</label>
+                    <input
+                      value={item.chassisNumber}
+                      onChange={(e) => updateItem(index, { chassisNumber: e.target.value })}
+                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700">Dominio (opcional)</label>
+                    <input
+                      value={item.domain}
+                      onChange={(e) => updateItem(index, { domain: e.target.value })}
+                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700">N° de motor (opcional)</label>
+                    <input
+                      value={item.engineNumber}
+                      onChange={(e) => updateItem(index, { engineNumber: e.target.value })}
+                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-700">Regla de exceso</label>

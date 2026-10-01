@@ -374,6 +374,17 @@ function ItemCard({
             {CONTRACT_ITEM_TYPE_LABELS[item.type]} — {item.description}
           </p>
           {item.identifier && <p className="text-xs text-slate-500">{item.identifier}</p>}
+          {(item.chassis_number || item.domain || item.engine_number) && (
+            <p className="text-xs text-slate-500">
+              {[
+                item.chassis_number && `Chasis: ${item.chassis_number}`,
+                item.domain && `Dominio: ${item.domain}`,
+                item.engine_number && `Motor: ${item.engine_number}`,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          )}
         </div>
         <div className="flex gap-2">
           <button onClick={() => setUsageFormOpen((v) => !v)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">
@@ -384,6 +395,8 @@ function ItemCard({
           </button>
         </div>
       </div>
+
+      <InternalNumberField item={item} onDone={onDone} onError={onError} />
 
       {current && (
         <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
@@ -439,6 +452,75 @@ function ItemCard({
         />
       )}
     </Card>
+  );
+}
+
+function InternalNumberField({
+  item,
+  onDone,
+  onError,
+}: {
+  item: ContractItem;
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(item.internal_number ?? "");
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    onError(null);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("set_contract_item_internal_number", {
+      p_item_id: item.id,
+      p_internal_number: value || null,
+    });
+    setSaving(false);
+    if (error) { onError(error.message); return; }
+    setEditing(false);
+    onDone();
+  }
+
+  if (!editing) {
+    return (
+      <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+        <span>Número interno: {item.internal_number ?? "sin asignar"}</span>
+        <button
+          type="button"
+          onClick={() => { setValue(item.internal_number ?? ""); setEditing(true); }}
+          className="font-medium text-indigo-600 hover:underline"
+        >
+          Editar
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 flex items-center gap-2">
+      <input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Ej: SIN-001"
+        className="w-40 rounded-lg border border-slate-300 px-2 py-1 text-xs"
+      />
+      <button
+        type="button"
+        onClick={save}
+        disabled={saving}
+        className="rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+      >
+        {saving ? "Guardando…" : "Guardar"}
+      </button>
+      <button
+        type="button"
+        onClick={() => setEditing(false)}
+        className="text-xs font-medium text-slate-500 hover:underline"
+      >
+        Cancelar
+      </button>
+    </div>
   );
 }
 
