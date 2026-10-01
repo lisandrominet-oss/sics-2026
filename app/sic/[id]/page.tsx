@@ -111,6 +111,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           <Info label="Proyecto" value={project?.name ?? "-"} />
           <Info label="Solicitante" value={requester?.full_name ?? requester?.email ?? "-"} />
           <Info label="Área / Departamento" value={sic.department ?? "-"} />
+          {sic.on_behalf_of && <Info label="Solicitado en nombre de" value={sic.on_behalf_of} />}
           <Info label="Necesaria para" value={sic.needed_by_date ? formatDate(sic.needed_by_date) : "-"} />
           <Info label="Creada" value={formatDate(sic.created_at)} />
           <Info label="Monto final" value={formatAmount(sic.final_amount, sic.currency)} />

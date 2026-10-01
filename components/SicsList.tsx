@@ -25,6 +25,7 @@ export type SicRow = {
   updated_at: string;
   needed_by_date: string | null;
   department: string | null;
+  on_behalf_of: string | null;
   plants: { name: string; prefix: string } | null;
   project: { name: string } | null;
   requester: { full_name: string | null; email: string } | null;
@@ -135,6 +136,9 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                   <p className="truncate text-sm font-semibold text-slate-900">{sic.code}</p>
                   <p className="truncate text-xs text-slate-500">{sic.subject}</p>
                   {sic.department && <p className="truncate text-xs text-slate-400">{sic.department}</p>}
+                  {sic.on_behalf_of && (
+                    <p className="truncate text-xs text-amber-600">A pedido de: {sic.on_behalf_of}</p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-4">

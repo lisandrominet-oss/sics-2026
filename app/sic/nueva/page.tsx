@@ -17,6 +17,8 @@ export default async function NuevaSicPage() {
     supabase.from("projects").select("id, name").eq("active", true).order("name"),
   ]);
 
+  const canPickPlant = role === "compras" || role === "admin";
+
   return (
     <AppShell
       role={role}
@@ -36,7 +38,7 @@ export default async function NuevaSicPage() {
             plants={plants ?? []}
             projects={projects ?? []}
             defaultPlantId={profile.plant_id}
-            lockPlant={false}
+            canPickPlant={canPickPlant}
           />
         </div>
       </div>

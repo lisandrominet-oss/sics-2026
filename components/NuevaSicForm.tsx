@@ -12,22 +12,28 @@ export default function NuevaSicForm({
   plants,
   projects,
   defaultPlantId,
-  lockPlant,
+  canPickPlant,
 }: {
   plants: Plant[];
   projects: Project[];
   defaultPlantId: string | null;
-  lockPlant: boolean;
+  canPickPlant: boolean;
 }) {
   const router = useRouter();
+  // Si el usuario no tiene una planta asignada en su perfil, no hay nada a lo que
+  // bloquearlo: mostramos el selector igual aunque su rol no sea compras/admin.
+  const plantEditable = canPickPlant || !defaultPlantId;
   const [subject, setSubject] = useState("");
   const [neededByDate, setNeededByDate] = useState("");
   const [currency, setCurrency] = useState<"ARS" | "USD">("ARS");
   const [plantId, setPlantId] = useState(defaultPlantId ?? plants[0]?.id ?? "");
-  const [projectId, setProjectId] = useState(projects[0]?.id ?? "");
+  const [projectId, setProjectId] = useState("");
+  const [onBehalfOf, setOnBehalfOf] = useState("");
   const [items, setItems] = useState<ItemDraft[]>([{ ...EMPTY_ITEM }]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const selectedPlantName = plants.find((p) => p.id === plantId);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,11 +51,12 @@ export default function NuevaSicForm({
 
     const { data: sic, error: createError } = await supabase.rpc("create_sic", {
       p_subject: subject,
-      p_project_id: projects.length > 0 ? projectId || null : null,
+      p_project_id: projectId || null,
       p_needed_by_date: neededByDate,
       p_currency: currency,
       p_plant_id: plantId || null,
       p_items: payloadItems,
+      p_on_behalf_of: canPickPlant ? onBehalfOf || null : null,
     });
 
     if (createError || !sic) {
@@ -91,39 +98,58 @@ export default function NuevaSicForm({
     <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700">¿Es para Taller o para un Proyecto?</label>
+          <label className="block text-sm font-medium text-slate-700">Área</label>
+          {plantEditable ? (
+            <select
+              value={plantId}
+              onChange={(e) => setPlantId(e.target.value)}
+              required
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            >
+              {plants.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.prefix})
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="mt-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              {selectedPlantName ? `${selectedPlantName.name} (${selectedPlantName.prefix})` : "-"}
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Seleccionar proyecto</label>
           <select
-            value={plantId}
-            onChange={(e) => setPlantId(e.target.value)}
-            disabled={lockPlant && !!defaultPlantId}
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
           >
-            {plants.map((p) => (
+            <option value="">Taller</option>
+            {projects.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} ({p.prefix})
+                {p.name}
               </option>
             ))}
           </select>
         </div>
-        {projects.length > 1 && (
-          <div>
-            <label className="block text-sm font-medium text-slate-700">Proyecto</label>
-            <select
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-              required
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            >
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
       </div>
+
+      {canPickPlant && (
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Solicitado en nombre de (opcional)</label>
+          <input
+            value={onBehalfOf}
+            onChange={(e) => setOnBehalfOf(e.target.value)}
+            placeholder="Ej: Martín Vargas (no tiene acceso a su mail)"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+          <p className="mt-1 text-xs text-slate-400">
+            Completalo solo si estás cargando esta SIC por un área que no puede ingresar con su propio mail.
+          </p>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-slate-700">Asunto / razón de la compra</label>
