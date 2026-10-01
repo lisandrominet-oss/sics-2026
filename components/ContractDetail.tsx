@@ -4,7 +4,7 @@ import { Fragment, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import FilePreview from "@/components/FilePreview";
-import { IconChevronDown } from "@/components/icons";
+import { IconChevronDown, IconFileText, IconReceipt } from "@/components/icons";
 import {
   CONTRACT_DISPLAY_STATUS_COLORS,
   CONTRACT_DISPLAY_STATUS_LABELS,
@@ -1103,15 +1103,19 @@ function CuotasTab({
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => { setPaymentFormFor(null); setDetailFor(null); setInvoiceFormFor((v) => (v === inst.id ? null : inst.id)); }}
-                        className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                        title={isInvoiceOpen ? "Cancelar" : "Subir factura"}
+                        aria-label={isInvoiceOpen ? "Cancelar" : "Subir factura"}
+                        className={`rounded-md border p-1.5 ${isInvoiceOpen ? "border-indigo-300 bg-indigo-50 text-indigo-600" : "border-slate-300 text-slate-600 hover:bg-slate-50"}`}
                       >
-                        {isInvoiceOpen ? "Cancelar" : "Cargar factura"}
+                        <IconFileText className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => { setInvoiceFormFor(null); setDetailFor(null); setPaymentFormFor((v) => (v === inst.id ? null : inst.id)); }}
-                        className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                        title={isPaymentOpen ? "Cancelar" : "Subir recibo"}
+                        aria-label={isPaymentOpen ? "Cancelar" : "Subir recibo"}
+                        className={`rounded-md border p-1.5 ${isPaymentOpen ? "border-indigo-300 bg-indigo-50 text-indigo-600" : "border-slate-300 text-slate-600 hover:bg-slate-50"}`}
                       >
-                        {isPaymentOpen ? "Cancelar" : "Registrar pago"}
+                        <IconReceipt className="h-4 w-4" />
                       </button>
                       {inst.status === "con_diferencia" && (
                         <button

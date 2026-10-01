@@ -127,6 +127,19 @@ export function IconTruck({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
+export function IconReceipt({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className}>
+      <path
+        d="M6 3h12v16l-1.5-1-1.5 1-1.5-1-1.5 1-1.5-1-1.5 1-1.5-1-1.5 1z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M9 8h6M9 12h4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function IconFileText({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className}>
