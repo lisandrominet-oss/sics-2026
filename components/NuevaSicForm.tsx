@@ -25,7 +25,6 @@ export default function NuevaSicForm({
   const plantEditable = canPickPlant || !defaultPlantId;
   const [subject, setSubject] = useState("");
   const [neededByDate, setNeededByDate] = useState("");
-  const [currency, setCurrency] = useState<"ARS" | "USD">("ARS");
   const [plantId, setPlantId] = useState(defaultPlantId ?? plants[0]?.id ?? "");
   const [projectId, setProjectId] = useState("");
   const [onBehalfOf, setOnBehalfOf] = useState("");
@@ -53,7 +52,8 @@ export default function NuevaSicForm({
       p_subject: subject,
       p_project_id: projectId || null,
       p_needed_by_date: neededByDate,
-      p_currency: currency,
+      // La moneda se define cuando Compras carga la cotización, no al pedirla.
+      p_currency: "ARS",
       p_plant_id: plantId || null,
       p_items: payloadItems,
       p_on_behalf_of: canPickPlant ? onBehalfOf || null : null,
@@ -138,7 +138,7 @@ export default function NuevaSicForm({
 
       {canPickPlant && (
         <div>
-          <label className="block text-sm font-medium text-slate-700">Solicitado en nombre de (opcional)</label>
+          <label className="block text-sm font-medium text-slate-700">Solicita:</label>
           <input
             value={onBehalfOf}
             onChange={(e) => setOnBehalfOf(e.target.value)}
@@ -162,28 +162,15 @@ export default function NuevaSicForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700">¿Para qué fecha lo necesitás?</label>
-          <input
-            type="date"
-            value={neededByDate}
-            onChange={(e) => setNeededByDate(e.target.value)}
-            required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700">Moneda</label>
-          <select
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value as "ARS" | "USD")}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          >
-            <option value="ARS">ARS</option>
-            <option value="USD">USD</option>
-          </select>
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-700">Fecha límite</label>
+        <input
+          type="date"
+          value={neededByDate}
+          onChange={(e) => setNeededByDate(e.target.value)}
+          required
+          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
       </div>
 
       <div>
