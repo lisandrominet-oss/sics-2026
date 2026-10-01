@@ -1845,6 +1845,71 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_contract: {
+        Args: {
+          p_contract_id: string
+          p_end_date: string
+          p_notes: string
+          p_notice_days: number
+          p_renewal_months: number
+          p_renewal_type: Database["public"]["Enums"]["contract_renewal_type"]
+          p_start_date: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          notes: string | null
+          notice_days: number
+          owner_id: string
+          plant_id: string | null
+          project_id: string | null
+          provider_id: string
+          renewal_months: number | null
+          renewal_type: Database["public"]["Enums"]["contract_renewal_type"]
+          return_note: string | null
+          returned: boolean
+          returned_at: string | null
+          sic_id: string | null
+          start_date: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contracts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_contract_item: {
+        Args: {
+          p_chassis_number: string
+          p_description: string
+          p_domain: string
+          p_engine_number: string
+          p_identifier: string
+          p_item_id: string
+        }
+        Returns: {
+          chassis_number: string | null
+          contract_id: string
+          created_at: string
+          description: string
+          domain: string | null
+          engine_number: string | null
+          id: string
+          identifier: string | null
+          internal_number: string | null
+          type: Database["public"]["Enums"]["contract_item_type"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contract_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_sic_details: {
         Args: {
           p_items: Json

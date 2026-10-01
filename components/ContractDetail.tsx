@@ -18,6 +18,7 @@ import {
   formatDateOnly,
   formatUsd,
   type ContractDocumentType,
+  type ContractRenewalType,
   type ProviderInvoiceKind,
 } from "@/lib/contracts";
 import type { Database } from "@/lib/database.types";
@@ -181,6 +182,7 @@ function DatosTab({
 }) {
   const [renewOpen, setRenewOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -207,6 +209,12 @@ function DatosTab({
       {!contract.returned && (
         <div className="flex flex-wrap gap-3">
           <button
+            onClick={() => setEditOpen((v) => !v)}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            {editOpen ? "Cancelar" : "Editar contrato"}
+          </button>
+          <button
             onClick={() => setRenewOpen((v) => !v)}
             className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
@@ -221,9 +229,100 @@ function DatosTab({
         </div>
       )}
 
+      {editOpen && (
+        <EditContractForm
+          contract={contract}
+          onDone={() => { setEditOpen(false); onDone(); }}
+          onError={onError}
+        />
+      )}
       {renewOpen && <RenewForm contractId={contract.id} onDone={() => { setRenewOpen(false); onDone(); }} onError={onError} />}
       {returnOpen && <ReturnForm contractId={contract.id} onDone={() => { setReturnOpen(false); onDone(); }} onError={onError} />}
     </div>
+  );
+}
+
+function EditContractForm({
+  contract,
+  onDone,
+  onError,
+}: {
+  contract: Contract;
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const [startDate, setStartDate] = useState(contract.start_date);
+  const [endDate, setEndDate] = useState(contract.end_date);
+  const [renewalType, setRenewalType] = useState<ContractRenewalType>(contract.renewal_type);
+  const [renewalMonths, setRenewalMonths] = useState(contract.renewal_months ? String(contract.renewal_months) : "");
+  const [noticeDays, setNoticeDays] = useState(String(contract.notice_days));
+  const [notes, setNotes] = useState(contract.notes ?? "");
+  const [loading, setLoading] = useState(false);
+
+  async function submit() {
+    setLoading(true);
+    onError(null);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("update_contract", {
+      p_contract_id: contract.id,
+      p_start_date: startDate,
+      p_end_date: endDate,
+      p_renewal_type: renewalType,
+      p_renewal_months: renewalMonths ? Number(renewalMonths) : null,
+      p_notice_days: Number(noticeDays || 0),
+      p_notes: notes || null,
+    });
+    setLoading(false);
+    if (error) { onError(error.message); return; }
+    onDone();
+  }
+
+  return (
+    <Card title="Editar contrato">
+      <p className="text-xs text-slate-500">
+        Las fechas solo se pueden cambiar si el contrato todavía no tiene documentos ni cuotas facturadas. Si ya
+        tiene datos cargados, usá "Renovar" para extenderlo o "Devolver equipo" para terminarlo antes.
+      </p>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Inicio</label>
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Vencimiento</label>
+          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Renovación</label>
+          <select
+            value={renewalType}
+            onChange={(e) => setRenewalType(e.target.value as ContractRenewalType)}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            {(Object.keys(CONTRACT_RENEWAL_TYPE_LABELS) as ContractRenewalType[]).map((t) => (
+              <option key={t} value={t}>{CONTRACT_RENEWAL_TYPE_LABELS[t]}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Plazo renovación (meses)</label>
+          <input type="number" min="0" value={renewalMonths} onChange={(e) => setRenewalMonths(e.target.value)} disabled={renewalType === "sin_renovacion"} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Días de preaviso</label>
+          <input type="number" min="0" value={noticeDays} onChange={(e) => setNoticeDays(e.target.value)} disabled={renewalType === "sin_renovacion"} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50" />
+        </div>
+      </div>
+      <div className="mt-3">
+        <label className="block text-xs font-medium text-slate-700">Notas (opcional)</label>
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+      <button onClick={submit} disabled={loading} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+        {loading ? "Guardando…" : "Guardar cambios"}
+      </button>
+    </Card>
   );
 }
 
@@ -364,6 +463,7 @@ function ItemCard({
 }) {
   const [rateFormOpen, setRateFormOpen] = useState(false);
   const [usageFormOpen, setUsageFormOpen] = useState(false);
+  const [editItemOpen, setEditItemOpen] = useState(false);
   const current = rates[0];
 
   return (
@@ -387,6 +487,9 @@ function ItemCard({
           )}
         </div>
         <div className="flex gap-2">
+          <button onClick={() => setEditItemOpen((v) => !v)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">
+            {editItemOpen ? "Cancelar" : "Editar equipo"}
+          </button>
           <button onClick={() => setUsageFormOpen((v) => !v)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">
             Cargar horas del mes
           </button>
@@ -395,6 +498,14 @@ function ItemCard({
           </button>
         </div>
       </div>
+
+      {editItemOpen && (
+        <EditItemForm
+          item={item}
+          onDone={() => { setEditItemOpen(false); onDone(); }}
+          onError={onError}
+        />
+      )}
 
       <InternalNumberField item={item} onDone={onDone} onError={onError} />
 
@@ -452,6 +563,75 @@ function ItemCard({
         />
       )}
     </Card>
+  );
+}
+
+function EditItemForm({
+  item,
+  onDone,
+  onError,
+}: {
+  item: ContractItem;
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const [description, setDescription] = useState(item.description);
+  const [identifier, setIdentifier] = useState(item.identifier ?? "");
+  const [chassisNumber, setChassisNumber] = useState(item.chassis_number ?? "");
+  const [domain, setDomain] = useState(item.domain ?? "");
+  const [engineNumber, setEngineNumber] = useState(item.engine_number ?? "");
+  const [loading, setLoading] = useState(false);
+
+  async function submit() {
+    setLoading(true);
+    onError(null);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("update_contract_item", {
+      p_item_id: item.id,
+      p_description: description,
+      p_identifier: identifier || null,
+      p_chassis_number: chassisNumber || null,
+      p_domain: domain || null,
+      p_engine_number: engineNumber || null,
+    });
+    setLoading(false);
+    if (error) { onError(error.message); return; }
+    onDone();
+  }
+
+  const showVehicleFields = item.type === "maquina" || item.type === "camioneta";
+
+  return (
+    <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <p className="text-xs font-semibold text-slate-700">Editar datos del equipo</p>
+      <div className="mt-2">
+        <label className="block text-xs font-medium text-slate-700">Descripción</label>
+        <input value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+      <div className="mt-2">
+        <label className="block text-xs font-medium text-slate-700">Número de serie / identificador</label>
+        <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+      {showVehicleFields && (
+        <div className="mt-2 grid grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-700">N° de chasis</label>
+            <input value={chassisNumber} onChange={(e) => setChassisNumber(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700">Dominio</label>
+            <input value={domain} onChange={(e) => setDomain(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700">N° de motor</label>
+            <input value={engineNumber} onChange={(e) => setEngineNumber(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        </div>
+      )}
+      <button onClick={submit} disabled={loading || !description} className="mt-3 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+        {loading ? "Guardando…" : "Guardar"}
+      </button>
+    </div>
   );
 }
 
