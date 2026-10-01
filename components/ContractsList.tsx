@@ -263,11 +263,14 @@ export default function ContractsList({
                   href={`/contratos/${s.contract.id}`}
                   className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 hover:bg-slate-50"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-900">{s.contract.provider?.name ?? "-"}</p>
-                    <p className="truncate text-xs text-slate-500">
-                      {s.items.map((i) => (i.internal_number ? `${i.description} (${i.internal_number})` : i.description)).join(", ")}
+                  <div className="w-20 shrink-0 text-center">
+                    <p className="text-base font-bold text-slate-900">
+                      {s.items.map((i) => i.internal_number).filter(Boolean).join(", ") || "-"}
                     </p>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-slate-900">{s.contract.provider?.name ?? "-"}</p>
+                    <p className="truncate text-xs text-slate-500">{s.items.map((i) => i.description).join(", ")}</p>
                     <p className="truncate text-xs text-slate-400">
                       {s.contract.plant ? `${s.contract.plant.name} (${s.contract.plant.prefix})` : s.contract.project?.name ?? "-"}
                     </p>
