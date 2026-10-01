@@ -1007,6 +1007,7 @@ function CuotasTab({
   async function voidInvoice(invoiceId: string) {
     const reason = prompt("Motivo de la anulación:");
     if (!reason) return;
+    onError(null);
     const supabase = createClient();
     const { error } = await supabase.rpc("void_provider_invoice", { p_invoice_id: invoiceId, p_reason: reason });
     if (error) { onError(error.message); return; }
@@ -1017,6 +1018,7 @@ function CuotasTab({
     const note = prompt("Motivo para aceptar la diferencia:");
     if (!note) return;
     const amountStr = prompt("Monto de la diferencia (ARS):");
+    onError(null);
     setAcceptingId(installmentId);
     const supabase = createClient();
     const { error } = await supabase.rpc("accept_installment_difference", {
@@ -1079,13 +1081,13 @@ function CuotasTab({
                         <div className="flex flex-wrap items-center gap-2">
                           <button
                             onClick={() => { setPaymentFormFor(null); setInvoiceFormFor((v) => (v === inst.id ? null : inst.id)); }}
-                            className="text-xs font-medium text-indigo-600 underline"
+                            className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
                           >
                             {invoiceFormFor === inst.id ? "Cancelar" : "Cargar factura"}
                           </button>
                           <button
                             onClick={() => { setInvoiceFormFor(null); setPaymentFormFor((v) => (v === inst.id ? null : inst.id)); }}
-                            className="text-xs font-medium text-indigo-600 underline"
+                            className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
                           >
                             {paymentFormFor === inst.id ? "Cancelar" : "Registrar pago"}
                           </button>
@@ -1196,13 +1198,12 @@ function InvoiceForm({
   const [number, setNumber] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [fxRate, setFxRate] = useState("");
-  const [currency, setCurrency] = useState<"ars" | "usd">("ars");
   const [netAmount, setNetAmount] = useState("");
   const [vatPct, setVatPct] = useState("21");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const netArs = currency === "usd" ? Number(netAmount || 0) * Number(fxRate || 0) : Number(netAmount || 0);
+  const netArs = Number(netAmount || 0);
   const vatArs = netArs * (Number(vatPct || 0) / 100);
   const totalArs = netArs + vatArs;
 
@@ -1278,22 +1279,13 @@ function InvoiceForm({
         </div>
       )}
 
-      <div className="mt-3 grid grid-cols-4 gap-3">
+      <div className="mt-3 grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">
-            Dólar venta BNA de la factura {currency === "ars" && "(opcional)"}
-          </label>
+          <label className="block text-xs font-medium text-slate-700">Dólar venta BNA (opcional)</label>
           <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Moneda de la factura</label>
-          <select value={currency} onChange={(e) => setCurrency(e.target.value as "ars" | "usd")} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-            <option value="ars">ARS</option>
-            <option value="usd">USD</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-700">Neto ({currency === "usd" ? "USD" : "ARS"})</label>
+          <label className="block text-xs font-medium text-slate-700">Neto (ARS)</label>
           <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         </div>
         <div>
@@ -1320,7 +1312,7 @@ function InvoiceForm({
 
       <button
         onClick={submit}
-        disabled={loading || !issueDate || !netAmount || (currency === "usd" && !fxRate)}
+        disabled={loading || !issueDate || !netAmount}
         className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
       >
         {loading ? "Guardando…" : "Guardar comprobante"}
