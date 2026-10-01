@@ -4,6 +4,7 @@ import { Fragment, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import FilePreview from "@/components/FilePreview";
+import { IconChevronDown } from "@/components/icons";
 import {
   CONTRACT_DISPLAY_STATUS_COLORS,
   CONTRACT_DISPLAY_STATUS_LABELS,
@@ -171,6 +172,19 @@ function Card({ title, children }: { title?: string; children: React.ReactNode }
     <div className="rounded-xl border border-slate-200 bg-white p-5">
       {title && <h2 className="text-sm font-semibold text-slate-900">{title}</h2>}
       <div className={title ? "mt-3" : ""}>{children}</div>
+    </div>
+  );
+}
+
+function CollapsiblePanel({ open, children }: { open: boolean; children: React.ReactNode }) {
+  return (
+    <div
+      className="col-span-full grid transition-[grid-template-rows] duration-300 ease-in-out"
+      style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+    >
+      <div className="overflow-hidden">
+        <div className="py-3">{open ? children : null}</div>
+      </div>
     </div>
   );
 }
@@ -1038,133 +1052,128 @@ function CuotasTab({
     <div className="space-y-4">
       <Card title="Cuotas">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="text-xs uppercase text-slate-400">
-              <tr>
-                <th className="py-2 pr-3">Período</th>
-                <th className="py-2 pr-3">Canon (USD)</th>
-                <th className="py-2 pr-3">Facturado (ARS)</th>
-                <th className="py-2 pr-3">Pagado (ARS)</th>
-                <th className="py-2 pr-3">Diferencia pago</th>
-                <th className="py-2 pr-3">Estado</th>
-                <th className="py-2 pr-3"></th>
-                <th className="py-2 pr-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {installments.map((inst) => {
-                const lines = linesFor(inst.period_start);
-                const invoicedArs = lines.reduce((sum, l) => sum + l.net_amount, 0);
-                const payLines = paymentLinesFor(inst.period_start);
-                const paidArs = payLines.reduce((sum, l) => sum + l.net_amount, 0);
-                const paymentDiff = invoicedArs - paidArs;
-                return (
-                  <Fragment key={inst.id}>
-                    <tr>
-                      <td className="py-2 pr-3 text-slate-700">
-                        {formatDateOnly(inst.period_start)} — {formatDateOnly(inst.period_end)}
-                      </td>
-                      <td className="py-2 pr-3 text-slate-600">{formatUsd(expectedByPeriod[inst.period_start] ?? 0)}</td>
-                      <td className="py-2 pr-3 text-slate-600">{lines.length > 0 ? formatArs(invoicedArs) : "-"}</td>
-                      <td className="py-2 pr-3 text-slate-600">{payLines.length > 0 ? formatArs(paidArs) : "-"}</td>
-                      <td className="py-2 pr-3">
-                        {payLines.length > 0 && Math.abs(paymentDiff) > 1 ? (
-                          <span className="font-medium text-amber-700">{formatArs(paymentDiff)}</span>
-                        ) : (
-                          <span className="text-slate-400">-</span>
-                        )}
-                      </td>
-                      <td className="py-2 pr-3">
-                        <span
-                          className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${CONTRACT_INSTALLMENT_STATUS_COLORS[inst.status]}`}
-                        >
-                          {CONTRACT_INSTALLMENT_STATUS_LABELS[inst.status]}
-                        </span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button
-                            onClick={() => { setPaymentFormFor(null); setDetailFor(null); setInvoiceFormFor((v) => (v === inst.id ? null : inst.id)); }}
-                            className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                          >
-                            {invoiceFormFor === inst.id ? "Cancelar" : "Cargar factura"}
-                          </button>
-                          <button
-                            onClick={() => { setInvoiceFormFor(null); setDetailFor(null); setPaymentFormFor((v) => (v === inst.id ? null : inst.id)); }}
-                            className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                          >
-                            {paymentFormFor === inst.id ? "Cancelar" : "Registrar pago"}
-                          </button>
-                          {inst.status === "con_diferencia" && (
-                            <button
-                              onClick={() => acceptDifference(inst.id)}
-                              disabled={acceptingId === inst.id}
-                              className="text-xs font-medium text-amber-700 underline disabled:opacity-50"
-                            >
-                              Aceptar diferencia
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-2 pr-3">
+          <div className="grid min-w-[900px] grid-cols-[1.3fr_110px_130px_130px_130px_150px_1fr_40px] items-center gap-x-3 text-sm">
+            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Período</div>
+            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Canon (USD)</div>
+            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Facturado (ARS)</div>
+            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Pagado (ARS)</div>
+            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Diferencia pago</div>
+            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Estado</div>
+            <div className="pb-2"></div>
+            <div className="pb-2"></div>
+
+            {installments.map((inst) => {
+              const lines = linesFor(inst.period_start);
+              const invoicedArs = lines.reduce((sum, l) => sum + l.net_amount, 0);
+              const payLines = paymentLinesFor(inst.period_start);
+              const paidArs = payLines.reduce((sum, l) => sum + l.net_amount, 0);
+              const paymentDiff = invoicedArs - paidArs;
+              const isDetailOpen = detailFor === inst.id;
+              const isInvoiceOpen = invoiceFormFor === inst.id;
+              const isPaymentOpen = paymentFormFor === inst.id;
+              return (
+                <Fragment key={inst.id}>
+                  <div className="border-b border-slate-100 py-2 pr-3 text-slate-700">
+                    {formatDateOnly(inst.period_start)} — {formatDateOnly(inst.period_end)}
+                  </div>
+                  <div className="border-b border-slate-100 py-2 pr-3 text-slate-600">
+                    {formatUsd(expectedByPeriod[inst.period_start] ?? 0)}
+                  </div>
+                  <div className="border-b border-slate-100 py-2 pr-3 text-slate-600">
+                    {lines.length > 0 ? formatArs(invoicedArs) : "-"}
+                  </div>
+                  <div className="border-b border-slate-100 py-2 pr-3 text-slate-600">
+                    {payLines.length > 0 ? formatArs(paidArs) : "-"}
+                  </div>
+                  <div className="border-b border-slate-100 py-2 pr-3">
+                    {payLines.length > 0 && Math.abs(paymentDiff) > 1 ? (
+                      <span className="font-medium text-amber-700">{formatArs(paymentDiff)}</span>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
+                  </div>
+                  <div className="border-b border-slate-100 py-2 pr-3">
+                    <span
+                      className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${CONTRACT_INSTALLMENT_STATUS_COLORS[inst.status]}`}
+                    >
+                      {CONTRACT_INSTALLMENT_STATUS_LABELS[inst.status]}
+                    </span>
+                  </div>
+                  <div className="border-b border-slate-100 py-2 pr-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={() => { setPaymentFormFor(null); setDetailFor(null); setInvoiceFormFor((v) => (v === inst.id ? null : inst.id)); }}
+                        className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                      >
+                        {isInvoiceOpen ? "Cancelar" : "Cargar factura"}
+                      </button>
+                      <button
+                        onClick={() => { setInvoiceFormFor(null); setDetailFor(null); setPaymentFormFor((v) => (v === inst.id ? null : inst.id)); }}
+                        className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                      >
+                        {isPaymentOpen ? "Cancelar" : "Registrar pago"}
+                      </button>
+                      {inst.status === "con_diferencia" && (
                         <button
-                          onClick={() => { setInvoiceFormFor(null); setPaymentFormFor(null); setDetailFor((v) => (v === inst.id ? null : inst.id)); }}
-                          className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                          onClick={() => acceptDifference(inst.id)}
+                          disabled={acceptingId === inst.id}
+                          className="text-xs font-medium text-amber-700 underline disabled:opacity-50"
                         >
-                          {detailFor === inst.id ? "Cancelar" : "Ver más"}
+                          Aceptar diferencia
                         </button>
-                      </td>
-                    </tr>
-                    {detailFor === inst.id && (
-                      <tr>
-                        <td colSpan={8} className="bg-slate-50 py-3">
-                          <InstallmentDetail
-                            contractId={contract.id}
-                            periodStart={inst.period_start}
-                            invoices={lines.map((l) => l.invoice)}
-                            payLines={payLines.map((l) => l.invoice)}
-                            invoiceFileUrls={invoiceFileUrls}
-                            paidFacturaIds={paidFacturaIds}
-                            onVoid={voidInvoice}
-                            onDone={onDone}
-                            onError={onError}
-                          />
-                        </td>
-                      </tr>
-                    )}
-                    {invoiceFormFor === inst.id && (
-                      <tr>
-                        <td colSpan={8} className="bg-slate-50 py-3">
-                          <InvoiceForm
-                            contract={contract}
-                            items={items}
-                            periodStart={inst.period_start}
-                            onDone={() => { setInvoiceFormFor(null); onDone(); }}
-                            onError={onError}
-                          />
-                        </td>
-                      </tr>
-                    )}
-                    {paymentFormFor === inst.id && (
-                      <tr>
-                        <td colSpan={8} className="bg-slate-50 py-3">
-                          <RegisterPaymentForm
-                            contract={contract}
-                            items={items}
-                            periodStart={inst.period_start}
-                            providerInvoices={providerInvoices}
-                            defaultAmount={invoicedArs > 0 ? invoicedArs : undefined}
-                            onDone={() => { setPaymentFormFor(null); onDone(); }}
-                            onError={onError}
-                          />
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
+                      )}
+                    </div>
+                  </div>
+                  <div className="border-b border-slate-100 py-2 pr-1 text-right">
+                    <button
+                      onClick={() => { setInvoiceFormFor(null); setPaymentFormFor(null); setDetailFor((v) => (v === inst.id ? null : inst.id)); }}
+                      aria-label={isDetailOpen ? "Ocultar detalle de la cuota" : "Ver detalle de la cuota"}
+                      aria-expanded={isDetailOpen}
+                      className="rounded-md border border-slate-300 p-1.5 text-slate-600 hover:bg-slate-50"
+                    >
+                      <IconChevronDown
+                        className={`h-4 w-4 transition-transform duration-300 ${isDetailOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  </div>
+
+                  <CollapsiblePanel open={isDetailOpen}>
+                    <InstallmentDetail
+                      contractId={contract.id}
+                      periodStart={inst.period_start}
+                      invoices={lines.map((l) => l.invoice)}
+                      payLines={payLines.map((l) => l.invoice)}
+                      invoiceFileUrls={invoiceFileUrls}
+                      paidFacturaIds={paidFacturaIds}
+                      onVoid={voidInvoice}
+                      onDone={onDone}
+                      onError={onError}
+                    />
+                  </CollapsiblePanel>
+                  <CollapsiblePanel open={isInvoiceOpen}>
+                    <InvoiceForm
+                      contract={contract}
+                      items={items}
+                      periodStart={inst.period_start}
+                      onDone={() => { setInvoiceFormFor(null); onDone(); }}
+                      onError={onError}
+                    />
+                  </CollapsiblePanel>
+                  <CollapsiblePanel open={isPaymentOpen}>
+                    <RegisterPaymentForm
+                      contract={contract}
+                      items={items}
+                      periodStart={inst.period_start}
+                      providerInvoices={providerInvoices}
+                      defaultAmount={invoicedArs > 0 ? invoicedArs : undefined}
+                      onDone={() => { setPaymentFormFor(null); onDone(); }}
+                      onError={onError}
+                    />
+                  </CollapsiblePanel>
+                </Fragment>
+              );
+            })}
+          </div>
         </div>
       </Card>
     </div>
