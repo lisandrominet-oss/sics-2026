@@ -105,6 +105,22 @@ export default async function ContratoDetailPage({ params }: { params: { id: str
       ? await supabase.from("provider_invoices").select("*").eq("kind", "pago").in("paid_invoice_id", facturaIds)
       : { data: [] as never[] };
 
+  const invoiceStoragePaths = new Set<string>();
+  (invoiceLines ?? []).forEach((l) => {
+    if (l.invoice.storage_path) invoiceStoragePaths.add(l.invoice.storage_path);
+  });
+  (payments ?? []).forEach((p) => {
+    if (p.storage_path) invoiceStoragePaths.add(p.storage_path);
+  });
+  const invoiceFileUrls = Object.fromEntries(
+    await Promise.all(
+      Array.from(invoiceStoragePaths).map(async (path) => {
+        const { data } = await supabase.storage.from("contract-files").createSignedUrl(path, 300);
+        return [path, data?.signedUrl ?? null] as const;
+      })
+    )
+  );
+
   return (
     <AppShell
       role={role}
@@ -135,6 +151,7 @@ export default async function ContratoDetailPage({ params }: { params: { id: str
             invoiceLines={invoiceLines ?? []}
             providerInvoices={providerInvoices ?? []}
             payments={payments ?? []}
+            invoiceFileUrls={invoiceFileUrls}
           />
         </div>
       </div>

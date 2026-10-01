@@ -1910,6 +1910,45 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_provider_invoice: {
+        Args: {
+          p_file_name: string
+          p_fx_rate: number
+          p_invoice_id: string
+          p_issue_date: string
+          p_net_amount: number
+          p_number: string
+          p_storage_path: string
+          p_total_amount: number
+          p_vat_amount: number
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          file_name: string | null
+          fx_rate: number | null
+          id: string
+          issue_date: string
+          kind: Database["public"]["Enums"]["provider_invoice_kind"]
+          net_amount: number | null
+          number: string | null
+          paid_invoice_id: string | null
+          provider_id: string
+          status: Database["public"]["Enums"]["provider_invoice_status"]
+          storage_path: string | null
+          total_amount: number
+          vat_amount: number | null
+          voided_at: string | null
+          voided_by: string | null
+          voided_reason: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "provider_invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_sic_details: {
         Args: {
           p_items: Json

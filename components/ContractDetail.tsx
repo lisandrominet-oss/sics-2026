@@ -54,6 +54,7 @@ export default function ContractDetail({
   invoiceLines,
   providerInvoices,
   payments,
+  invoiceFileUrls,
 }: {
   contract: Contract;
   items: ContractItem[];
@@ -66,6 +67,7 @@ export default function ContractDetail({
   invoiceLines: InvoiceLine[];
   providerInvoices: ProviderInvoice[];
   payments: ProviderInvoice[];
+  invoiceFileUrls: Record<string, string | null>;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("datos");
@@ -143,6 +145,7 @@ export default function ContractDetail({
             invoiceLines={invoiceLines}
             providerInvoices={providerInvoices}
             payments={payments}
+            invoiceFileUrls={invoiceFileUrls}
             items={items}
             onDone={refresh}
             onError={setError}
@@ -969,6 +972,7 @@ function CuotasTab({
   invoiceLines,
   providerInvoices,
   payments,
+  invoiceFileUrls,
   items,
   onDone,
   onError,
@@ -979,12 +983,14 @@ function CuotasTab({
   invoiceLines: InvoiceLine[];
   providerInvoices: ProviderInvoice[];
   payments: ProviderInvoice[];
+  invoiceFileUrls: Record<string, string | null>;
   items: ContractItem[];
   onDone: () => void;
   onError: (e: string | null) => void;
 }) {
   const [invoiceFormFor, setInvoiceFormFor] = useState<string | null>(null);
   const [paymentFormFor, setPaymentFormFor] = useState<string | null>(null);
+  const [detailFor, setDetailFor] = useState<string | null>(null);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
 
   function linesFor(periodStart: string) {
@@ -1080,13 +1086,19 @@ function CuotasTab({
                       <td className="py-2 pr-3">
                         <div className="flex flex-wrap items-center gap-2">
                           <button
-                            onClick={() => { setPaymentFormFor(null); setInvoiceFormFor((v) => (v === inst.id ? null : inst.id)); }}
+                            onClick={() => { setInvoiceFormFor(null); setPaymentFormFor(null); setDetailFor((v) => (v === inst.id ? null : inst.id)); }}
+                            className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                          >
+                            {detailFor === inst.id ? "Cancelar" : "Ver cuota"}
+                          </button>
+                          <button
+                            onClick={() => { setPaymentFormFor(null); setDetailFor(null); setInvoiceFormFor((v) => (v === inst.id ? null : inst.id)); }}
                             className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
                           >
                             {invoiceFormFor === inst.id ? "Cancelar" : "Cargar factura"}
                           </button>
                           <button
-                            onClick={() => { setInvoiceFormFor(null); setPaymentFormFor((v) => (v === inst.id ? null : inst.id)); }}
+                            onClick={() => { setInvoiceFormFor(null); setDetailFor(null); setPaymentFormFor((v) => (v === inst.id ? null : inst.id)); }}
                             className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
                           >
                             {paymentFormFor === inst.id ? "Cancelar" : "Registrar pago"}
@@ -1103,6 +1115,21 @@ function CuotasTab({
                         </div>
                       </td>
                     </tr>
+                    {detailFor === inst.id && (
+                      <tr>
+                        <td colSpan={7} className="bg-slate-50 py-3">
+                          <InstallmentDetail
+                            contractId={contract.id}
+                            periodStart={inst.period_start}
+                            invoices={lines.map((l) => l.invoice)}
+                            payLines={payLines.map((l) => l.invoice)}
+                            invoiceFileUrls={invoiceFileUrls}
+                            onDone={onDone}
+                            onError={onError}
+                          />
+                        </td>
+                      </tr>
+                    )}
                     {invoiceFormFor === inst.id && (
                       <tr>
                         <td colSpan={7} className="bg-slate-50 py-3">
@@ -1176,6 +1203,200 @@ function CuotasTab({
           </ul>
         )}
       </Card>
+    </div>
+  );
+}
+
+function InstallmentDetail({
+  contractId,
+  periodStart,
+  invoices,
+  payLines,
+  invoiceFileUrls,
+  onDone,
+  onError,
+}: {
+  contractId: string;
+  periodStart: string;
+  invoices: ProviderInvoice[];
+  payLines: ProviderInvoice[];
+  invoiceFileUrls: Record<string, string | null>;
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const uniqueInvoices = Array.from(new Map(invoices.map((i) => [i.id, i])).values());
+  const uniquePayments = Array.from(new Map(payLines.map((i) => [i.id, i])).values());
+
+  function Row({ inv }: { inv: ProviderInvoice }) {
+    return (
+      <li className="text-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className={inv.status === "anulado" ? "text-slate-400 line-through" : "text-slate-700"}>
+              {PROVIDER_INVOICE_KIND_LABELS[inv.kind]} {inv.number ?? ""} — {formatDateOnly(inv.issue_date)} — {formatArs(inv.total_amount)}
+            </span>
+            {inv.storage_path && (
+              <FilePreview url={invoiceFileUrls[inv.storage_path] ?? null} fileName={inv.file_name ?? "archivo"} label="Ver archivo" />
+            )}
+          </div>
+          {inv.status === "vigente" && (
+            <button
+              onClick={() => setEditingId((v) => (v === inv.id ? null : inv.id))}
+              className="text-xs font-medium text-indigo-600 underline"
+            >
+              {editingId === inv.id ? "Cancelar" : "Editar"}
+            </button>
+          )}
+        </div>
+        {editingId === inv.id && (
+          <EditComprobanteForm
+            contractId={contractId}
+            invoice={inv}
+            onDone={() => { setEditingId(null); onDone(); }}
+            onError={onError}
+          />
+        )}
+      </li>
+    );
+  }
+
+  return (
+    <Card title={`Detalle de la cuota — período ${formatDateOnly(periodStart)}`}>
+      <div>
+        <p className="text-xs font-semibold uppercase text-slate-400">Facturas / notas de crédito</p>
+        {uniqueInvoices.length === 0 ? (
+          <p className="mt-1 text-sm text-slate-400">Sin facturas cargadas.</p>
+        ) : (
+          <ul className="mt-2 space-y-3">
+            {uniqueInvoices.map((inv) => (
+              <Row key={inv.id} inv={inv} />
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="mt-4 border-t border-slate-100 pt-4">
+        <p className="text-xs font-semibold uppercase text-slate-400">Pagos</p>
+        {uniquePayments.length === 0 ? (
+          <p className="mt-1 text-sm text-slate-400">Sin pagos cargados.</p>
+        ) : (
+          <ul className="mt-2 space-y-3">
+            {uniquePayments.map((inv) => (
+              <Row key={inv.id} inv={inv} />
+            ))}
+          </ul>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+function EditComprobanteForm({
+  contractId,
+  invoice,
+  onDone,
+  onError,
+}: {
+  contractId: string;
+  invoice: ProviderInvoice;
+  onDone: () => void;
+  onError: (e: string | null) => void;
+}) {
+  const isPago = invoice.kind === "pago";
+  const [number, setNumber] = useState(invoice.number ?? "");
+  const [issueDate, setIssueDate] = useState(invoice.issue_date);
+  const [fxRate, setFxRate] = useState(invoice.fx_rate ? String(invoice.fx_rate) : "");
+  const [netAmount, setNetAmount] = useState(invoice.net_amount ? String(invoice.net_amount) : "");
+  const [vatPct, setVatPct] = useState(
+    invoice.net_amount && invoice.vat_amount ? String(Math.round((invoice.vat_amount / invoice.net_amount) * 10000) / 100) : "21"
+  );
+  const [totalAmount, setTotalAmount] = useState(String(invoice.total_amount));
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const netArs = Number(netAmount || 0);
+  const vatArs = netArs * (Number(vatPct || 0) / 100);
+  const computedTotal = netArs + vatArs;
+
+  async function submit() {
+    setLoading(true);
+    onError(null);
+    const supabase = createClient();
+
+    let storagePath: string | null = null;
+    let fileName: string | null = null;
+    if (file) {
+      const path = `${contractId}/comprobantes/${Date.now()}-${file.name}`;
+      const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
+      if (upErr) { setLoading(false); onError(upErr.message); return; }
+      storagePath = path;
+      fileName = file.name;
+    }
+
+    const { error } = await supabase.rpc("update_provider_invoice", {
+      p_invoice_id: invoice.id,
+      p_number: number || null,
+      p_issue_date: issueDate,
+      p_fx_rate: isPago ? null : (fxRate ? Number(fxRate) : null),
+      p_net_amount: isPago ? null : netArs,
+      p_vat_amount: isPago ? null : vatArs,
+      p_total_amount: isPago ? Number(totalAmount) : computedTotal,
+      p_storage_path: storagePath,
+      p_file_name: fileName,
+    });
+    setLoading(false);
+    if (error) { onError(error.message); return; }
+    onDone();
+  }
+
+  return (
+    <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <p className="text-xs font-semibold text-slate-700">Editar {isPago ? "pago" : "comprobante"}</p>
+      <div className="mt-2 grid grid-cols-3 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Número</label>
+          <input value={number} onChange={(e) => setNumber(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">Fecha</label>
+          <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+        {isPago ? (
+          <div>
+            <label className="block text-xs font-medium text-slate-700">Monto pagado (ARS)</label>
+            <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        ) : (
+          <div>
+            <label className="block text-xs font-medium text-slate-700">Dólar venta BNA (opcional)</label>
+            <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        )}
+      </div>
+      {!isPago && (
+        <div className="mt-3 grid grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-700">Neto (ARS)</label>
+            <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700">% IVA</label>
+            <input type="number" step="0.01" value={vatPct} onChange={(e) => setVatPct(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <Info label="Total (ARS)" value={formatArs(computedTotal)} />
+        </div>
+      )}
+      <div className="mt-3">
+        <label className="block text-xs font-medium text-slate-700">Reemplazar archivo (opcional)</label>
+        <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+      </div>
+      <button
+        onClick={submit}
+        disabled={loading || !issueDate}
+        className="mt-3 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+      >
+        {loading ? "Guardando…" : "Guardar cambios"}
+      </button>
     </div>
   );
 }
