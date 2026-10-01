@@ -1299,7 +1299,7 @@ function EditComprobanteForm({
   const [currency, setCurrency] = useState<"ars" | "usd">("ars");
   const [fxRate, setFxRate] = useState(invoice.fx_rate ? String(invoice.fx_rate) : "");
   const [netAmount, setNetAmount] = useState(invoice.net_amount ? String(invoice.net_amount) : "");
-  const [grossUsd, setGrossUsd] = useState("");
+  const [subtotalUsd, setSubtotalUsd] = useState("");
   const [vatPct, setVatPct] = useState(
     invoice.net_amount && invoice.vat_amount ? String(Math.round((invoice.vat_amount / invoice.net_amount) * 10000) / 100) : "21"
   );
@@ -1308,11 +1308,9 @@ function EditComprobanteForm({
   const [loading, setLoading] = useState(false);
 
   const isUsd = currency === "usd";
-  const computedTotal = isUsd ? Number(grossUsd || 0) * Number(fxRate || 0) : Number(netAmount || 0) * (1 + Number(vatPct || 0) / 100);
-  const netArs = isUsd
-    ? (Number(grossUsd || 0) / (1 + Number(vatPct || 0) / 100)) * Number(fxRate || 0)
-    : Number(netAmount || 0);
-  const vatArs = computedTotal - netArs;
+  const netArs = isUsd ? Number(subtotalUsd || 0) * Number(fxRate || 0) : Number(netAmount || 0);
+  const vatArs = netArs * (Number(vatPct || 0) / 100);
+  const computedTotal = netArs + vatArs;
 
   async function submit() {
     setLoading(true);
@@ -1386,8 +1384,8 @@ function EditComprobanteForm({
           </div>
           {isUsd ? (
             <div>
-              <label className="block text-xs font-medium text-slate-700">Bruto USD</label>
-              <input type="number" step="0.01" value={grossUsd} onChange={(e) => setGrossUsd(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <label className="block text-xs font-medium text-slate-700">Subtotal USD</label>
+              <input type="number" step="0.01" value={subtotalUsd} onChange={(e) => setSubtotalUsd(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             </div>
           ) : (
             <div>
@@ -1408,7 +1406,7 @@ function EditComprobanteForm({
       </div>
       <button
         onClick={submit}
-        disabled={loading || !issueDate || (!isPago && isUsd && (!grossUsd || !fxRate))}
+        disabled={loading || !issueDate || (!isPago && isUsd && (!subtotalUsd || !fxRate))}
         className="mt-3 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
       >
         {loading ? "Guardando…" : "Guardar cambios"}
@@ -1437,17 +1435,15 @@ function InvoiceForm({
   const [currency, setCurrency] = useState<"ars" | "usd">("ars");
   const [fxRate, setFxRate] = useState("");
   const [netAmount, setNetAmount] = useState("");
-  const [grossUsd, setGrossUsd] = useState("");
+  const [subtotalUsd, setSubtotalUsd] = useState("");
   const [vatPct, setVatPct] = useState("21");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   const isUsd = currency === "usd";
-  const totalArs = isUsd ? Number(grossUsd || 0) * Number(fxRate || 0) : Number(netAmount || 0) * (1 + Number(vatPct || 0) / 100);
-  const netArs = isUsd
-    ? (Number(grossUsd || 0) / (1 + Number(vatPct || 0) / 100)) * Number(fxRate || 0)
-    : Number(netAmount || 0);
-  const vatArs = totalArs - netArs;
+  const netArs = isUsd ? Number(subtotalUsd || 0) * Number(fxRate || 0) : Number(netAmount || 0);
+  const vatArs = netArs * (Number(vatPct || 0) / 100);
+  const totalArs = netArs + vatArs;
 
   async function submit() {
     setLoading(true);
@@ -1541,8 +1537,8 @@ function InvoiceForm({
         </div>
         {isUsd ? (
           <div>
-            <label className="block text-xs font-medium text-slate-700">Bruto USD</label>
-            <input type="number" step="0.01" value={grossUsd} onChange={(e) => setGrossUsd(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <label className="block text-xs font-medium text-slate-700">Subtotal USD</label>
+            <input type="number" step="0.01" value={subtotalUsd} onChange={(e) => setSubtotalUsd(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
           </div>
         ) : (
           <div>
@@ -1574,7 +1570,7 @@ function InvoiceForm({
 
       <button
         onClick={submit}
-        disabled={loading || !issueDate || (isUsd ? !grossUsd || !fxRate : !netAmount)}
+        disabled={loading || !issueDate || (isUsd ? !subtotalUsd || !fxRate : !netAmount)}
         className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
       >
         {loading ? "Guardando…" : "Guardar comprobante"}
