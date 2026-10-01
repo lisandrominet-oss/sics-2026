@@ -265,7 +265,9 @@ export default function ContractsList({
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-slate-900">{s.contract.provider?.name ?? "-"}</p>
-                    <p className="truncate text-xs text-slate-500">{s.items.map((i) => i.description).join(", ")}</p>
+                    <p className="truncate text-xs text-slate-500">
+                      {s.items.map((i) => (i.internal_number ? `${i.description} (${i.internal_number})` : i.description)).join(", ")}
+                    </p>
                     <p className="truncate text-xs text-slate-400">
                       {s.contract.plant ? `${s.contract.plant.name} (${s.contract.plant.prefix})` : s.contract.project?.name ?? "-"}
                     </p>
