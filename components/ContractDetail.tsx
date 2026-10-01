@@ -988,10 +988,20 @@ function CuotasTab({
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
 
   function linesFor(periodStart: string) {
-    return invoiceLines.filter((l) => l.period_start === periodStart && l.invoice.status === "vigente");
+    return invoiceLines.filter(
+      (l) => l.period_start === periodStart && l.invoice.status === "vigente" && l.invoice.kind !== "pago"
+    );
   }
 
-  const contractInvoices = Array.from(new Map(invoiceLines.map((l) => [l.invoice.id, l.invoice])).values());
+  function paymentLinesFor(periodStart: string) {
+    return invoiceLines.filter(
+      (l) => l.period_start === periodStart && l.invoice.status === "vigente" && l.invoice.kind === "pago"
+    );
+  }
+
+  const contractInvoices = Array.from(
+    new Map(invoiceLines.filter((l) => l.invoice.kind !== "pago").map((l) => [l.invoice.id, l.invoice])).values()
+  );
   const paidFacturaIds = new Set(payments.filter((p) => p.status === "vigente").map((p) => p.paid_invoice_id));
 
   async function voidInvoice(invoiceId: string) {
@@ -1049,6 +1059,8 @@ function CuotasTab({
       {paymentFormOpen && (
         <RegisterPaymentForm
           contract={contract}
+          items={items}
+          installments={installments}
           providerInvoices={providerInvoices}
           onDone={() => { setPaymentFormOpen(false); onDone(); }}
           onError={onError}
@@ -1061,8 +1073,10 @@ function CuotasTab({
             <thead className="text-xs uppercase text-slate-400">
               <tr>
                 <th className="py-2 pr-3">Período</th>
-                <th className="py-2 pr-3">Esperado (USD)</th>
+                <th className="py-2 pr-3">Canon (USD)</th>
                 <th className="py-2 pr-3">Facturado (ARS)</th>
+                <th className="py-2 pr-3">Pagado (ARS)</th>
+                <th className="py-2 pr-3">Diferencia pago</th>
                 <th className="py-2 pr-3">Estado</th>
                 <th className="py-2 pr-3"></th>
               </tr>
@@ -1071,6 +1085,9 @@ function CuotasTab({
               {installments.map((inst) => {
                 const lines = linesFor(inst.period_start);
                 const invoicedArs = lines.reduce((sum, l) => sum + l.net_amount, 0);
+                const payLines = paymentLinesFor(inst.period_start);
+                const paidArs = payLines.reduce((sum, l) => sum + l.net_amount, 0);
+                const paymentDiff = invoicedArs - paidArs;
                 return (
                   <tr key={inst.id}>
                     <td className="py-2 pr-3 text-slate-700">
@@ -1078,6 +1095,14 @@ function CuotasTab({
                     </td>
                     <td className="py-2 pr-3 text-slate-600">{formatUsd(expectedByPeriod[inst.period_start] ?? 0)}</td>
                     <td className="py-2 pr-3 text-slate-600">{lines.length > 0 ? formatArs(invoicedArs) : "-"}</td>
+                    <td className="py-2 pr-3 text-slate-600">{payLines.length > 0 ? formatArs(paidArs) : "-"}</td>
+                    <td className="py-2 pr-3">
+                      {payLines.length > 0 && Math.abs(paymentDiff) > 1 ? (
+                        <span className="font-medium text-amber-700">{formatArs(paymentDiff)}</span>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
                     <td className="py-2 pr-3">
                       <span
                         className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${CONTRACT_INSTALLMENT_STATUS_COLORS[inst.status]}`}
@@ -1206,7 +1231,7 @@ function InvoiceForm({
       p_kind: kind,
       p_number: number || null,
       p_issue_date: issueDate,
-      p_fx_rate: Number(fxRate),
+      p_fx_rate: fxRate ? Number(fxRate) : null,
       p_net_amount: netArs,
       p_vat_amount: vatArs,
       p_total_amount: totalArs,
@@ -1246,7 +1271,9 @@ function InvoiceForm({
 
       <div className="mt-3 grid grid-cols-4 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Dólar venta BNA de la factura</label>
+          <label className="block text-xs font-medium text-slate-700">
+            Dólar venta BNA de la factura {currency === "ars" && "(opcional)"}
+          </label>
           <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         </div>
         <div>
@@ -1271,6 +1298,11 @@ function InvoiceForm({
         <Info label="IVA (ARS)" value={formatArs(vatArs)} />
         <Info label="Total (ARS)" value={formatArs(totalArs)} />
       </div>
+      {!fxRate && (
+        <p className="mt-2 text-xs text-slate-400">
+          Sin el dólar de la factura, esta cuota queda marcada "Facturada" sin el chequeo automático de diferencia contra el canon.
+        </p>
+      )}
 
       <div className="mt-3">
         <label className="block text-xs font-medium text-slate-700">Archivo</label>
@@ -1323,7 +1355,7 @@ function InvoiceForm({
 
       <button
         onClick={submit}
-        disabled={loading || !issueDate || !netAmount || !fxRate}
+        disabled={loading || !issueDate || !netAmount || (currency === "usd" && !fxRate)}
         className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
       >
         {loading ? "Guardando…" : "Guardar comprobante"}
@@ -1334,11 +1366,15 @@ function InvoiceForm({
 
 function RegisterPaymentForm({
   contract,
+  items,
+  installments,
   providerInvoices,
   onDone,
   onError,
 }: {
   contract: Contract;
+  items: ContractItem[];
+  installments: Installment[];
   providerInvoices: ProviderInvoice[];
   onDone: () => void;
   onError: (e: string | null) => void;
@@ -1348,12 +1384,27 @@ function RegisterPaymentForm({
   const [issueDate, setIssueDate] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [lines, setLines] = useState<{ itemId: string; periodStart: string; netAmount: string }[]>([
+    { itemId: "", periodStart: installments[0]?.period_start ?? "", netAmount: "" },
+  ]);
   const [loading, setLoading] = useState(false);
 
-  function selectInvoice(id: string) {
+  async function selectInvoice(id: string) {
     setPaidInvoiceId(id);
     const inv = providerInvoices.find((i) => i.id === id);
     if (inv) setTotalAmount(String(inv.total_amount));
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("provider_invoice_lines")
+      .select("item_id, period_start, net_amount")
+      .eq("invoice_id", id);
+    if (data && data.length > 0) {
+      setLines(data.map((l) => ({ itemId: l.item_id ?? "", periodStart: l.period_start, netAmount: String(l.net_amount) })));
+    }
+  }
+
+  function updateLine(index: number, patch: Partial<(typeof lines)[number]>) {
+    setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
   }
 
   async function submit() {
@@ -1371,6 +1422,13 @@ function RegisterPaymentForm({
       fileName = file.name;
     }
 
+    const payloadLines = lines.map((l) => ({
+      contract_id: contract.id,
+      item_id: l.itemId || null,
+      period_start: l.periodStart,
+      net_amount: Number(l.netAmount),
+    }));
+
     const { error } = await supabase.rpc("record_provider_invoice", {
       p_provider_id: contract.provider!.id,
       p_kind: "pago",
@@ -1383,7 +1441,7 @@ function RegisterPaymentForm({
       p_storage_path: storagePath,
       p_file_name: fileName,
       p_paid_invoice_id: paidInvoiceId || null,
-      p_lines: [],
+      p_lines: payloadLines,
     });
     setLoading(false);
     if (error) { onError(error.message); return; }
@@ -1421,6 +1479,53 @@ function RegisterPaymentForm({
         <label className="block text-xs font-medium text-slate-700">Comprobante de pago (opcional)</label>
         <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
       </div>
+
+      <div className="mt-4">
+        <p className="text-xs font-medium text-slate-700">
+          Líneas por equipo y período — se precargan con lo facturado, editá si pagaste menos
+        </p>
+        <div className="mt-2 space-y-2">
+          {lines.map((line, index) => (
+            <div key={index} className="grid grid-cols-4 gap-2">
+              <select value={line.itemId} onChange={(e) => updateLine(index, { itemId: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
+                <option value="">Total del contrato</option>
+                {items.map((i) => (
+                  <option key={i.id} value={i.id}>
+                    {i.description}
+                  </option>
+                ))}
+              </select>
+              <select value={line.periodStart} onChange={(e) => updateLine(index, { periodStart: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
+                {installments.map((i) => (
+                  <option key={i.id} value={i.period_start}>
+                    {formatDateOnly(i.period_start)}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Pagado"
+                value={line.netAmount}
+                onChange={(e) => updateLine(index, { netAmount: e.target.value })}
+                className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+              />
+              {lines.length > 1 && (
+                <button onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))} className="text-xs text-red-600 underline">
+                  Quitar
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() => setLines((prev) => [...prev, { itemId: "", periodStart: installments[0]?.period_start ?? "", netAmount: "" }])}
+          className="mt-2 rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+        >
+          + Agregar línea
+        </button>
+      </div>
+
       <button
         onClick={submit}
         disabled={loading || !issueDate || !totalAmount || !paidInvoiceId}
