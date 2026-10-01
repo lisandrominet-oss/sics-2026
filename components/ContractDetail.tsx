@@ -1296,8 +1296,10 @@ function EditComprobanteForm({
   const isPago = invoice.kind === "pago";
   const [number, setNumber] = useState(invoice.number ?? "");
   const [issueDate, setIssueDate] = useState(invoice.issue_date);
+  const [currency, setCurrency] = useState<"ars" | "usd">("ars");
   const [fxRate, setFxRate] = useState(invoice.fx_rate ? String(invoice.fx_rate) : "");
   const [netAmount, setNetAmount] = useState(invoice.net_amount ? String(invoice.net_amount) : "");
+  const [grossUsd, setGrossUsd] = useState("");
   const [vatPct, setVatPct] = useState(
     invoice.net_amount && invoice.vat_amount ? String(Math.round((invoice.vat_amount / invoice.net_amount) * 10000) / 100) : "21"
   );
@@ -1305,9 +1307,12 @@ function EditComprobanteForm({
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const netArs = Number(netAmount || 0);
-  const vatArs = netArs * (Number(vatPct || 0) / 100);
-  const computedTotal = netArs + vatArs;
+  const isUsd = currency === "usd";
+  const computedTotal = isUsd ? Number(grossUsd || 0) * Number(fxRate || 0) : Number(netAmount || 0) * (1 + Number(vatPct || 0) / 100);
+  const netArs = isUsd
+    ? (Number(grossUsd || 0) / (1 + Number(vatPct || 0) / 100)) * Number(fxRate || 0)
+    : Number(netAmount || 0);
+  const vatArs = computedTotal - netArs;
 
   async function submit() {
     setLoading(true);
@@ -1359,17 +1364,37 @@ function EditComprobanteForm({
           </div>
         ) : (
           <div>
-            <label className="block text-xs font-medium text-slate-700">Dólar venta BNA (opcional)</label>
-            <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <label className="block text-xs font-medium text-slate-700">Moneda de la factura</label>
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value as "ars" | "usd")}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            >
+              <option value="ars">ARS</option>
+              <option value="usd">USD</option>
+            </select>
           </div>
         )}
       </div>
       {!isPago && (
-        <div className="mt-3 grid grid-cols-3 gap-3">
+        <div className="mt-3 grid grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-700">Neto (ARS)</label>
-            <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <label className="block text-xs font-medium text-slate-700">
+              Dólar venta BNA {!isUsd && "(opcional)"}
+            </label>
+            <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
           </div>
+          {isUsd ? (
+            <div>
+              <label className="block text-xs font-medium text-slate-700">Bruto USD</label>
+              <input type="number" step="0.01" value={grossUsd} onChange={(e) => setGrossUsd(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            </div>
+          ) : (
+            <div>
+              <label className="block text-xs font-medium text-slate-700">Neto (ARS)</label>
+              <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            </div>
+          )}
           <div>
             <label className="block text-xs font-medium text-slate-700">% IVA</label>
             <input type="number" step="0.01" value={vatPct} onChange={(e) => setVatPct(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
@@ -1383,7 +1408,7 @@ function EditComprobanteForm({
       </div>
       <button
         onClick={submit}
-        disabled={loading || !issueDate}
+        disabled={loading || !issueDate || (!isPago && isUsd && (!grossUsd || !fxRate))}
         className="mt-3 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
       >
         {loading ? "Guardando…" : "Guardar cambios"}
@@ -1409,15 +1434,20 @@ function InvoiceForm({
   const [itemId, setItemId] = useState(items.length === 1 ? items[0].id : "");
   const [number, setNumber] = useState("");
   const [issueDate, setIssueDate] = useState("");
+  const [currency, setCurrency] = useState<"ars" | "usd">("ars");
   const [fxRate, setFxRate] = useState("");
   const [netAmount, setNetAmount] = useState("");
+  const [grossUsd, setGrossUsd] = useState("");
   const [vatPct, setVatPct] = useState("21");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const netArs = Number(netAmount || 0);
-  const vatArs = netArs * (Number(vatPct || 0) / 100);
-  const totalArs = netArs + vatArs;
+  const isUsd = currency === "usd";
+  const totalArs = isUsd ? Number(grossUsd || 0) * Number(fxRate || 0) : Number(netAmount || 0) * (1 + Number(vatPct || 0) / 100);
+  const netArs = isUsd
+    ? (Number(grossUsd || 0) / (1 + Number(vatPct || 0) / 100)) * Number(fxRate || 0)
+    : Number(netAmount || 0);
+  const vatArs = totalArs - netArs;
 
   async function submit() {
     setLoading(true);
@@ -1491,15 +1521,35 @@ function InvoiceForm({
         </div>
       )}
 
-      <div className="mt-3 grid grid-cols-3 gap-3">
+      <div className="mt-3 grid grid-cols-4 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Dólar venta BNA (opcional)</label>
+          <label className="block text-xs font-medium text-slate-700">Moneda de la factura</label>
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as "ars" | "usd")}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="ars">ARS</option>
+            <option value="usd">USD</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-slate-700">
+            Dólar venta BNA {!isUsd && "(opcional)"}
+          </label>
           <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-700">Neto (ARS)</label>
-          <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        </div>
+        {isUsd ? (
+          <div>
+            <label className="block text-xs font-medium text-slate-700">Bruto USD</label>
+            <input type="number" step="0.01" value={grossUsd} onChange={(e) => setGrossUsd(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        ) : (
+          <div>
+            <label className="block text-xs font-medium text-slate-700">Neto (ARS)</label>
+            <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        )}
         <div>
           <label className="block text-xs font-medium text-slate-700">% IVA</label>
           <input type="number" step="0.01" value={vatPct} onChange={(e) => setVatPct(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
@@ -1511,7 +1561,7 @@ function InvoiceForm({
         <Info label="IVA (ARS)" value={formatArs(vatArs)} />
         <Info label="Total (ARS)" value={formatArs(totalArs)} />
       </div>
-      {!fxRate && (
+      {!isUsd && !fxRate && (
         <p className="mt-2 text-xs text-slate-400">
           Sin el dólar de la factura, esta cuota queda marcada "Facturada" sin el chequeo automático de diferencia contra el canon.
         </p>
@@ -1524,7 +1574,7 @@ function InvoiceForm({
 
       <button
         onClick={submit}
-        disabled={loading || !issueDate || !netAmount}
+        disabled={loading || !issueDate || (isUsd ? !grossUsd || !fxRate : !netAmount)}
         className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
       >
         {loading ? "Guardando…" : "Guardar comprobante"}
