@@ -95,3 +95,21 @@ export function formatDate(iso: string) {
     timeStyle: "short",
   }).format(new Date(iso));
 }
+
+// Supabase Storage (compatible con S3) rechaza ciertos caracteres en la key del
+// archivo — típicamente símbolos como "°", tildes, espacios múltiples o paréntesis
+// seguidos de ciertos signos. El nombre original se guarda aparte (en la columna
+// file_name) para mostrarlo tal cual; esto solo sanea lo que se usa como path.
+export function sanitizeFileName(name: string): string {
+  const lastDot = name.lastIndexOf(".");
+  const base = lastDot > 0 ? name.slice(0, lastDot) : name;
+  const ext = lastDot > 0 ? name.slice(lastDot) : "";
+  const safeBase = base
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  const safeExt = ext.replace(/[^a-zA-Z0-9.]/g, "");
+  return (safeBase || "archivo") + safeExt;
+}

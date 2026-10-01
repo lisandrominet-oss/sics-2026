@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
-import type { SicFileType, SicStatus, UserRole } from "@/lib/constants";
+import { sanitizeFileName, type SicFileType, type SicStatus, type UserRole } from "@/lib/constants";
 
 type SicFile = {
   id: string;
@@ -63,7 +63,7 @@ export default function SicActions({
 
   async function uploadFile(file: File, fileType: SicFileType, itemId?: string) {
     const supabase = createClient();
-    const path = `${sicId}/${fileType}/${Date.now()}-${file.name}`;
+    const path = `${sicId}/${fileType}/${Date.now()}-${sanitizeFileName(file.name)}`;
     const { error: upErr } = await supabase.storage
       .from("sic-files")
       .upload(path, file, { contentType: file.type || "application/octet-stream" });
@@ -593,7 +593,7 @@ function ObservacionEditor({
         const file = items[i].file;
         const itemRow = newItems[i];
         if (!file || !itemRow) continue;
-        const path = `${sicId}/referencia/${itemRow.id}/${file.name}`;
+        const path = `${sicId}/referencia/${itemRow.id}/${sanitizeFileName(file.name)}`;
         const { error: upErr } = await supabase.storage
           .from("sic-files")
           .upload(path, file, { contentType: file.type || "application/octet-stream" });

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import FilePreview from "@/components/FilePreview";
 import ProviderCategoryPicker from "@/components/ProviderCategoryPicker";
+import { sanitizeFileName } from "@/lib/constants";
 import type { Database } from "@/lib/database.types";
 
 type Provider = Database["public"]["Tables"]["providers"]["Row"];
@@ -157,7 +158,7 @@ export default function ProviderRow({
     setUploading(true);
     setError(null);
     const supabase = createClient();
-    const path = `${provider.id}/${Date.now()}-${file.name}`;
+    const path = `${provider.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
     const { error: upErr } = await supabase.storage
       .from("provider-files")
       .upload(path, file, { contentType: file.type || "application/octet-stream" });

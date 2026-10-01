@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import FilePreview from "@/components/FilePreview";
 import { IconChevronDown, IconFileText, IconReceipt } from "@/components/icons";
+import { sanitizeFileName } from "@/lib/constants";
 import {
   CONTRACT_DISPLAY_STATUS_COLORS,
   CONTRACT_DISPLAY_STATUS_LABELS,
@@ -391,7 +392,7 @@ function ReturnForm({ contractId, onDone, onError }: { contractId: string; onDon
     setLoading(true);
     onError(null);
     const supabase = createClient();
-    const path = `${contractId}/acta_devolucion/${Date.now()}-${file.name}`;
+    const path = `${contractId}/acta_devolucion/${Date.now()}-${sanitizeFileName(file.name)}`;
     const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
     if (upErr) { setLoading(false); onError(upErr.message); return; }
     const { error } = await supabase.rpc("return_contract", {
@@ -823,7 +824,7 @@ function UsageForm({
     let reportPath: string | null = null;
     let reportName: string | null = null;
     if (file) {
-      const path = `${installment.contract_id}/informe_horas/${itemId}/${Date.now()}-${file.name}`;
+      const path = `${installment.contract_id}/informe_horas/${itemId}/${Date.now()}-${sanitizeFileName(file.name)}`;
       const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
       if (upErr) { setLoading(false); onError(upErr.message); return; }
       reportPath = path;
@@ -910,7 +911,7 @@ function DocumentosTab({
     setLoading(true);
     onError(null);
     const supabase = createClient();
-    const path = `${contractId}/${docType}/${Date.now()}-${file.name}`;
+    const path = `${contractId}/${docType}/${Date.now()}-${sanitizeFileName(file.name)}`;
     const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
     if (upErr) { setLoading(false); onError(upErr.message); return; }
     const { error } = await supabase.from("contract_documents").insert({
@@ -1320,7 +1321,7 @@ function EditComprobanteForm({
     let storagePath: string | null = null;
     let fileName: string | null = null;
     if (file) {
-      const path = `${contractId}/comprobantes/${Date.now()}-${file.name}`;
+      const path = `${contractId}/comprobantes/${Date.now()}-${sanitizeFileName(file.name)}`;
       const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
       if (upErr) { setLoading(false); onError(upErr.message); return; }
       storagePath = path;
@@ -1453,7 +1454,7 @@ function InvoiceForm({
     let storagePath: string | null = null;
     let fileName: string | null = null;
     if (file) {
-      const path = `${contract.id}/comprobantes/${Date.now()}-${file.name}`;
+      const path = `${contract.id}/comprobantes/${Date.now()}-${sanitizeFileName(file.name)}`;
       const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
       if (upErr) { setLoading(false); onError(upErr.message); return; }
       storagePath = path;
@@ -1612,7 +1613,7 @@ function RegisterPaymentForm({
     let storagePath: string | null = null;
     let fileName: string | null = null;
     if (file) {
-      const path = `${contract.id}/comprobantes/${Date.now()}-${file.name}`;
+      const path = `${contract.id}/comprobantes/${Date.now()}-${sanitizeFileName(file.name)}`;
       const { error: upErr } = await supabase.storage.from("contract-files").upload(path, file, { contentType: file.type || "application/octet-stream" });
       if (upErr) { setLoading(false); onError(upErr.message); return; }
       storagePath = path;

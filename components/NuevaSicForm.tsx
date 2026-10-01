@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
+import { sanitizeFileName } from "@/lib/constants";
 
 type Plant = { id: string; name: string; prefix: string };
 type Project = { id: string; name: string };
@@ -76,7 +77,7 @@ export default function NuevaSicForm({
         const file = items[i].file;
         const itemRow = createdItems[i];
         if (!file || !itemRow) continue;
-        const path = `${sic.id}/referencia/${itemRow.id}/${file.name}`;
+        const path = `${sic.id}/referencia/${itemRow.id}/${sanitizeFileName(file.name)}`;
         const { error: upErr } = await supabase.storage
           .from("sic-files")
           .upload(path, file, { contentType: file.type || "application/octet-stream" });
