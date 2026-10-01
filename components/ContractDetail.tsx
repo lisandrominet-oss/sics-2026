@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import FilePreview from "@/components/FilePreview";
@@ -983,8 +983,8 @@ function CuotasTab({
   onDone: () => void;
   onError: (e: string | null) => void;
 }) {
-  const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
-  const [paymentFormOpen, setPaymentFormOpen] = useState(false);
+  const [invoiceFormFor, setInvoiceFormFor] = useState<string | null>(null);
+  const [paymentFormFor, setPaymentFormFor] = useState<string | null>(null);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
 
   function linesFor(periodStart: string) {
@@ -1031,42 +1031,6 @@ function CuotasTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap justify-end gap-2">
-        <button
-          onClick={() => { setPaymentFormOpen(false); setInvoiceFormOpen((v) => !v); }}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-        >
-          {invoiceFormOpen ? "Cancelar" : "Cargar factura / nota de crédito"}
-        </button>
-        <button
-          onClick={() => { setInvoiceFormOpen(false); setPaymentFormOpen((v) => !v); }}
-          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-        >
-          {paymentFormOpen ? "Cancelar" : "Registrar pago"}
-        </button>
-      </div>
-
-      {invoiceFormOpen && (
-        <InvoiceForm
-          contract={contract}
-          items={items}
-          installments={installments}
-          onDone={() => { setInvoiceFormOpen(false); onDone(); }}
-          onError={onError}
-        />
-      )}
-
-      {paymentFormOpen && (
-        <RegisterPaymentForm
-          contract={contract}
-          items={items}
-          installments={installments}
-          providerInvoices={providerInvoices}
-          onDone={() => { setPaymentFormOpen(false); onDone(); }}
-          onError={onError}
-        />
-      )}
-
       <Card title="Cuotas">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -1089,39 +1053,83 @@ function CuotasTab({
                 const paidArs = payLines.reduce((sum, l) => sum + l.net_amount, 0);
                 const paymentDiff = invoicedArs - paidArs;
                 return (
-                  <tr key={inst.id}>
-                    <td className="py-2 pr-3 text-slate-700">
-                      {formatDateOnly(inst.period_start)} — {formatDateOnly(inst.period_end)}
-                    </td>
-                    <td className="py-2 pr-3 text-slate-600">{formatUsd(expectedByPeriod[inst.period_start] ?? 0)}</td>
-                    <td className="py-2 pr-3 text-slate-600">{lines.length > 0 ? formatArs(invoicedArs) : "-"}</td>
-                    <td className="py-2 pr-3 text-slate-600">{payLines.length > 0 ? formatArs(paidArs) : "-"}</td>
-                    <td className="py-2 pr-3">
-                      {payLines.length > 0 && Math.abs(paymentDiff) > 1 ? (
-                        <span className="font-medium text-amber-700">{formatArs(paymentDiff)}</span>
-                      ) : (
-                        <span className="text-slate-400">-</span>
-                      )}
-                    </td>
-                    <td className="py-2 pr-3">
-                      <span
-                        className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${CONTRACT_INSTALLMENT_STATUS_COLORS[inst.status]}`}
-                      >
-                        {CONTRACT_INSTALLMENT_STATUS_LABELS[inst.status]}
-                      </span>
-                    </td>
-                    <td className="py-2 pr-3">
-                      {inst.status === "con_diferencia" && (
-                        <button
-                          onClick={() => acceptDifference(inst.id)}
-                          disabled={acceptingId === inst.id}
-                          className="text-xs font-medium text-amber-700 underline disabled:opacity-50"
+                  <Fragment key={inst.id}>
+                    <tr>
+                      <td className="py-2 pr-3 text-slate-700">
+                        {formatDateOnly(inst.period_start)} — {formatDateOnly(inst.period_end)}
+                      </td>
+                      <td className="py-2 pr-3 text-slate-600">{formatUsd(expectedByPeriod[inst.period_start] ?? 0)}</td>
+                      <td className="py-2 pr-3 text-slate-600">{lines.length > 0 ? formatArs(invoicedArs) : "-"}</td>
+                      <td className="py-2 pr-3 text-slate-600">{payLines.length > 0 ? formatArs(paidArs) : "-"}</td>
+                      <td className="py-2 pr-3">
+                        {payLines.length > 0 && Math.abs(paymentDiff) > 1 ? (
+                          <span className="font-medium text-amber-700">{formatArs(paymentDiff)}</span>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
+                      </td>
+                      <td className="py-2 pr-3">
+                        <span
+                          className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${CONTRACT_INSTALLMENT_STATUS_COLORS[inst.status]}`}
                         >
-                          Aceptar diferencia
-                        </button>
-                      )}
-                    </td>
-                  </tr>
+                          {CONTRACT_INSTALLMENT_STATUS_LABELS[inst.status]}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            onClick={() => { setPaymentFormFor(null); setInvoiceFormFor((v) => (v === inst.id ? null : inst.id)); }}
+                            className="text-xs font-medium text-indigo-600 underline"
+                          >
+                            {invoiceFormFor === inst.id ? "Cancelar" : "Cargar factura"}
+                          </button>
+                          <button
+                            onClick={() => { setInvoiceFormFor(null); setPaymentFormFor((v) => (v === inst.id ? null : inst.id)); }}
+                            className="text-xs font-medium text-indigo-600 underline"
+                          >
+                            {paymentFormFor === inst.id ? "Cancelar" : "Registrar pago"}
+                          </button>
+                          {inst.status === "con_diferencia" && (
+                            <button
+                              onClick={() => acceptDifference(inst.id)}
+                              disabled={acceptingId === inst.id}
+                              className="text-xs font-medium text-amber-700 underline disabled:opacity-50"
+                            >
+                              Aceptar diferencia
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                    {invoiceFormFor === inst.id && (
+                      <tr>
+                        <td colSpan={7} className="bg-slate-50 py-3">
+                          <InvoiceForm
+                            contract={contract}
+                            items={items}
+                            periodStart={inst.period_start}
+                            onDone={() => { setInvoiceFormFor(null); onDone(); }}
+                            onError={onError}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                    {paymentFormFor === inst.id && (
+                      <tr>
+                        <td colSpan={7} className="bg-slate-50 py-3">
+                          <RegisterPaymentForm
+                            contract={contract}
+                            items={items}
+                            periodStart={inst.period_start}
+                            providerInvoices={providerInvoices}
+                            defaultAmount={invoicedArs > 0 ? invoicedArs : undefined}
+                            onDone={() => { setPaymentFormFor(null); onDone(); }}
+                            onError={onError}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })}
             </tbody>
@@ -1173,17 +1181,18 @@ function CuotasTab({
 function InvoiceForm({
   contract,
   items,
-  installments,
+  periodStart,
   onDone,
   onError,
 }: {
   contract: Contract;
   items: ContractItem[];
-  installments: Installment[];
+  periodStart: string;
   onDone: () => void;
   onError: (e: string | null) => void;
 }) {
   const [kind, setKind] = useState<Extract<ProviderInvoiceKind, "factura" | "nota_credito">>("factura");
+  const [itemId, setItemId] = useState(items.length === 1 ? items[0].id : "");
   const [number, setNumber] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [fxRate, setFxRate] = useState("");
@@ -1191,18 +1200,11 @@ function InvoiceForm({
   const [netAmount, setNetAmount] = useState("");
   const [vatPct, setVatPct] = useState("21");
   const [file, setFile] = useState<File | null>(null);
-  const [lines, setLines] = useState<{ itemId: string; periodStart: string; netAmount: string }[]>([
-    { itemId: "", periodStart: installments[0]?.period_start ?? "", netAmount: "" },
-  ]);
   const [loading, setLoading] = useState(false);
 
   const netArs = currency === "usd" ? Number(netAmount || 0) * Number(fxRate || 0) : Number(netAmount || 0);
   const vatArs = netArs * (Number(vatPct || 0) / 100);
   const totalArs = netArs + vatArs;
-
-  function updateLine(index: number, patch: Partial<(typeof lines)[number]>) {
-    setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
-  }
 
   async function submit() {
     setLoading(true);
@@ -1219,13 +1221,6 @@ function InvoiceForm({
       fileName = file.name;
     }
 
-    const payloadLines = lines.map((l) => ({
-      contract_id: contract.id,
-      item_id: l.itemId || null,
-      period_start: l.periodStart,
-      net_amount: Number(l.netAmount),
-    }));
-
     const { error } = await supabase.rpc("record_provider_invoice", {
       p_provider_id: contract.provider!.id,
       p_kind: kind,
@@ -1238,7 +1233,7 @@ function InvoiceForm({
       p_storage_path: storagePath,
       p_file_name: fileName,
       p_paid_invoice_id: null,
-      p_lines: payloadLines,
+      p_lines: [{ contract_id: contract.id, item_id: itemId || null, period_start: periodStart, net_amount: netArs }],
     });
     setLoading(false);
     if (error) { onError(error.message); return; }
@@ -1246,7 +1241,7 @@ function InvoiceForm({
   }
 
   return (
-    <Card title="Cargar factura / nota de crédito">
+    <Card title={`Cargar factura / nota de crédito — período ${formatDateOnly(periodStart)}`}>
       <div className="grid grid-cols-3 gap-3">
         <div>
           <label className="block text-xs font-medium text-slate-700">Tipo</label>
@@ -1268,6 +1263,20 @@ function InvoiceForm({
           <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         </div>
       </div>
+
+      {items.length > 1 && (
+        <div className="mt-3">
+          <label className="block text-xs font-medium text-slate-700">Equipo</label>
+          <select value={itemId} onChange={(e) => setItemId(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <option value="">Total del contrato</option>
+            {items.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.description}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="mt-3 grid grid-cols-4 gap-3">
         <div>
@@ -1309,50 +1318,6 @@ function InvoiceForm({
         <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
       </div>
 
-      <div className="mt-4">
-        <p className="text-xs font-medium text-slate-700">Líneas por equipo y período</p>
-        <div className="mt-2 space-y-2">
-          {lines.map((line, index) => (
-            <div key={index} className="grid grid-cols-4 gap-2">
-              <select value={line.itemId} onChange={(e) => updateLine(index, { itemId: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
-                <option value="">Total del contrato</option>
-                {items.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.description}
-                  </option>
-                ))}
-              </select>
-              <select value={line.periodStart} onChange={(e) => updateLine(index, { periodStart: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
-                {installments.map((i) => (
-                  <option key={i.id} value={i.period_start}>
-                    {formatDateOnly(i.period_start)}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="Neto"
-                value={line.netAmount}
-                onChange={(e) => updateLine(index, { netAmount: e.target.value })}
-                className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
-              />
-              {lines.length > 1 && (
-                <button onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))} className="text-xs text-red-600 underline">
-                  Quitar
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-        <button
-          onClick={() => setLines((prev) => [...prev, { itemId: "", periodStart: installments[0]?.period_start ?? "", netAmount: "" }])}
-          className="mt-2 rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-        >
-          + Agregar línea
-        </button>
-      </div>
-
       <button
         onClick={submit}
         disabled={loading || !issueDate || !netAmount || (currency === "usd" && !fxRate)}
@@ -1367,45 +1332,27 @@ function InvoiceForm({
 function RegisterPaymentForm({
   contract,
   items,
-  installments,
+  periodStart,
   providerInvoices,
+  defaultAmount,
   onDone,
   onError,
 }: {
   contract: Contract;
   items: ContractItem[];
-  installments: Installment[];
+  periodStart: string;
   providerInvoices: ProviderInvoice[];
+  defaultAmount?: number;
   onDone: () => void;
   onError: (e: string | null) => void;
 }) {
   const [paidInvoiceId, setPaidInvoiceId] = useState(providerInvoices[0]?.id ?? "");
+  const [itemId, setItemId] = useState(items.length === 1 ? items[0].id : "");
   const [number, setNumber] = useState("");
   const [issueDate, setIssueDate] = useState("");
-  const [totalAmount, setTotalAmount] = useState("");
+  const [totalAmount, setTotalAmount] = useState(defaultAmount ? String(defaultAmount) : "");
   const [file, setFile] = useState<File | null>(null);
-  const [lines, setLines] = useState<{ itemId: string; periodStart: string; netAmount: string }[]>([
-    { itemId: "", periodStart: installments[0]?.period_start ?? "", netAmount: "" },
-  ]);
   const [loading, setLoading] = useState(false);
-
-  async function selectInvoice(id: string) {
-    setPaidInvoiceId(id);
-    const inv = providerInvoices.find((i) => i.id === id);
-    if (inv) setTotalAmount(String(inv.total_amount));
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("provider_invoice_lines")
-      .select("item_id, period_start, net_amount")
-      .eq("invoice_id", id);
-    if (data && data.length > 0) {
-      setLines(data.map((l) => ({ itemId: l.item_id ?? "", periodStart: l.period_start, netAmount: String(l.net_amount) })));
-    }
-  }
-
-  function updateLine(index: number, patch: Partial<(typeof lines)[number]>) {
-    setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
-  }
 
   async function submit() {
     setLoading(true);
@@ -1422,13 +1369,6 @@ function RegisterPaymentForm({
       fileName = file.name;
     }
 
-    const payloadLines = lines.map((l) => ({
-      contract_id: contract.id,
-      item_id: l.itemId || null,
-      period_start: l.periodStart,
-      net_amount: Number(l.netAmount),
-    }));
-
     const { error } = await supabase.rpc("record_provider_invoice", {
       p_provider_id: contract.provider!.id,
       p_kind: "pago",
@@ -1441,7 +1381,7 @@ function RegisterPaymentForm({
       p_storage_path: storagePath,
       p_file_name: fileName,
       p_paid_invoice_id: paidInvoiceId || null,
-      p_lines: payloadLines,
+      p_lines: [{ contract_id: contract.id, item_id: itemId || null, period_start: periodStart, net_amount: Number(totalAmount) }],
     });
     setLoading(false);
     if (error) { onError(error.message); return; }
@@ -1449,10 +1389,10 @@ function RegisterPaymentForm({
   }
 
   return (
-    <Card title="Registrar pago">
+    <Card title={`Registrar pago — período ${formatDateOnly(periodStart)}`}>
       <div>
         <label className="block text-xs font-medium text-slate-700">Factura que cancela</label>
-        <select value={paidInvoiceId} onChange={(e) => selectInvoice(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <select value={paidInvoiceId} onChange={(e) => setPaidInvoiceId(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
           {providerInvoices.length === 0 && <option value="">Sin facturas vigentes de este proveedor</option>}
           {providerInvoices.map((inv) => (
             <option key={inv.id} value={inv.id}>
@@ -1461,6 +1401,21 @@ function RegisterPaymentForm({
           ))}
         </select>
       </div>
+
+      {items.length > 1 && (
+        <div className="mt-3">
+          <label className="block text-xs font-medium text-slate-700">Equipo</label>
+          <select value={itemId} onChange={(e) => setItemId(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <option value="">Total del contrato</option>
+            {items.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.description}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div className="mt-3 grid grid-cols-3 gap-3">
         <div>
           <label className="block text-xs font-medium text-slate-700">Número de recibo (opcional)</label>
@@ -1478,52 +1433,6 @@ function RegisterPaymentForm({
       <div className="mt-3">
         <label className="block text-xs font-medium text-slate-700">Comprobante de pago (opcional)</label>
         <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
-      </div>
-
-      <div className="mt-4">
-        <p className="text-xs font-medium text-slate-700">
-          Líneas por equipo y período — se precargan con lo facturado, editá si pagaste menos
-        </p>
-        <div className="mt-2 space-y-2">
-          {lines.map((line, index) => (
-            <div key={index} className="grid grid-cols-4 gap-2">
-              <select value={line.itemId} onChange={(e) => updateLine(index, { itemId: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
-                <option value="">Total del contrato</option>
-                {items.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.description}
-                  </option>
-                ))}
-              </select>
-              <select value={line.periodStart} onChange={(e) => updateLine(index, { periodStart: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs">
-                {installments.map((i) => (
-                  <option key={i.id} value={i.period_start}>
-                    {formatDateOnly(i.period_start)}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="Pagado"
-                value={line.netAmount}
-                onChange={(e) => updateLine(index, { netAmount: e.target.value })}
-                className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
-              />
-              {lines.length > 1 && (
-                <button onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))} className="text-xs text-red-600 underline">
-                  Quitar
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-        <button
-          onClick={() => setLines((prev) => [...prev, { itemId: "", periodStart: installments[0]?.period_start ?? "", netAmount: "" }])}
-          className="mt-2 rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-        >
-          + Agregar línea
-        </button>
       </div>
 
       <button
