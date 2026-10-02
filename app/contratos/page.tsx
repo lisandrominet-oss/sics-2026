@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
-import ContractsList from "@/components/ContractsList";
+import ContractsList, { type InvoiceLine } from "@/components/ContractsList";
 import { IconPlusCircle } from "@/components/icons";
 import { effectiveRole } from "@/lib/constants";
 
@@ -26,6 +26,7 @@ export default async function ContratosPage() {
     { data: documents },
     { data: alerts },
     { data: providers },
+    { data: invoiceLines },
   ] = await Promise.all([
     supabase
       .from("contracts")
@@ -37,6 +38,8 @@ export default async function ContratosPage() {
     supabase.from("contract_documents").select("id, contract_id, provider_id, doc_type, expires_at, file_name"),
     supabase.from("contract_alerts").select("kind, target_id"),
     supabase.from("providers").select("id, name").order("name"),
+    // Para calcular la deuda con proveedores (facturado − pagado, sin IVA).
+    supabase.from("provider_invoice_lines").select("contract_id, net_amount, invoice:provider_invoices(kind, status)"),
   ]);
 
   return (
@@ -75,6 +78,7 @@ export default async function ContratosPage() {
             documents={documents ?? []}
             attendedAlerts={alerts ?? []}
             providers={providers ?? []}
+            invoiceLines={(invoiceLines ?? []) as unknown as InvoiceLine[]}
           />
         </div>
       </div>

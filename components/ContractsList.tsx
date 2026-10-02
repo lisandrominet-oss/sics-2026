@@ -11,6 +11,7 @@ import {
   CONTRACT_ITEM_TYPE_LABELS,
   contractDisplayStatus,
   daysUntil,
+  formatArs,
   formatDateOnly,
   formatUsd,
   isRenewalAlertActive,
@@ -18,6 +19,7 @@ import {
   type ContractDisplayStatus,
   type ContractItemType,
 } from "@/lib/contracts";
+import { IconChevronDown } from "@/components/icons";
 import type { Database } from "@/lib/database.types";
 
 type Contract = Database["public"]["Tables"]["contracts"]["Row"] & {
@@ -44,6 +46,17 @@ type ContractDocument = {
 };
 type AttendedAlert = { kind: string; target_id: string };
 type Provider = { id: string; name: string };
+export type InvoiceLine = {
+  contract_id: string;
+  net_amount: number | null;
+  invoice: { kind: Database["public"]["Enums"]["provider_invoice_kind"]; status: string } | null;
+};
+
+function todayIso() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
 
 const ALERT_WINDOW_DAYS = 60;
 
@@ -55,6 +68,7 @@ export default function ContractsList({
   documents,
   attendedAlerts,
   providers,
+  invoiceLines,
 }: {
   contracts: Contract[];
   items: ContractItem[];
@@ -63,6 +77,7 @@ export default function ContractsList({
   documents: ContractDocument[];
   attendedAlerts: AttendedAlert[];
   providers: Provider[];
+  invoiceLines: InvoiceLine[];
 }) {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<ContractDisplayStatus | "">("");
@@ -97,9 +112,53 @@ export default function ContractsList({
     return true;
   });
 
-  const committedUsd = summaries
-    .filter((s) => s.status !== "devuelto" && s.status !== "vencido")
-    .reduce((sum, s) => sum + s.monthlyUsd * Math.max(0, s.remaining), 0);
+  // Deuda con proveedores (ARS, sin IVA): facturado − pagado de las facturas vigentes, por contrato.
+  // Incluye contratos vencidos y devueltos. Las notas de crédito ya vienen con signo negativo y los
+  // pagos se restan. Un contrato pagado de más no compensa la deuda de otro (mínimo 0 por contrato).
+  const { debtArs, debtByProvider } = useMemo(() => {
+    const balanceByContract = new Map<string, number>();
+    for (const line of invoiceLines) {
+      if (!line.invoice || line.invoice.status !== "vigente") continue;
+      const amount = Number(line.net_amount ?? 0);
+      const signed = line.invoice.kind === "pago" ? -amount : amount;
+      balanceByContract.set(line.contract_id, (balanceByContract.get(line.contract_id) ?? 0) + signed);
+    }
+    const byProvider = new Map<string, number>();
+    let total = 0;
+    for (const [contractId, balance] of balanceByContract) {
+      if (balance <= 0) continue;
+      const contract = contracts.find((c) => c.id === contractId);
+      const name = contract?.provider?.name ?? "Sin proveedor";
+      byProvider.set(name, (byProvider.get(name) ?? 0) + balance);
+      total += balance;
+    }
+    const rows = [...byProvider.entries()].map(([name, amount]) => ({ name, amount })).sort((a, b) => b.amount - a.amount);
+    return { debtArs: total, debtByProvider: rows };
+  }, [invoiceLines, contracts]);
+
+  // Cuotas sin factura cargada, estimadas al canon mensual (USD). Las de períodos ya cumplidos son
+  // deuda "devengada" que todavía no llegó como factura; las de períodos que no terminaron son futuro.
+  const { accruedUsd, accruedCount, futureUsd, futureCount } = useMemo(() => {
+    const today = todayIso();
+    let accrued = 0;
+    let accruedN = 0;
+    let future = 0;
+    let futureN = 0;
+    for (const s of summaries) {
+      if (s.status === "devuelto") continue;
+      for (const inst of installments) {
+        if (inst.contract_id !== s.contract.id || inst.status !== "pendiente_de_factura") continue;
+        if (inst.period_end < today) {
+          accrued += s.monthlyUsd;
+          accruedN += 1;
+        } else {
+          future += s.monthlyUsd;
+          futureN += 1;
+        }
+      }
+    }
+    return { accruedUsd: accrued, accruedCount: accruedN, futureUsd: future, futureCount: futureN };
+  }, [summaries, installments]);
 
   const renewalAlerts = contracts.filter((c) => isRenewalAlertActive(c) && !attendedSet.has(`renovacion:${c.id}`));
   const documentAlerts = documents.filter((d) => {
@@ -137,14 +196,33 @@ export default function ContractsList({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Costo comprometido a futuro" value={formatUsd(committedUsd)} caption="Cuotas restantes de contratos vigentes" />
+      <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        <DebtCard totalArs={debtArs} rows={debtByProvider} />
         <StatCard
+          className="lg:col-span-2"
+          label="Devengado sin facturar"
+          value={formatUsd(accruedUsd)}
+          caption={`Estimado al canon · ${accruedCount} cuotas de períodos ya cumplidos sin factura cargada`}
+        />
+        <StatCard
+          className="lg:col-span-2"
+          label="Comprometido a futuro"
+          value={formatUsd(futureUsd)}
+          caption={`${futureCount} cuotas de períodos que aún no terminaron`}
+        />
+        <StatCard
+          className="lg:col-span-3"
           label="Contratos activos"
           value={String(summaries.filter((s) => s.status === "vigente" || s.status === "por_vencer").length)}
           caption={`${summaries.length} en total`}
         />
-        <StatCard label="Avisos sin atender" value={String(totalAlerts)} caption="Vencimientos, documentos y diferencias" accent={totalAlerts > 0} />
+        <StatCard
+          className="lg:col-span-3"
+          label="Avisos sin atender"
+          value={String(totalAlerts)}
+          caption="Vencimientos, documentos y diferencias"
+          accent={totalAlerts > 0}
+        />
       </div>
 
       {totalAlerts > 0 && (
@@ -299,9 +377,56 @@ export default function ContractsList({
   );
 }
 
-function StatCard({ label, value, caption, accent }: { label: string; value: string; caption: string; accent?: boolean }) {
+function DebtCard({ totalArs, rows }: { totalArs: number; rows: { name: string; amount: number }[] }) {
+  const [open, setOpen] = useState(false);
+  const hasDebt = rows.length > 0;
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-2">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Deuda con proveedores</p>
+      <p className={`mt-2 text-2xl font-bold ${hasDebt ? "text-red-600" : "text-slate-900"}`}>{formatArs(totalArs)}</p>
+      <p className="mt-1 text-xs text-slate-400">Facturado y no pagado · sin IVA</p>
+      {hasDebt && (
+        <>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            className="mt-3 flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-800"
+          >
+            <IconChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+            {open ? "Ocultar detalle" : "Ver por proveedor"}
+          </button>
+          {open && (
+            <ul className="mt-2 space-y-1 border-t border-slate-100 pt-2 text-xs">
+              {rows.map((r) => (
+                <li key={r.name} className="flex items-center justify-between gap-3">
+                  <span className="truncate text-slate-600">{r.name}</span>
+                  <span className="shrink-0 font-medium text-slate-900">{formatArs(r.amount)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  caption,
+  accent,
+  className = "",
+}: {
+  label: string;
+  value: string;
+  caption: string;
+  accent?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={`rounded-2xl border border-slate-200 bg-white p-6 ${className}`}>
       <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
       <p className={`mt-2 text-2xl font-bold ${accent ? "text-amber-600" : "text-slate-900"}`}>{value}</p>
       <p className="mt-1 text-xs text-slate-400">{caption}</p>

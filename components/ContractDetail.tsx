@@ -1358,7 +1358,7 @@ function EditComprobanteForm({
         </div>
         {isPago ? (
           <div>
-            <label className="block text-xs font-medium text-slate-700">Monto pagado (ARS)</label>
+            <label className="block text-xs font-medium text-slate-700">Monto pagado sin IVA (ARS)</label>
             <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
           </div>
         ) : (
@@ -1677,7 +1677,7 @@ function RegisterPaymentForm({
           <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Monto pagado (ARS)</label>
+          <label className="block text-xs font-medium text-slate-700">Monto pagado sin IVA (ARS)</label>
           <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         </div>
       </div>
