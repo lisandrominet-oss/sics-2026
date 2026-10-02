@@ -131,10 +131,6 @@ export default function SicActions({
   const CurrentAccountBlock = (
     <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Cuenta corriente</p>
-      <p className="mt-1 text-xs text-slate-500">
-        Para consumibles de compra habitual: se saltea la cotización y la aprobación de Gerencia, y se pasa
-        directo a la orden de compra. La factura llega a fin de mes.
-      </p>
       {currentAccountProviders.length === 0 ? (
         <p className="mt-2 text-xs text-amber-600">
           Ningún proveedor tiene cuenta corriente habilitada. Marcalo desde Proveedores → Editar datos.
