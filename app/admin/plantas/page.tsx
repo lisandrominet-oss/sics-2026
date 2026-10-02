@@ -21,7 +21,7 @@ export default async function PlantasPage() {
       fullName={profile.full_name}
     >
       <div className="mx-auto max-w-2xl">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Administración</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Sistema</p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">Plantas / Empresas</h1>
         <p className="mt-2 text-sm text-slate-500">
           Cada planta tiene un prefijo único que se usa para numerar las SICs (ej. SIC-TAMET-2026-0001).

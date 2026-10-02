@@ -156,3 +156,33 @@ export function IconArrowLeft({ className = "h-4 w-4" }: { className?: string })
     </svg>
   );
 }
+
+export function IconBadge({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className}>
+      <rect x="4.5" y="3.5" width="15" height="17" rx="2" />
+      <circle cx="12" cy="10" r="2.5" />
+      <path d="M8 16.5c.6-1.6 2.2-2.5 4-2.5s3.4.9 4 2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconPackage({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className}>
+      <path d="M12 3.5l8 4.2v8.6l-8 4.2-8-4.2V7.7l8-4.2z" strokeLinejoin="round" />
+      <path d="M4 7.7l8 4.3 8-4.3M12 12v8.5" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconBarChart({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className}>
+      <path d="M4 20h16" strokeLinecap="round" />
+      <rect x="5.5" y="12" width="3.5" height="6" rx="1" />
+      <rect x="10.25" y="7" width="3.5" height="11" rx="1" />
+      <rect x="15" y="10" width="3.5" height="8" rx="1" />
+    </svg>
+  );
+}

@@ -7,16 +7,20 @@ import RoleSwitcher from "@/components/RoleSwitcher";
 import NotificationsBell from "@/components/NotificationsBell";
 import InactivityGuard from "@/components/InactivityGuard";
 import {
+  IconBadge,
+  IconBarChart,
   IconBuilding,
   IconFileText,
   IconFolder,
   IconGrid,
+  IconPackage,
   IconPlusCircle,
   IconSettings,
   IconTruck,
   IconUsers,
 } from "@/components/icons";
 import { CAN_CREATE_SIC, ROLE_LABELS, type UserRole } from "@/lib/constants";
+import { DEMO_MODULE_ROLES } from "@/lib/modules";
 
 function initials(name: string | null) {
   if (!name) return "?";
@@ -104,10 +108,21 @@ export default function AppShell({
             </>
           )}
 
+          {(DEMO_MODULE_ROLES as readonly string[]).includes(role) && (
+            <>
+              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Módulos
+              </p>
+              <NavLink href="/modulos/recursos-humanos" label="Recursos Humanos" icon={<IconBadge />} />
+              <NavLink href="/modulos/logistica" label="Logística" icon={<IconPackage />} />
+              <NavLink href="/modulos/administracion" label="Administración" icon={<IconBarChart />} />
+            </>
+          )}
+
           {role === "admin" && (
             <>
               <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                Administración
+                Sistema
               </p>
               <NavLink href="/admin/usuarios" label="Usuarios" icon={<IconUsers />} />
               <NavLink href="/admin/plantas" label="Plantas" icon={<IconBuilding />} />

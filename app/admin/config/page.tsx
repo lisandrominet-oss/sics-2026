@@ -24,7 +24,7 @@ export default async function ConfigPage() {
       fullName={profile.full_name}
     >
       <div className="mx-auto max-w-2xl">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Administración</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Sistema</p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">Configuración</h1>
         <p className="mt-2 text-sm text-slate-500">
           Ajustá el monto tope para aprobación de Gerencia y los dominios de email habilitados para iniciar sesión.
