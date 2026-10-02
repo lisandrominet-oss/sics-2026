@@ -52,12 +52,6 @@ export type InvoiceLine = {
   invoice: { kind: Database["public"]["Enums"]["provider_invoice_kind"]; status: string } | null;
 };
 
-function todayIso() {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
 const ALERT_WINDOW_DAYS = 60;
 
 export default function ContractsList({
@@ -84,6 +78,7 @@ export default function ContractsList({
   const [providerFilter, setProviderFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState<ContractItemType | "">("");
   const [attending, setAttending] = useState<string | null>(null);
+  const [debtOpen, setDebtOpen] = useState(false);
 
   const attendedSet = useMemo(() => new Set(attendedAlerts.map((a) => `${a.kind}:${a.target_id}`)), [attendedAlerts]);
 
@@ -136,29 +131,9 @@ export default function ContractsList({
     return { debtArs: total, debtByProvider: rows };
   }, [invoiceLines, contracts]);
 
-  // Cuotas sin factura cargada, estimadas al canon mensual (USD). Las de períodos ya cumplidos son
-  // deuda "devengada" que todavía no llegó como factura; las de períodos que no terminaron son futuro.
-  const { accruedUsd, accruedCount, futureUsd, futureCount } = useMemo(() => {
-    const today = todayIso();
-    let accrued = 0;
-    let accruedN = 0;
-    let future = 0;
-    let futureN = 0;
-    for (const s of summaries) {
-      if (s.status === "devuelto") continue;
-      for (const inst of installments) {
-        if (inst.contract_id !== s.contract.id || inst.status !== "pendiente_de_factura") continue;
-        if (inst.period_end < today) {
-          accrued += s.monthlyUsd;
-          accruedN += 1;
-        } else {
-          future += s.monthlyUsd;
-          futureN += 1;
-        }
-      }
-    }
-    return { accruedUsd: accrued, accruedCount: accruedN, futureUsd: future, futureCount: futureN };
-  }, [summaries, installments]);
+  const committedUsd = summaries
+    .filter((s) => s.status !== "devuelto" && s.status !== "vencido")
+    .reduce((sum, s) => sum + s.monthlyUsd * Math.max(0, s.remaining), 0);
 
   const renewalAlerts = contracts.filter((c) => isRenewalAlertActive(c) && !attendedSet.has(`renovacion:${c.id}`));
   const documentAlerts = documents.filter((d) => {
@@ -196,33 +171,39 @@ export default function ContractsList({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-6">
-        <DebtCard totalArs={debtArs} rows={debtByProvider} />
-        <StatCard
-          className="lg:col-span-2"
-          label="Devengado sin facturar"
-          value={formatUsd(accruedUsd)}
-          caption={`Estimado al canon · ${accruedCount} cuotas de períodos ya cumplidos sin factura cargada`}
-        />
-        <StatCard
-          className="lg:col-span-2"
-          label="Comprometido a futuro"
-          value={formatUsd(futureUsd)}
-          caption={`${futureCount} cuotas de períodos que aún no terminaron`}
-        />
-        <StatCard
-          className="lg:col-span-3"
-          label="Contratos activos"
-          value={String(summaries.filter((s) => s.status === "vigente" || s.status === "por_vencer").length)}
-          caption={`${summaries.length} en total`}
-        />
-        <StatCard
-          className="lg:col-span-3"
-          label="Avisos sin atender"
-          value={String(totalAlerts)}
-          caption="Vencimientos, documentos y diferencias"
-          accent={totalAlerts > 0}
-        />
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <DebtCard totalArs={debtArs} hasDebt={debtByProvider.length > 0} open={debtOpen} onToggle={() => setDebtOpen((v) => !v)} />
+          <StatCard label="Costo comprometido a futuro" value={formatUsd(committedUsd)} caption="Cuotas restantes de contratos vigentes" />
+          <StatCard
+            label="Contratos activos"
+            value={String(summaries.filter((s) => s.status === "vigente" || s.status === "por_vencer").length)}
+            caption={`${summaries.length} en total`}
+          />
+          <StatCard label="Avisos sin atender" value={String(totalAlerts)} caption="Vencimientos, documentos y diferencias" accent={totalAlerts > 0} />
+        </div>
+
+        <div
+          className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${debtOpen && debtByProvider.length > 0 ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+        >
+          <div className="overflow-hidden">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Deuda por proveedor</p>
+              <ul className="mt-3 divide-y divide-slate-100 text-sm">
+                {debtByProvider.map((r) => (
+                  <li key={r.name} className="flex items-center justify-between gap-4 py-2">
+                    <span className="truncate text-slate-700">{r.name}</span>
+                    <span className="shrink-0 font-semibold text-slate-900">{formatArs(r.amount)}</span>
+                  </li>
+                ))}
+                <li className="flex items-center justify-between gap-4 pt-3 text-sm font-bold text-slate-900">
+                  <span>Total</span>
+                  <span>{formatArs(debtArs)}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
 
       {totalAlerts > 0 && (
@@ -377,56 +358,47 @@ export default function ContractsList({
   );
 }
 
-function DebtCard({ totalArs, rows }: { totalArs: number; rows: { name: string; amount: number }[] }) {
-  const [open, setOpen] = useState(false);
-  const hasDebt = rows.length > 0;
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-2">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Deuda con proveedores</p>
+function DebtCard({
+  totalArs,
+  hasDebt,
+  open,
+  onToggle,
+}: {
+  totalArs: number;
+  hasDebt: boolean;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const content = (
+    <>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Total de deuda de contratos</p>
+        {hasDebt && (
+          <IconChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+        )}
+      </div>
       <p className={`mt-2 text-2xl font-bold ${hasDebt ? "text-red-600" : "text-slate-900"}`}>{formatArs(totalArs)}</p>
-      <p className="mt-1 text-xs text-slate-400">Facturado y no pagado · sin IVA</p>
-      {hasDebt && (
-        <>
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            className="mt-3 flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-800"
-          >
-            <IconChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-            {open ? "Ocultar detalle" : "Ver por proveedor"}
-          </button>
-          {open && (
-            <ul className="mt-2 space-y-1 border-t border-slate-100 pt-2 text-xs">
-              {rows.map((r) => (
-                <li key={r.name} className="flex items-center justify-between gap-3">
-                  <span className="truncate text-slate-600">{r.name}</span>
-                  <span className="shrink-0 font-medium text-slate-900">{formatArs(r.amount)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </>
-      )}
-    </div>
+      <p className="mt-1 text-xs text-slate-400">
+        {hasDebt ? "Facturado y no pagado, sin IVA · tocá para ver por proveedor" : "Facturado y no pagado, sin IVA"}
+      </p>
+    </>
+  );
+  if (!hasDebt) return <div className="rounded-2xl border border-slate-200 bg-white p-6">{content}</div>;
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      className="rounded-2xl border border-slate-200 bg-white p-6 text-left hover:bg-slate-50"
+    >
+      {content}
+    </button>
   );
 }
 
-function StatCard({
-  label,
-  value,
-  caption,
-  accent,
-  className = "",
-}: {
-  label: string;
-  value: string;
-  caption: string;
-  accent?: boolean;
-  className?: string;
-}) {
+function StatCard({ label, value, caption, accent }: { label: string; value: string; caption: string; accent?: boolean }) {
   return (
-    <div className={`rounded-2xl border border-slate-200 bg-white p-6 ${className}`}>
+    <div className="rounded-2xl border border-slate-200 bg-white p-6">
       <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
       <p className={`mt-2 text-2xl font-bold ${accent ? "text-amber-600" : "text-slate-900"}`}>{value}</p>
       <p className="mt-1 text-xs text-slate-400">{caption}</p>
