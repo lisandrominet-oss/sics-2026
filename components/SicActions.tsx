@@ -40,6 +40,9 @@ export default function SicActions({
   existingFiles,
   editData,
   projects,
+  purchaseType,
+  finalAmount: savedAmount,
+  currentAccountProviders,
 }: {
   sicId: string;
   status: SicStatus;
@@ -48,6 +51,9 @@ export default function SicActions({
   existingFiles: SicFile[];
   editData: EditData;
   projects: { id: string; name: string }[];
+  purchaseType: "normal" | "cuenta_corriente";
+  finalAmount: number | null;
+  currentAccountProviders: { id: string; name: string }[];
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -55,11 +61,15 @@ export default function SicActions({
   const [note, setNote] = useState("");
   const [finalAmount, setFinalAmount] = useState("");
   const [poNumber, setPoNumber] = useState("");
+  const [ccProviderId, setCcProviderId] = useState("");
+  const [ccAmount, setCcAmount] = useState(savedAmount !== null ? String(savedAmount) : "");
   const comparacionInput = useRef<HTMLInputElement>(null);
   const ordenInput = useRef<HTMLInputElement>(null);
 
   const findFile = (type: SicFileType) => existingFiles.find((f) => f.file_type === type);
   const hasFactura = !!findFile("factura");
+  const isCurrentAccount = purchaseType === "cuenta_corriente";
+  const isCompras = ["compras", "admin"].includes(role);
 
   async function uploadFile(file: File, fileType: SicFileType, itemId?: string) {
     const supabase = createClient();
@@ -117,6 +127,51 @@ export default function SicActions({
   const itemsRequiringCert = editData.items.filter((it) => it.requiresQualityCert);
   const canManageCerts = ["compras", "admin"].includes(role) && itemsRequiringCert.length > 0;
 
+
+  const CurrentAccountBlock = (
+    <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Cuenta corriente</p>
+      <p className="mt-1 text-xs text-slate-500">
+        Para consumibles de compra habitual: se saltea la cotización y la aprobación de Gerencia, y se pasa
+        directo a la orden de compra. La factura llega a fin de mes.
+      </p>
+      {currentAccountProviders.length === 0 ? (
+        <p className="mt-2 text-xs text-amber-600">
+          Ningún proveedor tiene cuenta corriente habilitada. Marcalo desde Proveedores → Editar datos.
+        </p>
+      ) : (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <select
+            value={ccProviderId}
+            onChange={(e) => setCcProviderId(e.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          >
+            <option value="">Proveedor…</option>
+            {currentAccountProviders.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+          <Btn
+            onClick={() =>
+              run(() =>
+                supabase.rpc("classify_sic_current_account", {
+                  p_sic_id: sicId,
+                  p_provider_id: ccProviderId,
+                  p_note: note || null,
+                })
+              )
+            }
+            loading={loading || !ccProviderId}
+          >
+            Aceptar como cuenta corriente
+          </Btn>
+        </div>
+      )}
+    </div>
+  );
+
   function renderStatusPanel(): React.ReactNode {
   if (status === "enviada" && ["compras", "admin"].includes(role)) {
     return (
@@ -150,6 +205,7 @@ export default function SicActions({
             Rechazar
           </Btn>
         </div>
+        {CurrentAccountBlock}
         {error && <Err>{error}</Err>}
       </ActionCard>
     );
@@ -202,6 +258,7 @@ export default function SicActions({
             Enviar a validación técnica
           </Btn>
         </div>
+        {CurrentAccountBlock}
         {error && <Err>{error}</Err>}
       </ActionCard>
     );
@@ -263,6 +320,17 @@ export default function SicActions({
           <Btn onClick={() => run(() => supabase.rpc("issue_po", { p_sic_id: sicId, p_po_number: poNumber || null, p_note: note || null }))} loading={loading}>
             Emitir orden de compra
           </Btn>
+          {isCurrentAccount && (
+            <span className="ml-2">
+              <Btn
+                variant="warning"
+                onClick={() => run(() => supabase.rpc("revert_sic_to_normal", { p_sic_id: sicId, p_note: note || null }))}
+                loading={loading}
+              >
+                Volver a compra normal
+              </Btn>
+            </span>
+          )}
         </div>
         {error && <Err>{error}</Err>}
       </ActionCard>
@@ -288,18 +356,23 @@ export default function SicActions({
     return (
       <ActionCard title="Cierre de la SIC">
         <MultiFileRow
-          label="Facturas (obligatoria al menos una)"
+          label={isCurrentAccount ? "Facturas (opcional: en cuenta corriente llega mensual)" : "Facturas (obligatoria al menos una)"}
           files={existingFiles.filter((f) => f.file_type === "factura")}
           onUpload={(f) => run(() => uploadFile(f, "factura").then(() => ({ error: null })))}
           onDelete={(f) => run(() => deleteFile(f))}
         />
         {NoteBox}
         <div className="mt-3">
-          <Btn onClick={() => run(() => supabase.rpc("close_sic", { p_sic_id: sicId, p_note: note || null }))} loading={loading || !hasFactura}>
+          <Btn
+            onClick={() => run(() => supabase.rpc("close_sic", { p_sic_id: sicId, p_note: note || null }))}
+            loading={loading || (isCurrentAccount ? savedAmount === null : !hasFactura)}
+          >
             Cerrar SIC
           </Btn>
         </div>
-        {!hasFactura && <p className="mt-2 text-xs text-amber-600">Subí la factura antes de cerrar la SIC.</p>}
+        {isCurrentAccount
+          ? savedAmount === null && <p className="mt-2 text-xs text-amber-600">Cargá el monto de la compra antes de cerrar la SIC.</p>
+          : !hasFactura && <p className="mt-2 text-xs text-amber-600">Subí la factura antes de cerrar la SIC.</p>}
         {error && <Err>{error}</Err>}
       </ActionCard>
     );
@@ -310,6 +383,35 @@ export default function SicActions({
 
   return (
     <div className="space-y-4">
+      {isCurrentAccount && isCompras && ["orden_emitida", "recibida"].includes(status) && (
+        <ActionCard title="Monto de la compra (cuenta corriente)">
+          <p className="text-xs text-slate-500">
+            Cargalo con el remito en mano, sin IVA. Hace falta para poder cerrar la SIC y para la liquidación mensual.
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={ccAmount}
+              onChange={(e) => setCcAmount(e.target.value)}
+              placeholder="Monto en ARS"
+              className="w-48 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            />
+            <Btn
+              onClick={() =>
+                run(() =>
+                  supabase.rpc("set_sic_current_account_amount", { p_sic_id: sicId, p_amount: Number(ccAmount), p_note: null })
+                )
+              }
+              loading={loading || ccAmount === ""}
+            >
+              {savedAmount === null ? "Guardar monto" : "Actualizar monto"}
+            </Btn>
+          </div>
+          {error && <Err>{error}</Err>}
+        </ActionCard>
+      )}
       {renderStatusPanel()}
       {canManageCerts && (
         <ActionCard title="Certificados de calidad">

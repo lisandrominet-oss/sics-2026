@@ -193,6 +193,7 @@ function AddProviderForm({
   const [taxStatus, setTaxStatus] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("");
   const [favorite, setFavorite] = useState(false);
+  const [hasCurrentAccount, setHasCurrentAccount] = useState(false);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -218,6 +219,7 @@ function AddProviderForm({
         tax_status: taxStatus.trim() || null,
         payment_terms: paymentTerms.trim() || null,
         favorite,
+        has_current_account: hasCurrentAccount,
         created_by: currentUserId,
       })
       .select()
@@ -319,6 +321,10 @@ function AddProviderForm({
       <label className="flex items-center gap-2 text-sm text-slate-700">
         <input type="checkbox" checked={favorite} onChange={(e) => setFavorite(e.target.checked)} />
         Marcar como proveedor favorito
+      </label>
+      <label className="flex items-center gap-2 text-sm text-slate-700">
+        <input type="checkbox" checked={hasCurrentAccount} onChange={(e) => setHasCurrentAccount(e.target.checked)} />
+        Tiene cuenta corriente (compras habituales, factura mensual)
       </label>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

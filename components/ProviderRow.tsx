@@ -59,6 +59,7 @@ export default function ProviderRow({
   const [taxId, setTaxId] = useState(provider.tax_id ?? "");
   const [taxStatus, setTaxStatus] = useState(provider.tax_status ?? "");
   const [paymentTerms, setPaymentTerms] = useState(provider.payment_terms ?? "");
+  const [hasCurrentAccount, setHasCurrentAccount] = useState(provider.has_current_account);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(categoryIds);
 
   const [newComment, setNewComment] = useState("");
@@ -107,6 +108,7 @@ export default function ProviderRow({
         tax_id: taxId || null,
         tax_status: taxStatus || null,
         payment_terms: paymentTerms || null,
+        has_current_account: hasCurrentAccount,
       })
       .eq("id", provider.id);
 
@@ -212,6 +214,11 @@ export default function ProviderRow({
           </div>
         </button>
         <div className="flex flex-wrap items-center gap-1.5">
+          {provider.has_current_account && (
+            <span className="rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-semibold text-violet-700">
+              Cuenta corriente
+            </span>
+          )}
           {categoryNames.map((name) => (
             <span key={name} className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] text-slate-600">
               {name}
@@ -228,6 +235,7 @@ export default function ProviderRow({
               <Field label="Condición ante IVA" value={provider.tax_status} />
               <Field label="Forma de pago" value={provider.payment_terms} />
               <Field label="Contacto" value={provider.contact_name} />
+              <Field label="Cuenta corriente" value={provider.has_current_account ? "Habilitada" : "No"} />
               <div className="col-span-2 flex flex-wrap gap-2 pt-1">
                 <button
                   onClick={() => setEditing(true)}
@@ -281,6 +289,14 @@ export default function ProviderRow({
                   setSelectedCategoryIds((prev) => [...prev, c.id]);
                 }}
               />
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={hasCurrentAccount}
+                  onChange={(e) => setHasCurrentAccount(e.target.checked)}
+                />
+                Tiene cuenta corriente (compras habituales, factura mensual)
+              </label>
               <div className="flex gap-2">
                 <button
                   onClick={save}

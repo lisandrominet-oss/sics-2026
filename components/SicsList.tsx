@@ -26,6 +26,7 @@ export type SicRow = {
   needed_by_date: string | null;
   department: string | null;
   on_behalf_of: string | null;
+  purchase_type: string;
   plants: { name: string; prefix: string } | null;
   project: { name: string } | null;
   requester: { full_name: string | null; email: string } | null;
@@ -133,7 +134,14 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                   {sic.plants?.prefix ?? "SIC"}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-slate-900">{sic.code}</p>
+                  <p className="truncate text-sm font-semibold text-slate-900">
+                    {sic.code}
+                    {sic.purchase_type === "cuenta_corriente" && (
+                      <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-violet-700">
+                        Cta. cte.
+                      </span>
+                    )}
+                  </p>
                   <p className="truncate text-xs text-slate-500">{sic.subject}</p>
                   {sic.department && <p className="truncate text-xs text-slate-400">{sic.department}</p>}
                   {sic.on_behalf_of && (

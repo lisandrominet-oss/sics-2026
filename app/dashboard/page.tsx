@@ -39,7 +39,7 @@ export default async function DashboardPage({
   let query = supabase
     .from("sics")
     .select(
-      "id, code, subject, status, currency, final_amount, estimated_amount, created_at, updated_at, needed_by_date, department, requester_id, on_behalf_of, plants(name, prefix), project:projects(name), requester:profiles!sics_requester_id_fkey(full_name, email)"
+      "id, code, subject, status, currency, final_amount, estimated_amount, created_at, updated_at, needed_by_date, department, requester_id, on_behalf_of, purchase_type, plants(name, prefix), project:projects(name), requester:profiles!sics_requester_id_fkey(full_name, email)"
     )
     .order(sortColumn, { ascending: sortDir === "asc", nullsFirst: false });
 

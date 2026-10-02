@@ -898,6 +898,7 @@ export type Database = {
           created_by: string | null
           email: string | null
           favorite: boolean
+          has_current_account: boolean
           id: string
           name: string
           payment_terms: string | null
@@ -912,6 +913,7 @@ export type Database = {
           created_by?: string | null
           email?: string | null
           favorite?: boolean
+          has_current_account?: boolean
           id?: string
           name: string
           payment_terms?: string | null
@@ -926,6 +928,7 @@ export type Database = {
           created_by?: string | null
           email?: string | null
           favorite?: boolean
+          has_current_account?: boolean
           id?: string
           name?: string
           payment_terms?: string | null
@@ -1131,6 +1134,8 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          provider_id: string | null
+          purchase_type: string
           requester_id: string
           sequence: number
           status: Database["public"]["Enums"]["sic_status"]
@@ -1152,6 +1157,8 @@ export type Database = {
           plant_id: string
           po_number?: string | null
           project_id?: string | null
+          provider_id?: string | null
+          purchase_type?: string
           requester_id: string
           sequence: number
           status?: Database["public"]["Enums"]["sic_status"]
@@ -1173,6 +1180,8 @@ export type Database = {
           plant_id?: string
           po_number?: string | null
           project_id?: string | null
+          provider_id?: string | null
+          purchase_type?: string
           requester_id?: string
           sequence?: number
           status?: Database["public"]["Enums"]["sic_status"]
@@ -1193,6 +1202,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sics_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
             referencedColumns: ["id"]
           },
           {
@@ -1341,6 +1357,40 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          provider_id: string | null
+          purchase_type: string
+          requester_id: string
+          sequence: number
+          status: Database["public"]["Enums"]["sic_status"]
+          subject: string
+          updated_at: string
+          year: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "sics"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      classify_sic_current_account: {
+        Args: { p_note?: string; p_provider_id: string; p_sic_id: string }
+        Returns: {
+          code: string
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
+          department: string | null
+          description: string | null
+          estimated_amount: number | null
+          final_amount: number | null
+          id: string
+          needed_by_date: string | null
+          on_behalf_of: string | null
+          plant_id: string
+          po_number: string | null
+          project_id: string | null
+          provider_id: string | null
+          purchase_type: string
           requester_id: string
           sequence: number
           status: Database["public"]["Enums"]["sic_status"]
@@ -1371,6 +1421,8 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          provider_id: string | null
+          purchase_type: string
           requester_id: string
           sequence: number
           status: Database["public"]["Enums"]["sic_status"]
@@ -1405,6 +1457,8 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          provider_id: string | null
+          purchase_type: string
           requester_id: string
           sequence: number
           status: Database["public"]["Enums"]["sic_status"]
@@ -1484,6 +1538,8 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          provider_id: string | null
+          purchase_type: string
           requester_id: string
           sequence: number
           status: Database["public"]["Enums"]["sic_status"]
@@ -1519,6 +1575,8 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          provider_id: string | null
+          purchase_type: string
           requester_id: string
           sequence: number
           status: Database["public"]["Enums"]["sic_status"]
@@ -1582,6 +1640,8 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          provider_id: string | null
+          purchase_type: string
           requester_id: string
           sequence: number
           status: Database["public"]["Enums"]["sic_status"]
@@ -1647,6 +1707,8 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          provider_id: string | null
+          purchase_type: string
           requester_id: string
           sequence: number
           status: Database["public"]["Enums"]["sic_status"]
@@ -1767,6 +1829,38 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      revert_sic_to_normal: {
+        Args: { p_note?: string; p_sic_id: string }
+        Returns: {
+          code: string
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
+          department: string | null
+          description: string | null
+          estimated_amount: number | null
+          final_amount: number | null
+          id: string
+          needed_by_date: string | null
+          on_behalf_of: string | null
+          plant_id: string
+          po_number: string | null
+          project_id: string | null
+          provider_id: string | null
+          purchase_type: string
+          requester_id: string
+          sequence: number
+          status: Database["public"]["Enums"]["sic_status"]
+          subject: string
+          updated_at: string
+          year: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "sics"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       set_contract_alert_attended: {
         Args: { p_attended: boolean; p_kind: string; p_target_id: string }
         Returns: undefined
@@ -1792,6 +1886,38 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      set_sic_current_account_amount: {
+        Args: { p_amount: number; p_note?: string; p_sic_id: string }
+        Returns: {
+          code: string
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
+          department: string | null
+          description: string | null
+          estimated_amount: number | null
+          final_amount: number | null
+          id: string
+          needed_by_date: string | null
+          on_behalf_of: string | null
+          plant_id: string
+          po_number: string | null
+          project_id: string | null
+          provider_id: string | null
+          purchase_type: string
+          requester_id: string
+          sequence: number
+          status: Database["public"]["Enums"]["sic_status"]
+          subject: string
+          updated_at: string
+          year: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "sics"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       submit_quotes: {
         Args: { p_final_amount: number; p_note?: string; p_sic_id: string }
         Returns: {
@@ -1808,6 +1934,8 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          provider_id: string | null
+          purchase_type: string
           requester_id: string
           sequence: number
           status: Database["public"]["Enums"]["sic_status"]
@@ -1838,6 +1966,8 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          provider_id: string | null
+          purchase_type: string
           requester_id: string
           sequence: number
           status: Database["public"]["Enums"]["sic_status"]
@@ -1978,6 +2108,8 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          provider_id: string | null
+          purchase_type: string
           requester_id: string
           sequence: number
           status: Database["public"]["Enums"]["sic_status"]
