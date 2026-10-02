@@ -1533,6 +1533,13 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_contract_debt_usd: {
+        Args: never
+        Returns: {
+          contract_id: string
+          remaining_usd: number
+        }[]
+      }
       get_contract_installment_expected_usd: {
         Args: { p_contract_id: string; p_period_start: string }
         Returns: number

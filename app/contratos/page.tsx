@@ -27,6 +27,7 @@ export default async function ContratosPage() {
     { data: alerts },
     { data: providers },
     { data: invoiceLines },
+    { data: contractDebts },
   ] = await Promise.all([
     supabase
       .from("contracts")
@@ -38,8 +39,10 @@ export default async function ContratosPage() {
     supabase.from("contract_documents").select("id, contract_id, provider_id, doc_type, expires_at, file_name"),
     supabase.from("contract_alerts").select("kind, target_id"),
     supabase.from("providers").select("id, name").order("name"),
-    // Para calcular la deuda con proveedores (facturado − pagado, sin IVA).
+    // Para los totales facturado y pagado por proveedor (sin IVA).
     supabase.from("provider_invoice_lines").select("contract_id, net_amount, invoice:provider_invoices(kind, status)"),
+    // Deuda en USD por contrato (canon exacto de las cuotas menos lo pagado).
+    supabase.rpc("get_contract_debt_usd"),
   ]);
 
   return (
@@ -79,6 +82,7 @@ export default async function ContratosPage() {
             attendedAlerts={alerts ?? []}
             providers={providers ?? []}
             invoiceLines={(invoiceLines ?? []) as unknown as InvoiceLine[]}
+            contractDebts={(contractDebts ?? []) as { contract_id: string; remaining_usd: number }[]}
           />
         </div>
       </div>

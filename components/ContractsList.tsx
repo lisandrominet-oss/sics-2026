@@ -46,6 +46,8 @@ type ContractDocument = {
 };
 type AttendedAlert = { kind: string; target_id: string };
 type Provider = { id: string; name: string };
+type PanelKey = "deuda" | "facturado" | "pagado";
+type ProviderRow = { name: string; amount: number };
 export type InvoiceLine = {
   contract_id: string;
   net_amount: number | null;
@@ -63,6 +65,7 @@ export default function ContractsList({
   attendedAlerts,
   providers,
   invoiceLines,
+  contractDebts,
 }: {
   contracts: Contract[];
   items: ContractItem[];
@@ -72,13 +75,14 @@ export default function ContractsList({
   attendedAlerts: AttendedAlert[];
   providers: Provider[];
   invoiceLines: InvoiceLine[];
+  contractDebts: { contract_id: string; remaining_usd: number }[];
 }) {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<ContractDisplayStatus | "">("");
   const [providerFilter, setProviderFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState<ContractItemType | "">("");
   const [attending, setAttending] = useState<string | null>(null);
-  const [debtOpen, setDebtOpen] = useState(false);
+  const [openPanel, setOpenPanel] = useState<PanelKey | null>(null);
 
   const attendedSet = useMemo(() => new Set(attendedAlerts.map((a) => `${a.kind}:${a.target_id}`)), [attendedAlerts]);
 
@@ -107,33 +111,60 @@ export default function ContractsList({
     return true;
   });
 
-  // Deuda con proveedores (ARS, sin IVA): facturado − pagado de las facturas vigentes, por contrato.
-  // Incluye contratos vencidos y devueltos. Las notas de crédito ya vienen con signo negativo y los
-  // pagos se restan. Un contrato pagado de más no compensa la deuda de otro (mínimo 0 por contrato).
-  const { debtArs, debtByProvider } = useMemo(() => {
-    const balanceByContract = new Map<string, number>();
+  // Los tres cuadros se arman por proveedor (vía el contrato de cada línea/deuda).
+  const providerOf = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of contracts) map.set(c.id, c.provider?.name ?? "Sin proveedor");
+    return map;
+  }, [contracts]);
+
+  const byProvider = (entries: [string, number][]): { total: number; rows: ProviderRow[] } => {
+    const acc = new Map<string, number>();
+    let total = 0;
+    for (const [contractId, amount] of entries) {
+      if (amount <= 0) continue;
+      const name = providerOf.get(contractId) ?? "Sin proveedor";
+      acc.set(name, (acc.get(name) ?? 0) + amount);
+      total += amount;
+    }
+    const rows = [...acc.entries()].map(([name, amount]) => ({ name, amount })).sort((a, b) => b.amount - a.amount);
+    return { total, rows };
+  };
+
+  // 1. Deuda total de contratos (USD): canon exacto de todas las cuotas, pasadas y futuras, menos lo pagado.
+  const debt = useMemo(
+    () => byProvider(contractDebts.map((d) => [d.contract_id, Number(d.remaining_usd ?? 0)])),
+    [contractDebts, providerOf]
+  );
+
+  // 2 y 3. Facturado y pagado (ARS, sin IVA) de comprobantes vigentes. Las notas de crédito ya vienen
+  // con signo negativo en la línea, así que restan solas del facturado.
+  const { billed, paidTotals, unpaidArs } = useMemo(() => {
+    const billedByContract = new Map<string, number>();
+    const paidByContract = new Map<string, number>();
     for (const line of invoiceLines) {
       if (!line.invoice || line.invoice.status !== "vigente") continue;
-      const amount = Number(line.net_amount ?? 0);
-      const signed = line.invoice.kind === "pago" ? -amount : amount;
-      balanceByContract.set(line.contract_id, (balanceByContract.get(line.contract_id) ?? 0) + signed);
+      const target = line.invoice.kind === "pago" ? paidByContract : billedByContract;
+      target.set(line.contract_id, (target.get(line.contract_id) ?? 0) + Number(line.net_amount ?? 0));
     }
-    const byProvider = new Map<string, number>();
-    let total = 0;
-    for (const [contractId, balance] of balanceByContract) {
-      if (balance <= 0) continue;
-      const contract = contracts.find((c) => c.id === contractId);
-      const name = contract?.provider?.name ?? "Sin proveedor";
-      byProvider.set(name, (byProvider.get(name) ?? 0) + balance);
-      total += balance;
+    // Facturado y no pagado: por contrato, sin que un pago de más compense la deuda de otro.
+    let unpaid = 0;
+    for (const [contractId, amount] of billedByContract) {
+      unpaid += Math.max(0, amount - (paidByContract.get(contractId) ?? 0));
     }
-    const rows = [...byProvider.entries()].map(([name, amount]) => ({ name, amount })).sort((a, b) => b.amount - a.amount);
-    return { debtArs: total, debtByProvider: rows };
-  }, [invoiceLines, contracts]);
+    return {
+      billed: byProvider([...billedByContract.entries()]),
+      paidTotals: byProvider([...paidByContract.entries()]),
+      unpaidArs: unpaid,
+    };
+  }, [invoiceLines, providerOf]);
 
-  const committedUsd = summaries
-    .filter((s) => s.status !== "devuelto" && s.status !== "vencido")
-    .reduce((sum, s) => sum + s.monthlyUsd * Math.max(0, s.remaining), 0);
+  const panels: Record<PanelKey, { title: string; rows: ProviderRow[]; total: number; format: (n: number) => string }> = {
+    deuda: { title: "Deuda por proveedor (USD)", rows: debt.rows, total: debt.total, format: formatUsd },
+    facturado: { title: "Facturado por proveedor (ARS)", rows: billed.rows, total: billed.total, format: formatArs },
+    pagado: { title: "Pagado por proveedor (ARS)", rows: paidTotals.rows, total: paidTotals.total, format: formatArs },
+  };
+  const activePanel = openPanel ? panels[openPanel] : null;
 
   const renewalAlerts = contracts.filter((c) => isRenewalAlertActive(c) && !attendedSet.has(`renovacion:${c.id}`));
   const documentAlerts = documents.filter((d) => {
@@ -172,36 +203,69 @@ export default function ContractsList({
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <DebtCard totalArs={debtArs} hasDebt={debtByProvider.length > 0} open={debtOpen} onToggle={() => setDebtOpen((v) => !v)} />
-          <StatCard label="Costo comprometido a futuro" value={formatUsd(committedUsd)} caption="Cuotas restantes de contratos vigentes" />
-          <StatCard
-            label="Contratos activos"
-            value={String(summaries.filter((s) => s.status === "vigente" || s.status === "por_vencer").length)}
-            caption={`${summaries.length} en total`}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr_200px]">
+          <MoneyCard
+            label="Total de deuda de contratos"
+            value={formatUsd(debt.total)}
+            caption="Histórico y futuro, sin IVA · en USD"
+            valueClass="text-red-600"
+            open={openPanel === "deuda"}
+            onToggle={() => setOpenPanel((p) => (p === "deuda" ? null : "deuda"))}
+            expandable={debt.rows.length > 0}
           />
-          <StatCard label="Avisos sin atender" value={String(totalAlerts)} caption="Vencimientos, documentos y diferencias" accent={totalAlerts > 0} />
+          <MoneyCard
+            label="Total facturado por proveedores"
+            value={formatArs(billed.total)}
+            caption={`Sin IVA · de los cuales sin pagar: ${formatArs(unpaidArs)}`}
+            open={openPanel === "facturado"}
+            onToggle={() => setOpenPanel((p) => (p === "facturado" ? null : "facturado"))}
+            expandable={billed.rows.length > 0}
+          />
+          <MoneyCard
+            label="Total pagado"
+            value={formatArs(paidTotals.total)}
+            caption="Pagos cargados, sin IVA"
+            valueClass="text-emerald-600"
+            open={openPanel === "pagado"}
+            onToggle={() => setOpenPanel((p) => (p === "pagado" ? null : "pagado"))}
+            expandable={paidTotals.rows.length > 0}
+          />
+          <div className="flex flex-col justify-center divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-5 py-2">
+            <div className="py-3">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Contratos activos</p>
+              <p className="mt-0.5 text-lg font-bold text-slate-900">
+                {summaries.filter((s) => s.status === "vigente" || s.status === "por_vencer").length}
+                <span className="ml-1.5 text-xs font-normal text-slate-400">de {summaries.length}</span>
+              </p>
+            </div>
+            <div className="py-3">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Avisos sin atender</p>
+              <p className={`mt-0.5 text-lg font-bold ${totalAlerts > 0 ? "text-amber-600" : "text-slate-900"}`}>{totalAlerts}</p>
+            </div>
+          </div>
         </div>
 
         <div
-          className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${debtOpen && debtByProvider.length > 0 ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+          className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${activePanel && activePanel.rows.length > 0 ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
         >
           <div className="overflow-hidden">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Deuda por proveedor</p>
-              <ul className="mt-3 divide-y divide-slate-100 text-sm">
-                {debtByProvider.map((r) => (
-                  <li key={r.name} className="flex items-center justify-between gap-4 py-2">
-                    <span className="truncate text-slate-700">{r.name}</span>
-                    <span className="shrink-0 font-semibold text-slate-900">{formatArs(r.amount)}</span>
+            {activePanel && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-6">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{activePanel.title}</p>
+                <ul className="mt-3 divide-y divide-slate-100 text-sm">
+                  {activePanel.rows.map((r) => (
+                    <li key={r.name} className="flex items-center justify-between gap-4 py-2">
+                      <span className="truncate text-slate-700">{r.name}</span>
+                      <span className="shrink-0 font-semibold text-slate-900">{activePanel.format(r.amount)}</span>
+                    </li>
+                  ))}
+                  <li className="flex items-center justify-between gap-4 pt-3 text-sm font-bold text-slate-900">
+                    <span>Total</span>
+                    <span>{activePanel.format(activePanel.total)}</span>
                   </li>
-                ))}
-                <li className="flex items-center justify-between gap-4 pt-3 text-sm font-bold text-slate-900">
-                  <span>Total</span>
-                  <span>{formatArs(debtArs)}</span>
-                </li>
-              </ul>
-            </div>
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -358,32 +422,36 @@ export default function ContractsList({
   );
 }
 
-function DebtCard({
-  totalArs,
-  hasDebt,
+function MoneyCard({
+  label,
+  value,
+  caption,
+  valueClass = "text-slate-900",
   open,
   onToggle,
+  expandable,
 }: {
-  totalArs: number;
-  hasDebt: boolean;
+  label: string;
+  value: string;
+  caption: string;
+  valueClass?: string;
   open: boolean;
   onToggle: () => void;
+  expandable: boolean;
 }) {
   const content = (
     <>
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Total de deuda de contratos</p>
-        {hasDebt && (
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
+        {expandable && (
           <IconChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
         )}
       </div>
-      <p className={`mt-2 text-2xl font-bold ${hasDebt ? "text-red-600" : "text-slate-900"}`}>{formatArs(totalArs)}</p>
-      <p className="mt-1 text-xs text-slate-400">
-        {hasDebt ? "Facturado y no pagado, sin IVA · tocá para ver por proveedor" : "Facturado y no pagado, sin IVA"}
-      </p>
+      <p className={`mt-2 text-2xl font-bold ${valueClass}`}>{value}</p>
+      <p className="mt-1 text-xs text-slate-400">{caption}</p>
     </>
   );
-  if (!hasDebt) return <div className="rounded-2xl border border-slate-200 bg-white p-6">{content}</div>;
+  if (!expandable) return <div className="rounded-2xl border border-slate-200 bg-white p-6">{content}</div>;
   return (
     <button
       type="button"
@@ -393,15 +461,5 @@ function DebtCard({
     >
       {content}
     </button>
-  );
-}
-
-function StatCard({ label, value, caption, accent }: { label: string; value: string; caption: string; accent?: boolean }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
-      <p className={`mt-2 text-2xl font-bold ${accent ? "text-amber-600" : "text-slate-900"}`}>{value}</p>
-      <p className="mt-1 text-xs text-slate-400">{caption}</p>
-    </div>
   );
 }
