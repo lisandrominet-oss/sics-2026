@@ -58,7 +58,7 @@ export default function DashboardControls({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar por código o asunto…"
+          placeholder="Buscar por código, asunto o artículo…"
           className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm"
         />
       </div>

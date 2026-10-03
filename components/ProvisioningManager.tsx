@@ -9,7 +9,7 @@ import type { Database } from "@/lib/database.types";
 type Provisioned = Database["public"]["Tables"]["user_provisioning"]["Row"];
 type Plant = { id: string; name: string; prefix: string };
 
-const ROLES: UserRole[] = ["area", "compras", "gerencia", "panol", "admin"];
+const ROLES: UserRole[] = ["operativo", "area", "compras", "gerencia", "panol", "admin"];
 
 export default function ProvisioningManager({
   entries,
@@ -79,8 +79,12 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+    if ((role === "area" || role === "operativo") && !plantId) {
+      setError("Los jefes de área y los operativos necesitan un área (planta) asignada.");
+      return;
+    }
+    setLoading(true);
     const supabase = createClient();
     const { error } = await supabase.from("user_provisioning").insert({
       email: email.trim().toLowerCase(),

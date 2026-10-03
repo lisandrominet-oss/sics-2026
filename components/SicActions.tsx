@@ -4,7 +4,14 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
-import { sanitizeFileName, type SicFileType, type SicStatus, type UserRole } from "@/lib/constants";
+import {
+  REQUESTER_CANCELLABLE_STATUSES,
+  TERMINAL_STATUSES,
+  sanitizeFileName,
+  type SicFileType,
+  type SicStatus,
+  type UserRole,
+} from "@/lib/constants";
 
 type SicFile = {
   id: string;
@@ -37,6 +44,7 @@ export default function SicActions({
   status,
   role,
   isRequester,
+  isAreaBoss,
   existingFiles,
   editData,
   projects,
@@ -48,6 +56,7 @@ export default function SicActions({
   status: SicStatus;
   role: UserRole;
   isRequester: boolean;
+  isAreaBoss: boolean;
   existingFiles: SicFile[];
   editData: EditData;
   projects: { id: string; name: string }[];
@@ -123,7 +132,12 @@ export default function SicActions({
     />
   );
 
-  const canCancel = ["compras", "admin"].includes(role) && !["cerrada", "anulada"].includes(status);
+  // Compras/admin anulan en cualquier estado no terminal; quien emitió la SIC, solo antes de que Compras la acepte.
+  const canCancel =
+    (isCompras && !TERMINAL_STATUSES.includes(status)) ||
+    (isRequester && REQUESTER_CANCELLABLE_STATUSES.includes(status));
+  const canApproveAsBoss = role === "admin" || isAreaBoss;
+  const canValidateTechnically = role === "admin" || isRequester || isAreaBoss;
   const itemsRequiringCert = editData.items.filter((it) => it.requiresQualityCert);
   const canManageCerts = ["compras", "admin"].includes(role) && itemsRequiringCert.length > 0;
 
@@ -207,6 +221,56 @@ export default function SicActions({
     );
   }
 
+  if (status === "pendiente_aprobacion_jefe" && canApproveAsBoss) {
+    return (
+      <ActionCard title="Aprobación del jefe de área">
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Comentario — obligatorio si pedís corrección o rechazás"
+          rows={2}
+          className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Btn
+            onClick={() => run(() => supabase.rpc("jefe_review_sic", { p_sic_id: sicId, p_decision: "aceptar", p_note: note || null }))}
+            loading={loading}
+          >
+            Aprobar
+          </Btn>
+          <Btn
+            variant="warning"
+            onClick={() => run(() => supabase.rpc("jefe_review_sic", { p_sic_id: sicId, p_decision: "observar", p_note: note || null }))}
+            loading={loading || note.trim().length === 0}
+          >
+            Pedir corrección
+          </Btn>
+          <Btn
+            variant="danger"
+            onClick={() => run(() => supabase.rpc("jefe_review_sic", { p_sic_id: sicId, p_decision: "rechazar", p_note: note || null }))}
+            loading={loading || note.trim().length === 0}
+          >
+            Rechazar
+          </Btn>
+        </div>
+        <p className="mt-2 text-xs text-slate-400">
+          Al aprobar, la SIC pasa a Compras. Rechazar es definitivo; para que la corrijan, usá "Pedir corrección".
+        </p>
+        {error && <Err>{error}</Err>}
+      </ActionCard>
+    );
+  }
+
+  if (status === "pendiente_aprobacion_jefe" && isRequester) {
+    return (
+      <ActionCard title="En revisión del jefe de área">
+        <p className="text-sm text-slate-500">
+          Tu solicitud está esperando la aprobación del jefe de tu área. Cuando la apruebe pasa a Compras.
+        </p>
+      </ActionCard>
+    );
+  }
+
   if (status === "en_observacion" && (role === "admin" || isRequester)) {
     return <ObservacionEditor sicId={sicId} editData={editData} projects={projects} onDone={() => router.refresh()} />;
   }
@@ -216,13 +280,13 @@ export default function SicActions({
       <ActionCard title="Cotización y comparación de proveedores">
         <div className="space-y-2 text-sm">
           <MultiFileRow
-            label="Cotizaciones (una por proveedor)"
+            label="Cotizaciones (opcional)"
             files={existingFiles.filter((f) => f.file_type === "cotizacion")}
             onUpload={(f) => run(() => uploadFile(f, "cotizacion").then(() => ({ error: null })))}
             onDelete={(f) => run(() => deleteFile(f))}
           />
           <FileRow
-            label="Comparación de precios"
+            label="Comparación de precios (opcional)"
             inputRef={comparacionInput}
             file={findFile("comparacion")}
             onUpload={(f) => run(() => uploadFile(f, "comparacion").then(() => ({ error: null })))}
@@ -260,10 +324,10 @@ export default function SicActions({
     );
   }
 
-  if (status === "pendiente_validacion_tecnica" && (role === "admin" || isRequester)) {
+  if (status === "pendiente_validacion_tecnica" && canValidateTechnically) {
     return (
       <ActionCard title="Validación técnica">
-        <p className="text-sm text-slate-500">Revisá las cotizaciones y la comparación antes de aprobar.</p>
+        <p className="text-sm text-slate-500">Revisá la cotización y el monto antes de aprobar.</p>
         {NoteBox}
         <div className="mt-3 flex gap-2">
           <Btn onClick={() => run(() => supabase.rpc("technical_review", { p_sic_id: sicId, p_aprobar: true, p_note: note || null }))} loading={loading}>
@@ -480,7 +544,7 @@ function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void })
       <textarea
         value={reason}
         onChange={(e) => setReason(e.target.value)}
-        placeholder="Motivo — obligatorio, ej: Duplicado de SIC"
+        placeholder="Describe la razón"
         rows={2}
         className="mt-3 w-full rounded-lg border border-red-300 px-3 py-2 text-sm"
       />
@@ -686,6 +750,7 @@ function ObservacionEditor({
       .eq("sic_id", sicId)
       .order("position", { ascending: true });
 
+    const failedFiles: string[] = [];
     if (newItems) {
       for (let i = 0; i < items.length; i++) {
         const file = items[i].file;
@@ -695,24 +760,31 @@ function ObservacionEditor({
         const { error: upErr } = await supabase.storage
           .from("sic-files")
           .upload(path, file, { contentType: file.type || "application/octet-stream" });
-        if (upErr) continue;
-        await supabase.rpc("attach_file", {
+        if (upErr) {
+          failedFiles.push(file.name);
+          continue;
+        }
+        const { error: attachErr } = await supabase.rpc("attach_file", {
           p_sic_id: sicId,
           p_file_type: "referencia",
           p_storage_path: path,
           p_file_name: file.name,
           p_item_id: itemRow.id,
         });
+        if (attachErr) failedFiles.push(file.name);
       }
     }
 
     setLoading(false);
+    if (failedFiles.length > 0) {
+      window.alert(`La SIC se reenvió, pero no se pudo subir: ${failedFiles.join(", ")}. Avisale a Compras.`);
+    }
     onDone();
   }
 
   return (
     <form onSubmit={handleSubmit} className="rounded-xl border border-amber-300 bg-amber-50 p-5">
-      <h2 className="text-sm font-semibold text-slate-900">Corregir y reenviar a Compras</h2>
+      <h2 className="text-sm font-semibold text-slate-900">Corregir y reenviar</h2>
       <p className="mt-1 text-xs text-slate-500">
         Al reenviar, los archivos de referencia anteriores se reemplazan — volvé a adjuntar los que sigan siendo válidos.
       </p>
@@ -769,7 +841,7 @@ function ObservacionEditor({
           disabled={loading}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
         >
-          {loading ? "Guardando…" : "Guardar y reenviar a Compras"}
+          {loading ? "Guardando…" : "Guardar y reenviar"}
         </button>
       </div>
     </form>

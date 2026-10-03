@@ -8,7 +8,7 @@ import DashboardControls from "@/components/DashboardControls";
 import SicsList, { type SicRow } from "@/components/SicsList";
 import { IconPlusCircle } from "@/components/icons";
 import { CAN_CREATE_SIC, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
-import { PENDING_STATUSES_BY_ROLE, getPendingSicsCount } from "@/lib/pendingSics";
+import { PENDING_STATUSES_BY_ROLE, applyPendingFilter, getPendingSicsCount } from "@/lib/pendingSics";
 
 const SORT_COLUMNS = new Set(SORT_OPTIONS.map((o) => o.value));
 
@@ -24,6 +24,8 @@ export default async function DashboardPage({
   const supabase = createClient();
   const canSeeCerts = role === "compras" || role === "admin";
   const showPending = searchParams.filter === "mia";
+  const isAreaRole = role === "area" || role === "operativo";
+  const showMine = searchParams.filter === "mias" && isAreaRole;
   const showPendingCerts = searchParams.filter === "certificados" && canSeeCerts;
   const pendingStatuses = PENDING_STATUSES_BY_ROLE[role] ?? [];
 
@@ -44,9 +46,9 @@ export default async function DashboardPage({
     .order(sortColumn, { ascending: sortDir === "asc", nullsFirst: false });
 
   if (showPending && pendingStatuses.length > 0) {
-    query = query.in("status", pendingStatuses);
+    query = applyPendingFilter(query, role, profile.id);
   }
-  if (showPending && role === "area") {
+  if (showMine) {
     query = query.eq("requester_id", profile.id);
   }
   if (showPendingCerts) {
@@ -55,7 +57,15 @@ export default async function DashboardPage({
   if (searchQuery) {
     const safeQuery = searchQuery.replace(/[,()%_]/g, " ").trim();
     if (safeQuery) {
-      query = query.or(`code.ilike.%${safeQuery}%,subject.ilike.%${safeQuery}%`);
+      // También busca dentro de los artículos, para detectar pedidos repetidos (ej. "rodamiento 6205").
+      const { data: itemHits } = await supabase
+        .from("sic_items")
+        .select("sic_id")
+        .ilike("description", `%${safeQuery}%`)
+        .limit(200);
+      const itemSicIds = Array.from(new Set((itemHits ?? []).map((r) => r.sic_id)));
+      const itemClause = itemSicIds.length > 0 ? `,id.in.(${itemSicIds.join(",")})` : "";
+      query = query.or(`code.ilike.%${safeQuery}%,subject.ilike.%${safeQuery}%${itemClause}`);
     }
   }
 
@@ -101,7 +111,12 @@ export default async function DashboardPage({
         </div>
 
         <div className="mt-8 flex flex-wrap gap-2 text-sm">
-          <FilterTab href="/dashboard" active={!showPending && !showPendingCerts} label="Todas" />
+          <FilterTab
+            href="/dashboard"
+            active={!showPending && !showPendingCerts && !showMine}
+            label={isAreaRole ? "Mi área" : "Todas"}
+          />
+          {isAreaRole && <FilterTab href="/dashboard?filter=mias" active={showMine} label="Mis solicitudes" />}
           {role !== "admin" && (
             <FilterTab
               href="/dashboard?filter=mia"

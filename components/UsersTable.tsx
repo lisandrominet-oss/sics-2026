@@ -9,7 +9,7 @@ import type { Database } from "@/lib/database.types";
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type Plant = { id: string; name: string; prefix: string };
 
-const ROLES: UserRole[] = ["area", "compras", "gerencia", "panol", "admin"];
+const ROLES: UserRole[] = ["operativo", "area", "compras", "gerencia", "panol", "admin"];
 
 export default function UsersTable({
   profiles,

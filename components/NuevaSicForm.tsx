@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
-import { sanitizeFileName } from "@/lib/constants";
+import { STATUS_LABELS, sanitizeFileName, type SicStatus } from "@/lib/constants";
 
 type Plant = { id: string; name: string; prefix: string };
 type Project = { id: string; name: string };
@@ -32,6 +33,43 @@ export default function NuevaSicForm({
   const [items, setItems] = useState<ItemDraft[]>([{ ...EMPTY_ITEM }]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [createdId, setCreatedId] = useState<string | null>(null);
+  const [similar, setSimilar] = useState<{ id: string; code: string; status: SicStatus; description: string }[]>([]);
+
+  // Aviso suave de posibles pedidos repetidos: busca SIC en curso de la misma área con un artículo parecido.
+  const itemsKey = items.map((i) => i.description.trim().toLowerCase()).join("|");
+  useEffect(() => {
+    if (!plantId) {
+      setSimilar([]);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      const supabase = createClient();
+      const found = new Map<string, { id: string; code: string; status: SicStatus; description: string }>();
+      for (const it of items.slice(0, 10)) {
+        const tokens = it.description
+          .split(/\s+/)
+          .map((t) => t.replace(/[%,()_*]/g, ""))
+          .filter((t) => t.length >= 3)
+          .sort((a, b) => b.length - a.length)
+          .slice(0, 2);
+        if (it.description.trim().length < 4 || tokens.length === 0) continue;
+        let q = supabase
+          .from("sic_items")
+          .select("description, sic:sics!inner(id, code, status, plant_id)")
+          .eq("sic.plant_id", plantId)
+          .not("sic.status", "in", "(anulada,rechazada_jefe,rechazada_compras,rechazada_gerencia,cerrada)");
+        for (const t of tokens) q = q.ilike("description", `%${t}%`);
+        const { data } = await q.limit(3);
+        for (const row of (data ?? []) as unknown as { description: string; sic: { id: string; code: string; status: SicStatus } }[]) {
+          if (row.sic) found.set(row.sic.id, { ...row.sic, description: row.description });
+        }
+      }
+      setSimilar(Array.from(found.values()).slice(0, 5));
+    }, 600);
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemsKey, plantId]);
 
   const selectedPlantName = plants.find((p) => p.id === plantId);
 
@@ -72,6 +110,7 @@ export default function NuevaSicForm({
       .eq("sic_id", sic.id)
       .order("position", { ascending: true });
 
+    const failedFiles: string[] = [];
     if (createdItems) {
       for (let i = 0; i < items.length; i++) {
         const file = items[i].file;
@@ -81,15 +120,29 @@ export default function NuevaSicForm({
         const { error: upErr } = await supabase.storage
           .from("sic-files")
           .upload(path, file, { contentType: file.type || "application/octet-stream" });
-        if (upErr) continue;
-        await supabase.rpc("attach_file", {
+        if (upErr) {
+          failedFiles.push(file.name);
+          continue;
+        }
+        const { error: attachErr } = await supabase.rpc("attach_file", {
           p_sic_id: sic.id,
           p_file_type: "referencia",
           p_storage_path: path,
           p_file_name: file.name,
           p_item_id: itemRow.id,
         });
+        if (attachErr) failedFiles.push(file.name);
       }
+    }
+
+    // Si algún archivo no se pudo subir, no redirigimos en silencio: avisamos para que no se pierda.
+    if (failedFiles.length > 0) {
+      setCreatedId(sic.id);
+      setError(
+        `La SIC se creó, pero no se pudo subir: ${failedFiles.join(", ")}. Podés anularla y crearla de nuevo, o pedirle a Compras que te la devuelva para corregir.`
+      );
+      setLoading(false);
+      return;
     }
 
     router.push(`/sic/${sic.id}`);
@@ -181,11 +234,33 @@ export default function NuevaSicForm({
         </div>
       </div>
 
+      {similar.length > 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+          <p className="font-medium text-amber-900">Puede que ya exista un pedido parecido en tu área:</p>
+          <ul className="mt-1 space-y-0.5 text-xs text-amber-800">
+            {similar.map((sic) => (
+              <li key={sic.id}>
+                <Link href={`/sic/${sic.id}`} target="_blank" className="font-semibold underline">
+                  {sic.code}
+                </Link>{" "}
+                — {sic.description} ({STATUS_LABELS[sic.status]})
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1 text-xs text-amber-700">Es solo un aviso: podés enviar la solicitud igual.</p>
+        </div>
+      )}
+
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {createdId && (
+        <Link href={`/sic/${createdId}`} className="inline-block text-sm font-medium text-indigo-600 underline">
+          Ir a la SIC creada
+        </Link>
+      )}
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !!createdId}
         className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
       >
         {loading ? "Enviando…" : "Enviar solicitud"}

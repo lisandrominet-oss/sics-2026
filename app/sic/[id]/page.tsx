@@ -203,6 +203,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
             status={sic.status}
             role={role}
             isRequester={sic.requester_id === profile.id}
+            isAreaBoss={role === "area" && !!profile.plant_id && profile.plant_id === sic.plant_id}
             existingFiles={(files ?? [])
               .filter((f) => !f.item_id)
               .map((f) => ({

@@ -1624,6 +1624,10 @@ export type Database = {
           updated_at: string
         }[]
       }
+      is_area_member_of_plant: {
+        Args: { p_plant_id: string }
+        Returns: boolean
+      }
       issue_po: {
         Args: { p_note?: string; p_po_number?: string; p_sic_id: string }
         Returns: {
@@ -1656,6 +1660,43 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      jefe_review_sic: {
+        Args: {
+          p_decision: Database["public"]["Enums"]["compras_decision"]
+          p_note?: string
+          p_sic_id: string
+        }
+        Returns: {
+          code: string
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
+          department: string | null
+          description: string | null
+          estimated_amount: number | null
+          final_amount: number | null
+          id: string
+          needed_by_date: string | null
+          on_behalf_of: string | null
+          plant_id: string
+          po_number: string | null
+          project_id: string | null
+          provider_id: string | null
+          purchase_type: string
+          requester_id: string
+          sequence: number
+          status: Database["public"]["Enums"]["sic_status"]
+          subject: string
+          updated_at: string
+          year: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "sics"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      my_plant_id: { Args: never; Returns: string }
       my_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
@@ -2197,7 +2238,15 @@ export type Database = {
         | "recibida"
         | "cerrada"
         | "anulada"
-      user_role: "admin" | "gerencia" | "compras" | "panol" | "area"
+        | "pendiente_aprobacion_jefe"
+        | "rechazada_jefe"
+      user_role:
+        | "admin"
+        | "gerencia"
+        | "compras"
+        | "panol"
+        | "area"
+        | "operativo"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2370,8 +2419,10 @@ export const Constants = {
         "recibida",
         "cerrada",
         "anulada",
+        "pendiente_aprobacion_jefe",
+        "rechazada_jefe",
       ],
-      user_role: ["admin", "gerencia", "compras", "panol", "area"],
+      user_role: ["admin", "gerencia", "compras", "panol", "area", "operativo"],
     },
   },
 } as const

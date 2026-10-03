@@ -8,6 +8,8 @@ export type ComprasDecision = Database["public"]["Enums"]["compras_decision"];
 export const STATUS_LABELS: Record<SicStatus, string> = {
   enviada: "Enviada",
   en_observacion: "En observación",
+  pendiente_aprobacion_jefe: "Pendiente aprobación del jefe",
+  rechazada_jefe: "Rechazada por el jefe",
   rechazada_compras: "Rechazada por Compras",
   cotizando: "Aprobada por Compras",
   pendiente_validacion_tecnica: "Pendiente validación técnica",
@@ -23,6 +25,8 @@ export const STATUS_LABELS: Record<SicStatus, string> = {
 export const STATUS_COLORS: Record<SicStatus, string> = {
   enviada: "bg-slate-100 text-slate-700",
   en_observacion: "bg-amber-100 text-amber-700",
+  pendiente_aprobacion_jefe: "bg-amber-100 text-amber-700",
+  rechazada_jefe: "bg-red-100 text-red-700",
   rechazada_compras: "bg-red-100 text-red-700",
   cotizando: "bg-amber-100 text-amber-700",
   pendiente_validacion_tecnica: "bg-amber-100 text-amber-700",
@@ -40,7 +44,8 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   gerencia: "Gerencia",
   compras: "Compras",
   panol: "Pañol",
-  area: "Área",
+  area: "Jefe de área",
+  operativo: "Operativo",
 };
 
 export const SORT_OPTIONS = [
@@ -65,11 +70,17 @@ export const FILE_TYPE_LABELS: Record<SicFileType, string> = {
 
 export const MAX_SIC_ITEMS = 50;
 
+// Estados en los que quien emitió la SIC todavía puede anularla (antes de que Compras la acepte).
+export const REQUESTER_CANCELLABLE_STATUSES: SicStatus[] = ["pendiente_aprobacion_jefe", "en_observacion", "enviada"];
+
+// Estados que ya no se pueden anular ni seguir (cerrados definitivamente).
+export const TERMINAL_STATUSES: SicStatus[] = ["cerrada", "anulada"];
+
 export const COMPRAS_EXPORTABLE_STATUSES: SicStatus[] = ["enviada", "en_observacion", "cotizando"];
 
-export const CAN_CREATE_SIC: UserRole[] = ["area", "gerencia", "compras", "admin"];
+export const CAN_CREATE_SIC: UserRole[] = ["operativo", "area", "gerencia", "compras", "admin"];
 
-export const IMPERSONATABLE_ROLES: UserRole[] = ["gerencia", "compras", "panol", "area"];
+export const IMPERSONATABLE_ROLES: UserRole[] = ["gerencia", "compras", "panol", "area", "operativo"];
 
 export function effectiveRole(profile: {
   role: UserRole | null;
