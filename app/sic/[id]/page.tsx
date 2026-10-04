@@ -49,8 +49,8 @@ export default async function SicDetailPage({ params }: { params: { id: string }
     supabase.from("sic_files").select("*").eq("sic_id", params.id).order("created_at", { ascending: true }),
     supabase.from("sic_items").select("*").eq("sic_id", params.id).order("position", { ascending: true }),
     supabase.from("projects").select("id, name").eq("active", true).order("name"),
-    // Solo Compras/admin pueden leer proveedores; para el resto la lista llega vacía.
-    supabase.from("providers").select("id, name").eq("active", true).eq("has_current_account", true).order("name"),
+    // Solo Compras/admin pueden leer proveedores; para el resto las listas llegan vacías.
+    supabase.from("providers").select("id, name, has_current_account").eq("active", true).order("name"),
   ]);
 
   const filesWithUrls = await Promise.all(
@@ -65,6 +65,8 @@ export default async function SicDetailPage({ params }: { params: { id: string }
   const project = sic.project as { id: string; name: string } | null;
   const provider = sic.provider as { name: string } | null;
   const isCurrentAccount = sic.purchase_type === "cuenta_corriente";
+  const isDirect = sic.purchase_type === "directa";
+  const activeProviders = (ccProviders ?? []) as { id: string; name: string; has_current_account: boolean }[];
 
   const canExport = (role === "compras" || role === "admin") && COMPRAS_EXPORTABLE_STATUSES.includes(sic.status);
   const exportRows: SicExportRow[] = (items ?? []).map((it) => ({
@@ -111,6 +113,11 @@ export default async function SicDetailPage({ params }: { params: { id: string }
                 Cuenta corriente
               </span>
             )}
+            {isDirect && (
+              <span className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-700">
+                Compra directa
+              </span>
+            )}
             <StatusBadge status={sic.status} />
           </div>
         </div>
@@ -123,8 +130,10 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           {sic.on_behalf_of && <Info label="Solicitado en nombre de" value={sic.on_behalf_of} />}
           <Info label="Necesaria para" value={sic.needed_by_date ? formatDate(sic.needed_by_date) : "-"} />
           <Info label="Creada" value={formatDate(sic.created_at)} />
-          {isCurrentAccount && <Info label="Tipo de compra" value="Cuenta corriente" />}
-          {isCurrentAccount && <Info label="Proveedor" value={provider?.name ?? "-"} />}
+          {(isCurrentAccount || isDirect) && (
+            <Info label="Tipo de compra" value={isDirect ? "Compra directa" : "Cuenta corriente"} />
+          )}
+          {(isCurrentAccount || isDirect) && <Info label="Proveedor" value={provider?.name ?? "-"} />}
           <Info label="Monto final" value={formatAmount(sic.final_amount, sic.currency)} />
           <Info label="Orden de compra" value={sic.po_number ?? "-"} />
           <Info label="Última actualización" value={formatDate(sic.updated_at)} />
@@ -238,9 +247,10 @@ export default async function SicDetailPage({ params }: { params: { id: string }
               })),
             }}
             projects={projects ?? []}
-            purchaseType={sic.purchase_type as "normal" | "cuenta_corriente"}
+            purchaseType={sic.purchase_type as "normal" | "cuenta_corriente" | "directa"}
             finalAmount={sic.final_amount}
-            currentAccountProviders={ccProviders ?? []}
+            currentAccountProviders={activeProviders.filter((p) => p.has_current_account)}
+            allProviders={activeProviders}
           />
         </div>
 

@@ -25,7 +25,8 @@ export default async function DashboardPage({
   const canSeeCerts = role === "compras" || role === "admin";
   const showPending = searchParams.filter === "mia";
   const isAreaRole = role === "area" || role === "operativo";
-  const showMine = searchParams.filter === "mias" && isAreaRole;
+  const canHaveOwn = isAreaRole || role === "panol";
+  const showMine = searchParams.filter === "mias" && canHaveOwn;
   const showPendingCerts = searchParams.filter === "certificados" && canSeeCerts;
   const pendingStatuses = PENDING_STATUSES_BY_ROLE[role] ?? [];
 
@@ -116,7 +117,7 @@ export default async function DashboardPage({
             active={!showPending && !showPendingCerts && !showMine}
             label={isAreaRole ? "Mi área" : "Todas"}
           />
-          {isAreaRole && <FilterTab href="/dashboard?filter=mias" active={showMine} label="Mis solicitudes" />}
+          {canHaveOwn && <FilterTab href="/dashboard?filter=mias" active={showMine} label="Mis solicitudes" />}
           {role !== "admin" && (
             <FilterTab
               href="/dashboard?filter=mia"

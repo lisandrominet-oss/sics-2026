@@ -7,7 +7,7 @@ import type { SicStatus, UserRole } from "@/lib/constants";
 export const PENDING_STATUSES_BY_ROLE: Partial<Record<UserRole, SicStatus[]>> = {
   compras: ["enviada", "cotizando", "aprobada", "recibida"],
   gerencia: ["pendiente_aprobacion_gerencia"],
-  panol: ["orden_emitida"],
+  panol: ["orden_emitida", "pendiente_validacion_tecnica", "en_observacion"],
   area: ["pendiente_aprobacion_jefe", "pendiente_validacion_tecnica", "en_observacion"],
   operativo: ["pendiente_validacion_tecnica", "en_observacion"],
 };
@@ -21,6 +21,12 @@ export function applyPendingFilter<Q extends { in: any; eq: any; or: any }>(quer
     // Jefe: lo que espera su aprobación (de toda el área) + lo suyo que está pendiente.
     return query.or(
       `status.eq.pendiente_aprobacion_jefe,and(requester_id.eq.${profileId},status.in.(pendiente_validacion_tecnica,en_observacion))`
+    );
+  }
+  if (role === "panol") {
+    // Pañol: órdenes que esperan recepción + lo suyo propio como solicitante.
+    return query.or(
+      `status.eq.orden_emitida,and(requester_id.eq.${profileId},status.in.(pendiente_validacion_tecnica,en_observacion))`
     );
   }
   if (role === "operativo") {

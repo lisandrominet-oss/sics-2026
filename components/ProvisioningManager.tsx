@@ -80,8 +80,8 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if ((role === "area" || role === "operativo") && !plantId) {
-      setError("Los jefes de área y los operativos necesitan un área (planta) asignada.");
+    if ((role === "area" || role === "operativo" || role === "panol") && !plantId) {
+      setError("Los jefes de área, los operativos y los pañoleros necesitan un área (planta) asignada.");
       return;
     }
     setLoading(true);

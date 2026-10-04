@@ -51,6 +51,7 @@ export default function SicActions({
   purchaseType,
   finalAmount: savedAmount,
   currentAccountProviders,
+  allProviders,
 }: {
   sicId: string;
   status: SicStatus;
@@ -60,9 +61,10 @@ export default function SicActions({
   existingFiles: SicFile[];
   editData: EditData;
   projects: { id: string; name: string }[];
-  purchaseType: "normal" | "cuenta_corriente";
+  purchaseType: "normal" | "cuenta_corriente" | "directa";
   finalAmount: number | null;
   currentAccountProviders: { id: string; name: string }[];
+  allProviders: { id: string; name: string }[];
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -71,6 +73,8 @@ export default function SicActions({
   const [finalAmount, setFinalAmount] = useState("");
   const [poNumber, setPoNumber] = useState("");
   const [ccProviderId, setCcProviderId] = useState("");
+  const [directAmount, setDirectAmount] = useState("");
+  const [directProviderId, setDirectProviderId] = useState("");
   const [ccAmount, setCcAmount] = useState(savedAmount !== null ? String(savedAmount) : "");
   const comparacionInput = useRef<HTMLInputElement>(null);
   const ordenInput = useRef<HTMLInputElement>(null);
@@ -78,6 +82,7 @@ export default function SicActions({
   const findFile = (type: SicFileType) => existingFiles.find((f) => f.file_type === type);
   const hasFactura = !!findFile("factura");
   const isCurrentAccount = purchaseType === "cuenta_corriente";
+  const isDirect = purchaseType === "directa";
   const isCompras = ["compras", "admin"].includes(role);
 
   async function uploadFile(file: File, fileType: SicFileType, itemId?: string) {
@@ -182,6 +187,50 @@ export default function SicActions({
     </div>
   );
 
+  const DirectBlock = (
+    <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Compra directa</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          value={directAmount}
+          onChange={(e) => setDirectAmount(e.target.value)}
+          placeholder="Monto en ARS (obligatorio)"
+          className="w-56 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+        />
+        <select
+          value={directProviderId}
+          onChange={(e) => setDirectProviderId(e.target.value)}
+          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+        >
+          <option value="">Proveedor (opcional)</option>
+          {allProviders.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+        <Btn
+          onClick={() =>
+            run(() =>
+              supabase.rpc("classify_sic_direct", {
+                p_sic_id: sicId,
+                p_amount: Number(directAmount),
+                ...(directProviderId ? { p_provider_id: directProviderId } : {}),
+                p_note: note || null,
+              })
+            )
+          }
+          loading={loading || !directAmount || Number(directAmount) <= 0}
+        >
+          Aceptar como compra directa
+        </Btn>
+      </div>
+    </div>
+  );
+
   function renderStatusPanel(): React.ReactNode {
   if (status === "enviada" && ["compras", "admin"].includes(role)) {
     return (
@@ -216,6 +265,7 @@ export default function SicActions({
           </Btn>
         </div>
         {CurrentAccountBlock}
+        {DirectBlock}
         {error && <Err>{error}</Err>}
       </ActionCard>
     );
@@ -319,6 +369,7 @@ export default function SicActions({
           </Btn>
         </div>
         {CurrentAccountBlock}
+        {DirectBlock}
         {error && <Err>{error}</Err>}
       </ActionCard>
     );
@@ -380,7 +431,7 @@ export default function SicActions({
           <Btn onClick={() => run(() => supabase.rpc("issue_po", { p_sic_id: sicId, p_po_number: poNumber || null, p_note: note || null }))} loading={loading}>
             Emitir orden de compra
           </Btn>
-          {isCurrentAccount && (
+          {(isCurrentAccount || isDirect) && (
             <span className="ml-2">
               <Btn
                 variant="warning"

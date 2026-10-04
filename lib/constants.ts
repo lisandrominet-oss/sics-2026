@@ -78,7 +78,7 @@ export const TERMINAL_STATUSES: SicStatus[] = ["cerrada", "anulada"];
 
 export const COMPRAS_EXPORTABLE_STATUSES: SicStatus[] = ["enviada", "en_observacion", "cotizando"];
 
-export const CAN_CREATE_SIC: UserRole[] = ["operativo", "area", "gerencia", "compras", "admin"];
+export const CAN_CREATE_SIC: UserRole[] = ["operativo", "panol", "area", "gerencia", "compras", "admin"];
 
 export const IMPERSONATABLE_ROLES: UserRole[] = ["gerencia", "compras", "panol", "area", "operativo"];
 

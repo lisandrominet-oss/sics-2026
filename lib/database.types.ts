@@ -1405,6 +1405,43 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      classify_sic_direct: {
+        Args: {
+          p_amount: number
+          p_note?: string
+          p_provider_id?: string
+          p_sic_id: string
+        }
+        Returns: {
+          code: string
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
+          department: string | null
+          description: string | null
+          estimated_amount: number | null
+          final_amount: number | null
+          id: string
+          needed_by_date: string | null
+          on_behalf_of: string | null
+          plant_id: string
+          po_number: string | null
+          project_id: string | null
+          provider_id: string | null
+          purchase_type: string
+          requester_id: string
+          sequence: number
+          status: Database["public"]["Enums"]["sic_status"]
+          subject: string
+          updated_at: string
+          year: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "sics"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       close_sic: {
         Args: { p_note?: string; p_sic_id: string }
         Returns: {

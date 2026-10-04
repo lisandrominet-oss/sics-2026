@@ -31,7 +31,7 @@ export default async function NuevaSicPage() {
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Sistema de Compras</p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">Nueva solicitud interna de compra</h1>
         <p className="mt-2 text-sm text-slate-500">
-          {role === "operativo"
+          {role === "operativo" || role === "panol"
             ? "Completá los datos de tu solicitud. Primero la revisa el jefe de tu área y después pasa a Compras."
             : "Completá los datos de tu solicitud. Compras la va a revisar y buscar cotizaciones."}
         </p>
