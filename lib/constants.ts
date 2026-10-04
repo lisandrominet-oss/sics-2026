@@ -80,6 +80,12 @@ export const COMPRAS_EXPORTABLE_STATUSES: SicStatus[] = ["enviada", "en_observac
 
 export const CAN_CREATE_SIC: UserRole[] = ["operativo", "panol", "area", "gerencia", "compras", "admin"];
 
+// Roles que Gerencia puede asignar al gestionar usuarios (todos menos administrador).
+export const STAFF_ASSIGNABLE_ROLES: UserRole[] = ["operativo", "area", "compras", "gerencia", "panol"];
+
+// Roles que exigen un área (planta) asignada.
+export const ROLES_REQUIRING_PLANT: UserRole[] = ["area", "operativo", "panol"];
+
 export const IMPERSONATABLE_ROLES: UserRole[] = ["gerencia", "compras", "panol", "area", "operativo"];
 
 export function effectiveRole(profile: {

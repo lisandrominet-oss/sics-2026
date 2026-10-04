@@ -119,6 +119,15 @@ export default function AppShell({
             </>
           )}
 
+          {role === "gerencia" && (
+            <>
+              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Sistema
+              </p>
+              <NavLink href="/usuarios" label="Usuarios" icon={<IconUsers />} />
+            </>
+          )}
+
           {role === "admin" && (
             <>
               <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">

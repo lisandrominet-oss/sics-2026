@@ -2,12 +2,14 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
+import { effectiveRole } from "@/lib/constants";
 import ConfigForm from "@/components/ConfigForm";
 
 export default async function ConfigPage() {
   const profile = await getCurrentProfile();
   if (!profile || !profile.role) redirect("/login");
-  if (profile.role !== "admin") redirect("/dashboard");
+  const role = effectiveRole(profile)!;
+  if (role !== "admin") redirect("/dashboard");
 
   const supabase = createClient();
   const { data: settings } = await supabase.from("app_settings").select("*");
@@ -17,7 +19,7 @@ export default async function ConfigPage() {
 
   return (
     <AppShell
-      role={profile.role}
+      role={role}
       realRole={profile.role}
       userId={profile.id}
       actingAsRole={profile.acting_as_role}

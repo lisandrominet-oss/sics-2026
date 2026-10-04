@@ -84,7 +84,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    if (hasRole && path.startsWith("/admin") && profile?.role !== "admin") {
+    // Cuenta el rol efectivo: un admin "viendo como" otro rol no accede a /admin.
+    const effectiveRole = profile?.role === "admin" && profile.acting_as_role ? profile.acting_as_role : profile?.role;
+    if (hasRole && path.startsWith("/admin") && effectiveRole !== "admin") {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);

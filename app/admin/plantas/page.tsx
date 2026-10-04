@@ -2,19 +2,21 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
+import { effectiveRole } from "@/lib/constants";
 import PlantsManager from "@/components/PlantsManager";
 
 export default async function PlantasPage() {
   const profile = await getCurrentProfile();
   if (!profile || !profile.role) redirect("/login");
-  if (profile.role !== "admin") redirect("/dashboard");
+  const role = effectiveRole(profile)!;
+  if (role !== "admin") redirect("/dashboard");
 
   const supabase = createClient();
   const { data: plants } = await supabase.from("plants").select("*").order("name");
 
   return (
     <AppShell
-      role={profile.role}
+      role={role}
       realRole={profile.role}
       userId={profile.id}
       actingAsRole={profile.acting_as_role}

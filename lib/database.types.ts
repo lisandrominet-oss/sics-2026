@@ -1220,6 +1220,41 @@ export type Database = {
           },
         ]
       }
+      user_management_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          detail: Json | null
+          id: string
+          target_email: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json | null
+          id?: string
+          target_email?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json | null
+          id?: string
+          target_email?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_management_log_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_provisioning: {
         Row: {
           active: boolean
@@ -1992,6 +2027,84 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "sics"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      staff_add_user_access: {
+        Args: {
+          p_department?: string
+          p_email: string
+          p_full_name: string
+          p_plant_id?: string
+          p_role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: {
+          active: boolean
+          created_at: string
+          department: string | null
+          email: string
+          full_name: string | null
+          id: string
+          plant_id: string | null
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_provisioning"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      staff_delete_user_access: { Args: { p_id: string }; Returns: undefined }
+      staff_update_user: {
+        Args: {
+          p_active: boolean
+          p_department: string
+          p_plant_id: string
+          p_profile_id: string
+          p_role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: {
+          acting_as_role: Database["public"]["Enums"]["user_role"] | null
+          active: boolean
+          created_at: string
+          department: string | null
+          email: string
+          full_name: string | null
+          id: string
+          plant_id: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      staff_update_user_access: {
+        Args: {
+          p_active: boolean
+          p_department: string
+          p_full_name: string
+          p_id: string
+          p_plant_id: string
+          p_role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: {
+          active: boolean
+          created_at: string
+          department: string | null
+          email: string
+          full_name: string | null
+          id: string
+          plant_id: string | null
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_provisioning"
           isOneToOne: true
           isSetofReturn: false
         }
