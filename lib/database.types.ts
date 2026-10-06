@@ -1082,6 +1082,8 @@ export type Database = {
           received_quantity: number
           reference_link: string | null
           requires_quality_cert: boolean
+          review_note: string | null
+          review_status: string
           sic_id: string
           specs: string | null
         }
@@ -1094,6 +1096,8 @@ export type Database = {
           received_quantity?: number
           reference_link?: string | null
           requires_quality_cert?: boolean
+          review_note?: string | null
+          review_status?: string
           sic_id: string
           specs?: string | null
         }
@@ -1106,6 +1110,8 @@ export type Database = {
           received_quantity?: number
           reference_link?: string | null
           requires_quality_cert?: boolean
+          review_note?: string | null
+          review_status?: string
           sic_id?: string
           specs?: string | null
         }
@@ -1131,6 +1137,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -1154,6 +1161,7 @@ export type Database = {
           id?: string
           needed_by_date?: string | null
           on_behalf_of?: string | null
+          parent_sic_id?: string | null
           plant_id: string
           po_number?: string | null
           project_id?: string | null
@@ -1177,6 +1185,7 @@ export type Database = {
           id?: string
           needed_by_date?: string | null
           on_behalf_of?: string | null
+          parent_sic_id?: string | null
           plant_id?: string
           po_number?: string | null
           project_id?: string | null
@@ -1190,6 +1199,13 @@ export type Database = {
           year?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "sics_parent_sic_id_fkey"
+            columns: ["parent_sic_id"]
+            isOneToOne: false
+            referencedRelation: "sics"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sics_plant_id_fkey"
             columns: ["plant_id"]
@@ -1389,6 +1405,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -1421,6 +1438,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -1458,6 +1476,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -1490,6 +1509,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -1526,6 +1546,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -1607,6 +1628,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -1644,6 +1666,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -1713,6 +1736,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -1749,6 +1773,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -1817,6 +1842,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -1955,6 +1981,40 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
+          plant_id: string
+          po_number: string | null
+          project_id: string | null
+          provider_id: string | null
+          purchase_type: string
+          requester_id: string
+          sequence: number
+          status: Database["public"]["Enums"]["sic_status"]
+          subject: string
+          updated_at: string
+          year: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "sics"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      review_sic_items: {
+        Args: { p_decisions: Json; p_note?: string; p_sic_id: string }
+        Returns: {
+          code: string
+          created_at: string
+          currency: Database["public"]["Enums"]["currency_code"]
+          department: string | null
+          description: string | null
+          estimated_amount: number | null
+          final_amount: number | null
+          id: string
+          needed_by_date: string | null
+          on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -2012,6 +2072,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -2122,6 +2183,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -2154,6 +2216,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null
@@ -2296,6 +2359,7 @@ export type Database = {
           id: string
           needed_by_date: string | null
           on_behalf_of: string | null
+          parent_sic_id: string | null
           plant_id: string
           po_number: string | null
           project_id: string | null

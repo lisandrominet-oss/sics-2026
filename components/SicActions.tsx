@@ -28,6 +28,9 @@ type EditItem = {
   specs: string | null;
   referenceLink: string | null;
   existingFileName: string | null;
+  existingFileId: string | null;
+  existingFilePath: string | null;
+  reviewNote: string | null;
   requiresQualityCert: boolean;
   certFiles: SicFile[];
 };
@@ -264,6 +267,9 @@ export default function SicActions({
             Rechazar
           </Btn>
         </div>
+        {editData.items.length > 1 && (
+          <ItemReviewPanel items={editData.items} sicId={sicId} stage="compras" onDone={() => router.refresh()} />
+        )}
         {CurrentAccountBlock}
         {DirectBlock}
         {error && <Err>{error}</Err>}
@@ -306,6 +312,9 @@ export default function SicActions({
         <p className="mt-2 text-xs text-slate-400">
           Al aprobar, la SIC pasa a Compras. Rechazar es definitivo; para que la corrijan, usá "Pedir corrección".
         </p>
+        {editData.items.length > 1 && (
+          <ItemReviewPanel items={editData.items} sicId={sicId} stage="jefe" onDone={() => router.refresh()} />
+        )}
         {error && <Err>{error}</Err>}
       </ActionCard>
     );
@@ -754,12 +763,16 @@ function ObservacionEditor({
   const [items, setItems] = useState<ItemDraft[]>(
     editData.items.length > 0
       ? editData.items.map((it) => ({
+          id: it.id,
           description: it.description,
           quantity: String(it.quantity),
           specs: it.specs ?? "",
           referenceLink: it.referenceLink ?? "",
           file: null,
           existingFileName: it.existingFileName,
+          existingFileId: it.existingFileId,
+          existingFilePath: it.existingFilePath,
+          reviewNote: it.reviewNote,
           requiresQualityCert: it.requiresQualityCert,
         }))
       : [{ ...EMPTY_ITEM }]
@@ -774,6 +787,7 @@ function ObservacionEditor({
 
     const supabase = createClient();
     const payloadItems = items.map((it) => ({
+      id: it.id ?? null,
       description: it.description,
       quantity: Number(it.quantity),
       specs: it.specs || null,
@@ -799,6 +813,7 @@ function ObservacionEditor({
       .from("sic_items")
       .select("id, position")
       .eq("sic_id", sicId)
+      .eq("review_status", "activo")
       .order("position", { ascending: true });
 
     const failedFiles: string[] = [];
@@ -807,6 +822,11 @@ function ObservacionEditor({
         const file = items[i].file;
         const itemRow = newItems[i];
         if (!file || !itemRow) continue;
+        const previous = items[i];
+        if (previous.existingFileId && previous.existingFilePath) {
+          await supabase.storage.from("sic-files").remove([previous.existingFilePath]);
+          await supabase.rpc("delete_sic_file", { p_file_id: previous.existingFileId });
+        }
         const path = `${sicId}/referencia/${itemRow.id}/${sanitizeFileName(file.name)}`;
         const { error: upErr } = await supabase.storage
           .from("sic-files")
@@ -837,7 +857,7 @@ function ObservacionEditor({
     <form onSubmit={handleSubmit} className="rounded-xl border border-amber-300 bg-amber-50 p-5">
       <h2 className="text-sm font-semibold text-slate-900">Corregir y reenviar</h2>
       <p className="mt-1 text-xs text-slate-500">
-        Al reenviar, los archivos de referencia anteriores se reemplazan — volvé a adjuntar los que sigan siendo válidos.
+        Los archivos de referencia ya subidos se conservan. Adjuntá uno nuevo solo si querés reemplazar el anterior.
       </p>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
@@ -896,6 +916,155 @@ function ObservacionEditor({
         </button>
       </div>
     </form>
+  );
+}
+
+type ItemDecision = "aceptar" | "observar" | "rechazar";
+
+const DECISION_STYLES: Record<ItemDecision, { label: string; active: string }> = {
+  aceptar: { label: "Aprobar", active: "bg-emerald-600 text-white border-emerald-600" },
+  observar: { label: "Observar", active: "bg-amber-500 text-white border-amber-500" },
+  rechazar: { label: "Rechazar", active: "bg-red-600 text-white border-red-600" },
+};
+
+function ItemReviewPanel({
+  sicId,
+  items,
+  stage,
+  onDone,
+}: {
+  sicId: string;
+  items: EditItem[];
+  stage: "jefe" | "compras";
+  onDone: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [decisions, setDecisions] = useState<Record<string, ItemDecision>>(
+    Object.fromEntries(items.map((it) => [it.id, "aceptar" as ItemDecision]))
+  );
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const [generalNote, setGeneralNote] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const count = (d: ItemDecision) => items.filter((it) => decisions[it.id] === d).length;
+  const nAcc = count("aceptar");
+  const nObs = count("observar");
+  const nRej = count("rechazar");
+  const missingNote = items.some((it) => decisions[it.id] !== "aceptar" && !(notes[it.id] ?? "").trim());
+
+  let consequence: string;
+  if (nAcc === 0 && nObs === 0) consequence = "Todos rechazados: la SIC queda rechazada.";
+  else if (nAcc === 0) consequence = "Sin aprobados: la SIC vuelve entera al solicitante para que la corrija.";
+  else if (nObs > 0)
+    consequence = `La SIC sigue con ${nAcc} aprobado(s). ${nObs} observado(s) pasan a una SIC nueva para corregir${
+      nRej > 0 ? `; ${nRej} rechazado(s) quedan tachados` : ""
+    }.`;
+  else if (nRej > 0) consequence = `La SIC sigue con ${nAcc} aprobado(s); ${nRej} rechazado(s) quedan tachados y no se compran.`;
+  else consequence = stage === "jefe" ? "Todos aprobados: la SIC pasa a Compras." : "Todos aprobados: la SIC pasa a cotización.";
+
+  async function submit() {
+    setLoading(true);
+    setError(null);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("review_sic_items", {
+      p_sic_id: sicId,
+      p_decisions: items.map((it) => ({
+        item_id: it.id,
+        decision: decisions[it.id],
+        note: decisions[it.id] === "aceptar" ? null : (notes[it.id] ?? "").trim(),
+      })),
+      p_note: generalNote.trim() || null,
+    });
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    onDone();
+  }
+
+  if (!open) {
+    return (
+      <div className="mt-4 border-t border-slate-100 pt-3">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="text-sm font-medium text-indigo-600 hover:underline"
+        >
+          Revisar artículo por artículo
+        </button>
+        <p className="mt-1 text-xs text-slate-400">
+          Aprobá unos, observá otros y rechazá los que no correspondan, todo en una sola revisión.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Revisión por artículo</p>
+        <button type="button" onClick={() => setOpen(false)} className="text-xs text-slate-500 hover:underline">
+          Cerrar
+        </button>
+      </div>
+      <div className="mt-3 space-y-2">
+        {items.map((it, i) => {
+          const d = decisions[it.id];
+          return (
+            <div key={it.id} className="rounded-lg border border-slate-200 bg-white p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-slate-800">
+                  <span className="text-slate-400">{i + 1}.</span> {it.description}{" "}
+                  <span className="text-slate-400">— {it.quantity}</span>
+                </p>
+                <div className="flex gap-1">
+                  {(Object.keys(DECISION_STYLES) as ItemDecision[]).map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => setDecisions({ ...decisions, [it.id]: k })}
+                      className={`rounded-md border px-2.5 py-1 text-xs font-medium ${
+                        d === k ? DECISION_STYLES[k].active : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      {DECISION_STYLES[k].label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {d !== "aceptar" && (
+                <input
+                  value={notes[it.id] ?? ""}
+                  onChange={(e) => setNotes({ ...notes, [it.id]: e.target.value })}
+                  placeholder={d === "observar" ? "Qué hay que corregir (obligatorio)" : "Motivo del rechazo (obligatorio)"}
+                  className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <textarea
+        value={generalNote}
+        onChange={(e) => setGeneralNote(e.target.value)}
+        placeholder="Comentario general (opcional)"
+        rows={2}
+        className="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+      />
+      <p className="mt-3 text-xs font-medium text-slate-600">
+        {nAcc} aprobado(s) · {nObs} observado(s) · {nRej} rechazado(s)
+      </p>
+      <p className="mt-1 text-xs text-slate-500">{consequence}</p>
+      <div className="mt-3">
+        <Btn onClick={submit} loading={loading || missingNote}>
+          Confirmar revisión
+        </Btn>
+      </div>
+      {missingNote && <p className="mt-2 text-xs text-amber-600">Falta el motivo de algún artículo observado o rechazado.</p>}
+      {error && <Err>{error}</Err>}
+    </div>
   );
 }
 

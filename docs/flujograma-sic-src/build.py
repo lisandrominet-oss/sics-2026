@@ -125,6 +125,8 @@ tag("notif", 2235, 1576, "Avisa a Compras al recibir")
 tag("rules", 1215, 990, "Monto obligatorio · proveedor opcional")
 tag("rules", 1495, 1095, "Sin cotización ni Gerencia · factura mensual")
 tag("rules", 2010, 820, "Tope de Gerencia: $500.000 (configurable)")
+tag("rules", 345, 400, "Por artículo: observados a SIC nueva")
+tag("rules", 540, 1120, "Compras igual: observados a SIC nueva")
 
 # ================================================================ render
 def esc(t): return html.escape(t, quote=False)

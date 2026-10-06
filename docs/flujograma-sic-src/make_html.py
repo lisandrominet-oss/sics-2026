@@ -12,11 +12,11 @@ ROWS = [
   "Operativo, Pañol o jefe de área", "Asunto, proyecto, fecha límite y artículos (cantidad, especificaciones, link). Archivo de referencia por artículo (opcional). Marca de certificado de calidad por artículo.",
   "Al jefe del área, o directo a Compras si no emite un operativo ni el Pañol."),
  ("2", "Decisión del jefe", "Pendiente del jefe → Enviada · En observación · Rechazada por el jefe",
-  "Cualquier jefe del área de la SIC (y admin)", "Aprobar, pedir corrección o rechazar. El comentario es obligatorio al corregir o rechazar.",
-  "Aprueba: pasa a Compras. Corrección: vuelve al operativo, que edita y reenvía (vuelve a pasar por el jefe). Rechazo: final, definitivo."),
+  "Cualquier jefe del área de la SIC (y admin)", "Aprobar, pedir corrección o rechazar la SIC entera, o revisar artículo por artículo (aprobar, observar o rechazar cada uno). El comentario es obligatorio al corregir o rechazar.",
+  "Aprueba: pasa a Compras. Corrección: vuelve al operativo, que edita y reenvía (vuelve a pasar por el jefe). Rechazo: final, definitivo. Por artículo: los aprobados siguen; los observados pasan a una SIC nueva vinculada, que vuelve al operativo; los rechazados quedan tachados y no se compran."),
  ("3", "Revisión de Compras", "Enviada → Cotizando · En observación · Rechazada por Compras · Aprobada",
   "Compras", "Aceptar, pedir corrección o rechazar, con comentario. Elige el tipo de compra: normal, directa (monto obligatorio, proveedor opcional) o cuenta corriente (proveedor habilitado).",
-  "Normal: cotización. Directa: compara el monto con el tope. Cuenta corriente: directo a aprobada. Corrección: vuelve al operativo, que reenvía al jefe (si la emitió un jefe, vuelve a Compras). Rechazo: final."),
+  "Normal: cotización. Directa: compara el monto con el tope. Cuenta corriente: directo a aprobada. Corrección: vuelve al operativo, que reenvía al jefe (si la emitió un jefe, vuelve a Compras). Rechazo: final. Compras también puede revisar artículo por artículo, con la misma regla: los observados pasan a una SIC nueva y los rechazados no se compran."),
  ("4", "Cotización", "Cotizando → Pendiente de validación técnica",
   "Compras", "Monto final (obligatorio). Cotizaciones y comparación de precios: opcionales.",
   "Validación técnica."),
@@ -101,7 +101,7 @@ HTML = f"""<!doctype html>
 <div id="viewport">{svg}</div>
 <section class="resumen">
   <h2>Resumen paso a paso</h2>
-  <p class="lead">Qué estado tiene la SIC, quién actúa, qué se carga y a dónde va después. Versión del 4 de octubre de 2026.</p>
+  <p class="lead">Qué estado tiene la SIC, quién actúa, qué se carga y a dónde va después. Versión del 6 de octubre de 2026.</p>
   <table>
     <thead><tr><th>#</th><th>Paso</th><th>Estado</th><th>Quién actúa</th><th>Qué se carga</th><th>A dónde va después</th></tr></thead>
     <tbody>{rows_html}</tbody>

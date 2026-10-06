@@ -32,7 +32,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
   const { data: sic, error: sicError } = await supabase
     .from("sics")
     .select(
-      "*, plants(name, prefix), project:projects(id, name), provider:providers(name), requester:profiles!sics_requester_id_fkey(full_name, email, department)"
+      "*, plants(name, prefix), project:projects(id, name), provider:providers(name), requester:profiles!sics_requester_id_fkey(full_name, email, department), parent:sics!sics_parent_sic_id_fkey(id, code)"
     )
     .eq("id", params.id)
     .maybeSingle();
@@ -40,7 +40,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
   if (sicError) throw new Error(sicError.message);
   if (!sic) notFound();
 
-  const [{ data: events }, { data: files }, { data: items }, { data: projects }, { data: ccProviders }] = await Promise.all([
+  const [{ data: events }, { data: files }, { data: items }, { data: projects }, { data: ccProviders }, { data: children }] = await Promise.all([
     supabase
       .from("sic_events")
       .select("*, actor:profiles(full_name)")
@@ -51,6 +51,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
     supabase.from("projects").select("id, name").eq("active", true).order("name"),
     // Solo Compras/admin pueden leer proveedores; para el resto las listas llegan vacías.
     supabase.from("providers").select("id, name, has_current_account").eq("active", true).order("name"),
+    supabase.from("sics").select("id, code, status").eq("parent_sic_id", params.id).order("created_at", { ascending: true }),
   ]);
 
   const filesWithUrls = await Promise.all(
@@ -64,12 +65,15 @@ export default async function SicDetailPage({ params }: { params: { id: string }
   const plant = sic.plants as { name: string; prefix: string } | null;
   const project = sic.project as { id: string; name: string } | null;
   const provider = sic.provider as { name: string } | null;
+  const parentRaw = sic.parent as unknown;
+  const parentSic = (Array.isArray(parentRaw) ? parentRaw[0] : parentRaw) as { id: string; code: string } | null | undefined;
+  const activeItems = (items ?? []).filter((it) => it.review_status === "activo");
   const isCurrentAccount = sic.purchase_type === "cuenta_corriente";
   const isDirect = sic.purchase_type === "directa";
   const activeProviders = (ccProviders ?? []) as { id: string; name: string; has_current_account: boolean }[];
 
   const canExport = (role === "compras" || role === "admin") && COMPRAS_EXPORTABLE_STATUSES.includes(sic.status);
-  const exportRows: SicExportRow[] = (items ?? []).map((it) => ({
+  const exportRows: SicExportRow[] = activeItems.map((it) => ({
     codigo: sic.code,
     asunto: sic.subject,
     planta: plant ? `${plant.name} (${plant.prefix})` : "-",
@@ -139,6 +143,35 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           <Info label="Última actualización" value={formatDate(sic.updated_at)} />
         </div>
 
+        {(parentSic || (children ?? []).length > 0) && (
+          <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
+            {parentSic && (
+              <p>
+                Desprendida de{" "}
+                <Link href={`/sic/${parentSic.id}`} className="font-semibold underline">
+                  {parentSic.code}
+                </Link>
+                : estos artículos fueron observados en la revisión y se corrigen acá.
+              </p>
+            )}
+            {(children ?? []).length > 0 && (
+              <p>
+                Artículos observados que pasaron a una SIC nueva:{" "}
+                {(children ?? []).map((c, i) => (
+                  <span key={c.id}>
+                    {i > 0 && ", "}
+                    <Link href={`/sic/${c.id}`} className="font-semibold underline">
+                      {c.code}
+                    </Link>{" "}
+                    ({STATUS_LABELS[c.status]})
+                  </span>
+                ))}
+                .
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm">
           <h2 className="font-semibold text-slate-900">Artículos solicitados</h2>
           <div className="mt-3 space-y-3">
@@ -147,11 +180,23 @@ export default async function SicDetailPage({ params }: { params: { id: string }
               const itemCertFiles = filesWithUrls.filter(
                 (f) => f.item_id === item.id && f.file_type === "certificado_calidad"
               );
+              const rejected = item.review_status === "rechazado";
               return (
-                <div key={item.id} className="rounded-lg border border-slate-200 p-3">
-                  <p className="font-medium text-slate-800">
+                <div
+                  key={item.id}
+                  className={`rounded-lg border p-3 ${rejected ? "border-red-200 bg-red-50/50" : "border-slate-200"}`}
+                >
+                  {rejected && (
+                    <p className="mb-1 text-xs font-semibold text-red-700">
+                      Rechazado — no se compra{item.review_note ? `: ${item.review_note}` : ""}
+                    </p>
+                  )}
+                  {!rejected && item.review_note && sic.status === "en_observacion" && (
+                    <p className="mb-1 text-xs font-semibold text-amber-700">Observación: {item.review_note}</p>
+                  )}
+                  <p className={`font-medium ${rejected ? "text-slate-400 line-through" : "text-slate-800"}`}>
                     {i + 1}. {item.description} — {item.quantity}
-                    {item.received_quantity > 0 && (
+                    {!rejected && item.received_quantity > 0 && (
                       <span className="ml-2 text-xs font-normal text-slate-400">
                         ({item.received_quantity}/{item.quantity} recibido)
                       </span>
@@ -225,7 +270,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
               subject: sic.subject,
               projectId: sic.project_id,
               neededByDate: sic.needed_by_date,
-              items: (items ?? []).map((it) => ({
+              items: activeItems.map((it) => ({
                 id: it.id,
                 description: it.description,
                 quantity: it.quantity,
@@ -235,6 +280,10 @@ export default async function SicDetailPage({ params }: { params: { id: string }
                 existingFileName:
                   filesWithUrls.find((f) => f.item_id === it.id && f.file_type === "referencia")?.file_name ??
                   null,
+                existingFileId: filesWithUrls.find((f) => f.item_id === it.id && f.file_type === "referencia")?.id ?? null,
+                existingFilePath:
+                  filesWithUrls.find((f) => f.item_id === it.id && f.file_type === "referencia")?.storage_path ?? null,
+                reviewNote: it.review_note,
                 requiresQualityCert: it.requires_quality_cert,
                 certFiles: (files ?? [])
                   .filter((f) => f.item_id === it.id && f.file_type === "certificado_calidad")

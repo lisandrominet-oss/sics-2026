@@ -3,12 +3,16 @@
 import { MAX_SIC_ITEMS } from "@/lib/constants";
 
 export type ItemDraft = {
+  id?: string;
   description: string;
   quantity: string;
   specs: string;
   referenceLink: string;
   file: File | null;
   existingFileName?: string | null;
+  existingFileId?: string | null;
+  existingFilePath?: string | null;
+  reviewNote?: string | null;
   requiresQualityCert: boolean;
 };
 
@@ -60,6 +64,12 @@ export default function ItemsEditor({
               </button>
             )}
           </div>
+
+          {item.reviewNote && (
+            <p className="mt-2 rounded-md bg-amber-100 px-3 py-2 text-xs text-amber-800">
+              <span className="font-semibold">Observación:</span> {item.reviewNote}
+            </p>
+          )}
 
           <div className="mt-2 grid grid-cols-3 gap-3">
             <div className="col-span-2">
