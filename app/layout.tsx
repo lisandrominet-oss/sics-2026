@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import "./dark-theme.css";
 import ThemeWatcher from "@/components/ThemeWatcher";
+import AppToaster from "@/components/ui/AppToaster";
+import ConfirmProvider from "@/components/ui/ConfirmProvider";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -24,7 +26,8 @@ export default function RootLayout({
       </head>
       <body className="font-sans">
         <ThemeWatcher />
-        {children}
+        <ConfirmProvider>{children}</ConfirmProvider>
+        <AppToaster />
       </body>
     </html>
   );
