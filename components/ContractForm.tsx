@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notify } from "@/lib/notify";
 import { CONTRACT_ITEM_TYPE_LABELS, CONTRACT_RENEWAL_TYPE_LABELS, type ContractItemType, type ContractRenewalType } from "@/lib/contracts";
 
 type Provider = { id: string; name: string };
@@ -109,6 +110,7 @@ export default function ContractForm({
       return;
     }
 
+    notify.success("Contrato creado");
     router.push(`/contratos/${contract.id}`);
   }
 
@@ -378,7 +380,7 @@ export default function ContractForm({
         </button>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
 
       <button
         type="submit"

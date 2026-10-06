@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notify } from "@/lib/notify";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
 import {
   REQUESTER_CANCELLABLE_STATUSES,
@@ -121,6 +123,7 @@ export default function SicActions({
         return;
       }
       setNote("");
+      notify.success("Cambios guardados");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Ocurrió un error");
@@ -268,7 +271,7 @@ export default function SicActions({
           </Btn>
         </div>
         {editData.items.length > 1 && (
-          <ItemReviewPanel items={editData.items} sicId={sicId} stage="compras" onDone={() => router.refresh()} />
+          <ItemReviewPanel items={editData.items} sicId={sicId} stage="compras" onDone={() => { notify.success("Revisión por ítem registrada"); router.refresh(); }} />
         )}
         {CurrentAccountBlock}
         {DirectBlock}
@@ -313,7 +316,7 @@ export default function SicActions({
           Al aprobar, la SIC pasa a Compras. Rechazar es definitivo; para que la corrijan, usá "Pedir corrección".
         </p>
         {editData.items.length > 1 && (
-          <ItemReviewPanel items={editData.items} sicId={sicId} stage="jefe" onDone={() => router.refresh()} />
+          <ItemReviewPanel items={editData.items} sicId={sicId} stage="jefe" onDone={() => { notify.success("Revisión por ítem registrada"); router.refresh(); }} />
         )}
         {error && <Err>{error}</Err>}
       </ActionCard>
@@ -331,7 +334,7 @@ export default function SicActions({
   }
 
   if (status === "en_observacion" && (role === "admin" || isRequester)) {
-    return <ObservacionEditor sicId={sicId} editData={editData} projects={projects} onDone={() => router.refresh()} />;
+    return <ObservacionEditor sicId={sicId} editData={editData} projects={projects} onDone={() => { notify.success("SIC corregida y reenviada"); router.refresh(); }} />;
   }
 
   if (status === "cotizando" && ["compras", "admin"].includes(role)) {
@@ -467,7 +470,7 @@ export default function SicActions({
         onUploadRemito={(f) => run(() => uploadFile(f, "remito").then(() => ({ error: null })))}
         onUploadFactura={(f) => run(() => uploadFile(f, "factura").then(() => ({ error: null })))}
         onDeleteFile={(f) => run(() => deleteFile(f))}
-        onDone={() => router.refresh()}
+        onDone={() => { notify.success("Recepción registrada"); router.refresh(); }}
       />
     );
   }
@@ -554,12 +557,13 @@ export default function SicActions({
           </div>
         </ActionCard>
       )}
-      {canCancel && <CancelSicCard sicId={sicId} onDone={() => router.refresh()} />}
+      {canCancel && <CancelSicCard sicId={sicId} onDone={() => { notify.success("SIC anulada"); router.refresh(); }} />}
     </div>
   );
 }
 
 function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void }) {
+  const confirm = useConfirm();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
@@ -567,7 +571,15 @@ function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void })
 
   async function handleCancel() {
     if (!reason.trim()) return;
-    if (!confirm("¿Confirmás que querés anular esta SIC? Esta acción no se puede deshacer.")) return;
+    if (
+      !(await confirm({
+        title: "¿Anular esta SIC?",
+        description: "Esta acción no se puede deshacer.",
+        confirmLabel: "Anular SIC",
+        destructive: true,
+      }))
+    )
+      return;
     setLoading(true);
     setError(null);
     const supabase = createClient();
@@ -848,7 +860,7 @@ function ObservacionEditor({
 
     setLoading(false);
     if (failedFiles.length > 0) {
-      window.alert(`La SIC se reenvió, pero no se pudo subir: ${failedFiles.join(", ")}. Avisale a Compras.`);
+      notify.error("La SIC se reenvió, pero no se pudo subir un archivo", `${failedFiles.join(", ")}. Avisale a Compras.`);
     }
     onDone();
   }
@@ -1106,7 +1118,7 @@ function Btn({
 }
 
 function Err({ children }: { children: React.ReactNode }) {
-  return <p className="mt-2 text-sm text-red-600">{children}</p>;
+  return <p role="alert" className="animate-shake mt-2 text-sm text-red-600">{children}</p>;
 }
 
 function MultiFileRow({

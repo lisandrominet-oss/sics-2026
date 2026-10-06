@@ -31,7 +31,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+    <div className="animate-enter rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-soft">
       <h1 className="text-xl font-bold text-slate-900">Bienvenido</h1>
       <p className="mt-2 text-sm text-slate-500">
         Ingresá con tu cuenta de Google corporativa para continuar.
@@ -44,7 +44,7 @@ function LoginForm() {
         <IconGoogle />
         {loading ? "Redirigiendo…" : "Ingresar con Google"}
       </button>
-      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake mt-4 text-sm text-red-600">{error}</p>}
     </div>
   );
 }
@@ -59,7 +59,7 @@ export default function LoginPage() {
           </div>
           <span className="text-lg font-semibold text-white">Sistema de Compras</span>
         </div>
-        <div className="max-w-md">
+        <div className="max-w-md animate-enter [animation-delay:120ms]">
           <p className="text-3xl font-bold leading-snug text-white">
             Toda la gestión de compras de Servicios Industriales, de punta a punta.
           </p>

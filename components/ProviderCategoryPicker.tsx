@@ -80,7 +80,7 @@ export default function ProviderCategoryPicker({
           {creating ? "Creando…" : "+ Crear"}
         </button>
       </div>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
 }

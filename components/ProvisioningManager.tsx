@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notify, reportResult } from "@/lib/notify";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 import { ROLE_LABELS, type UserRole } from "@/lib/constants";
 import type { Database } from "@/lib/database.types";
 
@@ -47,6 +49,7 @@ export default function ProvisioningManager({
           plants={plants}
           onDone={() => {
             setShowForm(false);
+            notify.success("Usuario añadido");
             router.refresh();
           }}
         />
@@ -170,7 +173,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
         <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
         Activo (si está desmarcado, va a quedar pausado apenas inicie sesión)
       </label>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
       <button
         type="submit"
         disabled={loading}
@@ -184,6 +187,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
 
 function ProvisionedRow({ entry, plants }: { entry: Provisioned; plants: Plant[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [role, setRole] = useState<UserRole>(entry.role);
   const [department, setDepartment] = useState(entry.department ?? "");
   const [plantId, setPlantId] = useState(entry.plant_id ?? "");
@@ -204,13 +208,23 @@ function ProvisionedRow({ entry, plants }: { entry: Provisioned; plants: Plant[]
       setError(error.message);
       return;
     }
+    notify.success("Acceso actualizado");
     router.refresh();
   }
 
   async function remove() {
-    if (!confirm(`¿Eliminar el acceso pre-cargado de ${entry.full_name ?? entry.email}?`)) return;
+    if (
+      !(await confirm({
+        title: `¿Eliminar el acceso pre-cargado de ${entry.full_name ?? entry.email}?`,
+        description: "Esta acción no se puede deshacer.",
+        confirmLabel: "Eliminar",
+        destructive: true,
+      }))
+    )
+      return;
     const supabase = createClient();
-    await supabase.from("user_provisioning").delete().eq("id", entry.id);
+    const { error } = await supabase.from("user_provisioning").delete().eq("id", entry.id);
+    reportResult(error, "Acceso pre-cargado eliminado");
     router.refresh();
   }
 
@@ -263,7 +277,7 @@ function ProvisionedRow({ entry, plants }: { entry: Provisioned; plants: Plant[]
       <button onClick={remove} className="text-xs font-medium text-red-600 hover:underline">
         Eliminar
       </button>
-      {error && <p className="w-full text-xs text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake w-full text-xs text-red-600">{error}</p>}
     </li>
   );
 }

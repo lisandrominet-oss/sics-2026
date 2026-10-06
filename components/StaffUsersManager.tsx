@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import EmptyState from "@/components/ui/EmptyState";
+import { notify } from "@/lib/notify";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 import {
   ROLES_REQUIRING_PLANT,
   ROLE_LABELS,
@@ -43,7 +46,7 @@ export default function StaffUsersManager({
           <p className="mt-1 text-xs text-slate-500">Los que ya iniciaron sesión.</p>
         </div>
         {users.length === 0 ? (
-          <p className="px-6 py-8 text-center text-sm text-slate-400">No hay usuarios para mostrar.</p>
+          <EmptyState title="No hay usuarios para mostrar" className="!border-0 py-8" />
         ) : (
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
@@ -87,13 +90,14 @@ export default function StaffUsersManager({
             plants={plants}
             onDone={() => {
               setShowForm(false);
+              notify.success("Usuario añadido");
               router.refresh();
             }}
           />
         )}
 
         {pending.length === 0 ? (
-          <p className="px-6 py-8 text-center text-sm text-slate-400">No hay accesos pendientes.</p>
+          <EmptyState title="No hay accesos pendientes" className="!border-0 py-8" />
         ) : (
           <ul className="divide-y divide-slate-100">
             {pending.map((entry) => (
@@ -190,6 +194,7 @@ function UserRow({ user, plants, isSelf }: { user: Profile; plants: Plant[]; isS
       setError(rpcError.message);
       return;
     }
+    notify.success("Usuario actualizado");
     router.refresh();
   }
 
@@ -230,7 +235,7 @@ function UserRow({ user, plants, isSelf }: { user: Profile; plants: Plant[]; isS
         >
           Guardar
         </button>
-        {error && <p className="mt-1 max-w-[12rem] text-xs text-red-600">{error}</p>}
+        {error && <p role="alert" className="animate-shake mt-1 max-w-[12rem] text-xs text-red-600">{error}</p>}
       </td>
     </tr>
   );
@@ -238,6 +243,7 @@ function UserRow({ user, plants, isSelf }: { user: Profile; plants: Plant[]; isS
 
 function PendingRow({ entry, plants }: { entry: Provisioned; plants: Plant[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [fullName, setFullName] = useState(entry.full_name ?? "");
   const [role, setRole] = useState<UserRole>(entry.role);
   const [department, setDepartment] = useState(entry.department ?? "");
@@ -267,17 +273,27 @@ function PendingRow({ entry, plants }: { entry: Provisioned; plants: Plant[] }) 
       setError(rpcError.message);
       return;
     }
+    notify.success("Acceso actualizado");
     router.refresh();
   }
 
   async function remove() {
-    if (!confirm(`¿Eliminar el acceso pendiente de ${entry.full_name ?? entry.email}?`)) return;
+    if (
+      !(await confirm({
+        title: `¿Eliminar el acceso pendiente de ${entry.full_name ?? entry.email}?`,
+        description: "Esta acción no se puede deshacer.",
+        confirmLabel: "Eliminar",
+        destructive: true,
+      }))
+    )
+      return;
     const supabase = createClient();
     const { error: rpcError } = await supabase.rpc("staff_delete_user_access", { p_id: entry.id });
     if (rpcError) {
       setError(rpcError.message);
       return;
     }
+    notify.success("Acceso pendiente eliminado");
     router.refresh();
   }
 
@@ -314,7 +330,7 @@ function PendingRow({ entry, plants }: { entry: Provisioned; plants: Plant[] }) 
       <button onClick={remove} className="text-xs font-medium text-red-600 hover:underline">
         Eliminar
       </button>
-      {error && <p className="w-full text-xs text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake w-full text-xs text-red-600">{error}</p>}
     </li>
   );
 }
@@ -391,7 +407,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
           <PlantSelect value={plantId} onChange={setPlantId} plants={plants} className={inputClass} />
         </div>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
       <button
         type="submit"
         disabled={loading}

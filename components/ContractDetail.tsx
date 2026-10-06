@@ -3,6 +3,7 @@
 import { Fragment, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notify } from "@/lib/notify";
 import FilePreview from "@/components/FilePreview";
 import { IconChevronDown, IconFileText, IconReceipt } from "@/components/icons";
 import { sanitizeFileName } from "@/lib/constants";
@@ -77,6 +78,7 @@ export default function ContractDetail({
   const status = contractDisplayStatus(contract);
 
   function refresh() {
+    notify.success("Cambios guardados");
     router.refresh();
   }
 
@@ -129,7 +131,7 @@ export default function ContractDetail({
         ))}
       </div>
 
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-4">
         {tab === "datos" && <DatosTab contract={contract} onDone={refresh} onError={setError} />}

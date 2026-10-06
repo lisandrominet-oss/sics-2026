@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
+import EmptyState from "@/components/ui/EmptyState";
 import { IconArrowRight } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { downloadSicsXlsx, type SicExportRow } from "@/lib/exportSics";
 import {
+  CAN_CREATE_SIC,
   COMPRAS_EXPORTABLE_STATUSES,
   formatAmount,
   formatDate,
@@ -33,7 +35,6 @@ export type SicRow = {
 };
 
 export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRole }) {
-  const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +99,7 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-100 bg-amber-50 px-6 py-3">
           <p className="text-sm text-amber-800">{selected.size} SIC(s) seleccionada(s)</p>
           <div className="flex items-center gap-3">
-            {error && <p className="text-xs text-red-600">{error}</p>}
+            {error && <p role="alert" className="animate-shake text-xs text-red-600">{error}</p>}
             <button
               type="button"
               onClick={handleExport}
@@ -111,22 +112,27 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
         </div>
       )}
       <ul className="divide-y divide-slate-100">
-        {sics.map((sic) => {
+        {sics.map((sic, index) => {
           const exportable = canExport && COMPRAS_EXPORTABLE_STATUSES.includes(sic.status);
           return (
             <li
               key={sic.id}
-              onClick={() => router.push(`/sic/${sic.id}`)}
-              className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 hover:bg-slate-50 cursor-pointer"
+              style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}
+              className="group relative flex animate-enter flex-wrap items-center justify-between gap-3 px-6 py-4 transition-colors hover:bg-slate-50"
             >
+              <Link
+                href={`/sic/${sic.id}`}
+                prefetch={false}
+                aria-label={`Abrir ${sic.code}: ${sic.subject}`}
+                className="absolute inset-0 z-0 focus-visible:outline-offset-[-2px]"
+              />
               <div className="flex min-w-0 items-center gap-3">
                 {exportable && (
                   <input
                     type="checkbox"
                     checked={selected.has(sic.id)}
-                    onClick={(e) => e.stopPropagation()}
                     onChange={() => toggle(sic.id)}
-                    className="h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600"
+                    className="relative z-10 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600"
                     aria-label={`Seleccionar ${sic.code} para exportar`}
                   />
                 )}
@@ -163,7 +169,7 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                 </span>
                 <span className="hidden text-xs text-slate-400 md:block">{formatDate(sic.updated_at)}</span>
                 <StatusBadge status={sic.status} />
-                <span className="flex items-center gap-1 text-sm font-medium text-indigo-600">
+                <span className="flex items-center gap-1 text-sm font-medium text-indigo-600 transition-transform duration-base ease-out-expo group-hover:translate-x-0.5">
                   Ver
                   <IconArrowRight />
                 </span>
@@ -172,7 +178,23 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
           );
         })}
         {sics.length === 0 && (
-          <li className="px-6 py-10 text-center text-sm text-slate-400">No hay solicitudes para mostrar.</li>
+          <li>
+            <EmptyState
+              title="No hay solicitudes para mostrar"
+              description="Cuando haya solicitudes que coincidan con este filtro, van a aparecer acá."
+              className="!border-0"
+              action={
+                CAN_CREATE_SIC.includes(role) ? (
+                  <Link
+                    href="/sic/nueva"
+                    className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-base hover:bg-indigo-500 hover:shadow-md active:scale-[0.97]"
+                  >
+                    Crear una SIC
+                  </Link>
+                ) : undefined
+              }
+            />
+          </li>
         )}
       </ul>
     </div>

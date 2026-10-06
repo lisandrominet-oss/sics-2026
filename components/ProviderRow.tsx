@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notify, reportResult } from "@/lib/notify";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 import FilePreview from "@/components/FilePreview";
 import ProviderCategoryPicker from "@/components/ProviderCategoryPicker";
 import { sanitizeFileName } from "@/lib/constants";
@@ -47,6 +49,7 @@ export default function ProviderRow({
   onCategoryCreated: (category: Category) => void;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -75,21 +78,31 @@ export default function ProviderRow({
 
   async function toggleFavorite() {
     const supabase = createClient();
-    await supabase.from("providers").update({ favorite: !provider.favorite }).eq("id", provider.id);
+    const { error } = await supabase.from("providers").update({ favorite: !provider.favorite }).eq("id", provider.id);
+    reportResult(error, provider.favorite ? "Proveedor quitado de favoritos" : "Proveedor marcado como favorito");
     router.refresh();
   }
 
   async function toggleActive() {
     const supabase = createClient();
-    await supabase.from("providers").update({ active: !provider.active }).eq("id", provider.id);
+    const { error } = await supabase.from("providers").update({ active: !provider.active }).eq("id", provider.id);
+    reportResult(error, provider.active ? "Proveedor archivado" : "Proveedor reactivado");
     router.refresh();
   }
 
   async function remove() {
-    if (!confirm(`¿Eliminar definitivamente a ${provider.name}? Se borran también sus comentarios y archivos.`))
+    if (
+      !(await confirm({
+        title: `¿Eliminar definitivamente a ${provider.name}?`,
+        description: "Se borran también sus comentarios y archivos. Esta acción no se puede deshacer.",
+        confirmLabel: "Eliminar",
+        destructive: true,
+      }))
+    )
       return;
     const supabase = createClient();
-    await supabase.from("providers").delete().eq("id", provider.id);
+    const { error } = await supabase.from("providers").delete().eq("id", provider.id);
+    reportResult(error, "Proveedor eliminado");
     router.refresh();
   }
 
@@ -136,6 +149,7 @@ export default function ProviderRow({
 
     setSaving(false);
     setEditing(false);
+    notify.success("Proveedor actualizado");
     router.refresh();
   }
 
@@ -153,6 +167,7 @@ export default function ProviderRow({
       return;
     }
     setNewComment("");
+    notify.success("Comentario agregado");
     router.refresh();
   }
 
@@ -181,6 +196,7 @@ export default function ProviderRow({
       return;
     }
     if (fileInput.current) fileInput.current.value = "";
+    notify.success("Archivo subido");
     router.refresh();
   }
 
@@ -315,7 +331,7 @@ export default function ProviderRow({
             </div>
           )}
 
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p role="alert" className="animate-shake text-xs text-red-600">{error}</p>}
 
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">

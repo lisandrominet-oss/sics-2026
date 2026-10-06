@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notify } from "@/lib/notify";
 import { IMPERSONATABLE_ROLES, ROLE_LABELS, type UserRole } from "@/lib/constants";
 
 export default function RoleSwitcher({
@@ -19,6 +20,7 @@ export default function RoleSwitcher({
       .from("profiles")
       .update({ acting_as_role: value === "admin" ? null : (value as UserRole) })
       .eq("id", userId);
+    notify.info(value === "admin" ? "Volviste a la vista de Administrador" : `Ahora ves el sistema como ${ROLE_LABELS[value as UserRole]}`);
     router.refresh();
   }
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notify } from "@/lib/notify";
 
 export default function ConfigForm({
   threshold,
@@ -46,6 +47,7 @@ export default function ConfigForm({
       return;
     }
     setSaved(true);
+    notify.success("Configuración guardada");
     router.refresh();
   }
 
@@ -73,7 +75,7 @@ export default function ConfigForm({
           className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
       {saved && <p className="text-sm text-emerald-600">Guardado.</p>}
       <button
         type="submit"

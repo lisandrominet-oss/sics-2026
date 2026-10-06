@@ -6,6 +6,8 @@ import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
 import DashboardControls from "@/components/DashboardControls";
 import SicsList, { type SicRow } from "@/components/SicsList";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { IconPlusCircle } from "@/components/icons";
 import { CAN_CREATE_SIC, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
 import { PENDING_STATUSES_BY_ROLE, applyPendingFilter, getPendingSicsCount } from "@/lib/pendingSics";
@@ -106,9 +108,9 @@ export default async function DashboardPage({
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <StatCard label="SICs totales" value={totalCount ?? 0} caption="Vista general" />
-          <StatCard label="Pendientes de mi acción" value={pendingCount} caption="Requieren revisión" accent />
-          <StatCard label="Cerradas" value={closedCount ?? 0} caption="Historial completo" />
+          <StatCard label="SICs totales" value={totalCount ?? 0} caption="Vista general" delay={0} />
+          <StatCard label="Pendientes de mi acción" value={pendingCount} caption="Requieren revisión" accent delay={70} />
+          <StatCard label="Cerradas" value={closedCount ?? 0} caption="Historial completo" delay={140} />
         </div>
 
         <div className="mt-8 flex flex-wrap gap-2 text-sm">
@@ -136,11 +138,19 @@ export default async function DashboardPage({
           )}
         </div>
 
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <div className="mt-4 flex flex-wrap items-center gap-3" aria-hidden="true">
+              <Skeleton className="h-10 min-w-[16rem] flex-1 rounded-lg" />
+              <Skeleton className="h-10 w-52 rounded-lg" />
+              <Skeleton className="h-10 w-36 rounded-lg" />
+            </div>
+          }
+        >
           <DashboardControls defaultQuery={searchQuery} sort={sortColumn} dir={sortDir} />
         </Suspense>
 
-        {error && <p className="mt-4 text-sm text-red-600">{error.message}</p>}
+        {error && <p role="alert" className="animate-shake mt-4 text-sm text-red-600">{error.message}</p>}
 
         <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
           <div className="border-b border-slate-100 px-6 py-5">
@@ -159,16 +169,23 @@ function StatCard({
   value,
   caption,
   accent,
+  delay = 0,
 }: {
   label: string;
   value: number;
   caption: string;
   accent?: boolean;
+  delay?: number;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6">
+    <div
+      style={{ animationDelay: `${delay}ms` }}
+      className="animate-enter rounded-2xl border border-slate-200 bg-white p-6 shadow-soft transition-all duration-base ease-out-expo hover:-translate-y-0.5 hover:shadow-lift"
+    >
       <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
-      <p className={`mt-2 text-3xl font-bold ${accent ? "text-indigo-600" : "text-slate-900"}`}>{value}</p>
+      <p className={`mt-2 text-3xl font-bold ${accent ? "text-indigo-600" : "text-slate-900"}`}>
+        <AnimatedNumber value={value} />
+      </p>
       <p className="mt-1 text-xs text-slate-400">{caption}</p>
     </div>
   );
@@ -188,12 +205,12 @@ function FilterTab({
   return (
     <Link
       href={href}
-      className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-colors ${
+      className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-all duration-base active:scale-95 ${
         active ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"
       }`}
     >
       {label}
-      {dot && <span className="h-1.5 w-1.5 rounded-full bg-red-500" />}
+      {dot && <span className="h-1.5 w-1.5 animate-soft-pulse rounded-full bg-red-500" />}
     </Link>
   );
 }

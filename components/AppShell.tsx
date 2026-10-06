@@ -38,13 +38,14 @@ function NavLink({
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+      aria-current={active ? "page" : undefined}
+      className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-base ${
         active
-          ? "bg-white/10 text-white"
+          ? "bg-white/10 text-white shadow-[inset_3px_0_0_0_#818cf8]"
           : "text-[#94a3b8] hover:bg-white/5 hover:text-[#f1f5f9]"
       }`}
     >
-      {icon}
+      <span className="transition-transform duration-base ease-out-expo group-hover:scale-110">{icon}</span>
       {label}
     </Link>
   );
@@ -156,7 +157,9 @@ export default function AppShell({
       </aside>
 
       <div className="flex-1">
-        <main className="px-4 py-8 sm:px-6 lg:px-10">{children}</main>
+        <main className="px-4 py-8 sm:px-6 lg:px-10">
+          <div className="animate-enter">{children}</div>
+        </main>
       </div>
     </div>
   );

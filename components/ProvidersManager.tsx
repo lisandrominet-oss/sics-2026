@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import EmptyState from "@/components/ui/EmptyState";
+import { notify, reportResult } from "@/lib/notify";
 import ProviderCategoryPicker from "@/components/ProviderCategoryPicker";
 import ProviderRow from "@/components/ProviderRow";
 import type { Database } from "@/lib/database.types";
@@ -140,6 +142,7 @@ export default function ProvidersManager({
           onCategoryCreated={addCategoryToState}
           onDone={() => {
             setShowAddForm(false);
+            notify.success("Proveedor agregado");
             router.refresh();
           }}
         />
@@ -152,7 +155,7 @@ export default function ProvidersManager({
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         {filtered.length === 0 ? (
-          <p className="px-6 py-10 text-center text-sm text-slate-400">No hay proveedores para mostrar.</p>
+          <EmptyState title="No hay proveedores para mostrar" description="Probá con otro filtro o agregá un proveedor nuevo." className="!border-0" />
         ) : (
           <ul className="divide-y divide-slate-100">
             {filtered.map((p) => (
@@ -327,7 +330,7 @@ function AddProviderForm({
         Tiene cuenta corriente (compras habituales, factura mensual)
       </label>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
       <button
         type="submit"
         disabled={loading}
@@ -366,12 +369,14 @@ function CategoriesManager({
     }
     onCategoryCreated(data);
     setNewName("");
+    notify.success("Categoría creada");
     router.refresh();
   }
 
   async function toggleActive(category: Category) {
     const supabase = createClient();
-    await supabase.from("provider_categories").update({ active: !category.active }).eq("id", category.id);
+    const { error } = await supabase.from("provider_categories").update({ active: !category.active }).eq("id", category.id);
+    reportResult(error, category.active ? "Categoría archivada" : "Categoría reactivada");
     router.refresh();
   }
 
@@ -407,7 +412,7 @@ function CategoriesManager({
           Agregar
         </button>
       </form>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
 }

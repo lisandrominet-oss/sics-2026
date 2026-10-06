@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notify, reportResult } from "@/lib/notify";
 import type { Database } from "@/lib/database.types";
 
 type Project = Database["public"]["Tables"]["projects"]["Row"];
@@ -25,12 +26,14 @@ export default function ProjectsManager({ projects }: { projects: Project[] }) {
       return;
     }
     setName("");
+    notify.success("Proyecto creado");
     router.refresh();
   }
 
   async function toggleActive(project: Project) {
     const supabase = createClient();
-    await supabase.from("projects").update({ active: !project.active }).eq("id", project.id);
+    const { error } = await supabase.from("projects").update({ active: !project.active }).eq("id", project.id);
+    reportResult(error, project.active ? "Proyecto archivado" : "Proyecto reactivado");
     router.refresh();
   }
 
@@ -83,7 +86,7 @@ export default function ProjectsManager({ projects }: { projects: Project[] }) {
             className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
         <button
           type="submit"
           disabled={loading}

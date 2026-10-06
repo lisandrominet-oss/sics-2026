@@ -59,6 +59,8 @@ const config: Config = {
       animation: {
         "fade-in": "fade-in 200ms ease-out both",
         "fade-up": "fade-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both",
+        // Igual que fade-up pero sin dejar `transform` aplicado al terminar (importa si adentro hay elementos `fixed`).
+        enter: "fade-up 360ms cubic-bezier(0.16, 1, 0.3, 1) backwards",
         "scale-in": "scale-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both",
         "slide-down": "slide-down 200ms cubic-bezier(0.16, 1, 0.3, 1) both",
         shimmer: "shimmer 1.6s linear infinite",

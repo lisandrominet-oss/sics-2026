@@ -16,3 +16,16 @@ export const notify = {
     messages: { loading: string; success: string; error: string }
   ) => toast.promise(promise, messages),
 };
+
+// Muestra el resultado de una operación de Supabase: error (persistente) o éxito. Devuelve true si salió bien.
+export function reportResult(
+  error: { message: string } | null | undefined,
+  successMessage: string
+): boolean {
+  if (error) {
+    notify.error("No se pudo completar la acción", error.message);
+    return false;
+  }
+  notify.success(successMessage);
+  return true;
+}

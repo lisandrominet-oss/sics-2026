@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notify } from "@/lib/notify";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
 import { STATUS_LABELS, sanitizeFileName, type SicStatus } from "@/lib/constants";
 
@@ -145,6 +146,7 @@ export default function NuevaSicForm({
       return;
     }
 
+    notify.success("SIC enviada", "Quedó registrada y pasa a revisión.");
     router.push(`/sic/${sic.id}`);
   }
 
@@ -251,7 +253,7 @@ export default function NuevaSicForm({
         </div>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
       {createdId && (
         <Link href={`/sic/${createdId}`} className="inline-block text-sm font-medium text-indigo-600 underline">
           Ir a la SIC creada

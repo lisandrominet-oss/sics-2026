@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notify, reportResult } from "@/lib/notify";
 import type { Database } from "@/lib/database.types";
 
 type Plant = Database["public"]["Tables"]["plants"]["Row"];
@@ -30,12 +31,14 @@ export default function PlantsManager({ plants }: { plants: Plant[] }) {
     }
     setName("");
     setPrefix("");
+    notify.success("Planta creada");
     router.refresh();
   }
 
   async function toggleActive(plant: Plant) {
     const supabase = createClient();
-    await supabase.from("plants").update({ active: !plant.active }).eq("id", plant.id);
+    const { error } = await supabase.from("plants").update({ active: !plant.active }).eq("id", plant.id);
+    reportResult(error, plant.active ? "Planta archivada" : "Planta reactivada");
     router.refresh();
   }
 
@@ -94,7 +97,7 @@ export default function PlantsManager({ plants }: { plants: Plant[] }) {
             />
           </div>
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
         <button
           type="submit"
           disabled={loading}

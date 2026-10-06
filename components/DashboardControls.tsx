@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SORT_OPTIONS } from "@/lib/constants";
+import { startNavProgress } from "@/lib/navProgress";
 
 export default function DashboardControls({
   defaultQuery,
@@ -28,6 +29,7 @@ export default function DashboardControls({
         params.set(key, value);
       }
     }
+    startNavProgress();
     router.push(`${pathname}?${params.toString()}`);
   }
 

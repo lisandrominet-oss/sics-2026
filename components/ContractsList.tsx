@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import EmptyState from "@/components/ui/EmptyState";
+import { notify } from "@/lib/notify";
 import { downloadContractsXlsx, type ContractExportRow } from "@/lib/exportContracts";
 import {
   CONTRACT_DISPLAY_STATUS_COLORS,
@@ -182,6 +184,7 @@ export default function ContractsList({
     const supabase = createClient();
     await supabase.rpc("set_contract_alert_attended", { p_kind: kind, p_target_id: targetId, p_attended: true });
     setAttending(null);
+    notify.success("Alerta marcada como atendida");
     router.refresh();
   }
 
@@ -377,7 +380,7 @@ export default function ContractsList({
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         {filtered.length === 0 ? (
-          <p className="px-6 py-10 text-center text-sm text-slate-400">No hay contratos para mostrar.</p>
+          <EmptyState title="No hay contratos para mostrar" description="Probá con otro filtro o cargá un contrato nuevo." className="!border-0" />
         ) : (
           <ul className="divide-y divide-slate-100">
             {filtered.map((s) => (

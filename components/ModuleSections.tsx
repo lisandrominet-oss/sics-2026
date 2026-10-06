@@ -35,7 +35,7 @@ export default function ModuleSections({ sections }: { sections: string[] }) {
 
       {selected && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4"
+          className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-slate-900/50 px-4 backdrop-blur-sm"
           onClick={() => setSelected(null)}
         >
           <div
@@ -43,7 +43,7 @@ export default function ModuleSections({ sections }: { sections: string[] }) {
             aria-modal="true"
             aria-label={`${selected}: módulo en construcción`}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-xl"
+            className="w-full max-w-sm animate-scale-in rounded-2xl bg-white p-8 text-center shadow-xl"
           >
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{selected}</p>
             <p className="mt-4 text-5xl" aria-hidden="true">

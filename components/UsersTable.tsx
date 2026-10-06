@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { notify } from "@/lib/notify";
 import { ROLE_LABELS, type UserRole } from "@/lib/constants";
 import type { Database } from "@/lib/database.types";
 
@@ -78,6 +79,7 @@ function UserRow({
       setError(error.message);
       return;
     }
+    notify.success("Usuario actualizado");
     router.refresh();
   }
 
@@ -139,7 +141,7 @@ function UserRow({
         >
           Guardar
         </button>
-        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+        {error && <p role="alert" className="animate-shake mt-1 text-xs text-red-600">{error}</p>}
       </td>
     </tr>
   );

@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { notify } from "@/lib/notify";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
 import ThemeSelector from "@/components/ThemeSelector";
 import UserAvatar, { AVATAR_EVENT, clearAvatarCache, setAvatarCache } from "@/components/UserAvatar";
 
@@ -44,6 +46,7 @@ export default function ProfilePreferences({
   plantName: string | null;
   avatarPath: string | null;
 }) {
+  const confirm = useConfirm();
   const inputRef = useRef<HTMLInputElement>(null);
   const [currentPath, setCurrentPath] = useState<string | null>(avatarPath);
   const [busy, setBusy] = useState(false);
@@ -82,6 +85,7 @@ export default function ProfilePreferences({
         setAvatarCache(userId, data.signedUrl);
         announce(data.signedUrl);
       }
+      notify.success("Foto de perfil actualizada");
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo guardar la foto");
     } finally {
@@ -92,7 +96,14 @@ export default function ProfilePreferences({
 
   async function removePhoto() {
     if (!currentPath) return;
-    if (!confirm("¿Quitar tu foto de perfil?")) return;
+    if (
+      !(await confirm({
+        title: "¿Quitar tu foto de perfil?",
+        confirmLabel: "Quitar foto",
+        destructive: true,
+      }))
+    )
+      return;
     setBusy(true);
     setError(null);
     const supabase = createClient();
@@ -106,6 +117,7 @@ export default function ProfilePreferences({
     setCurrentPath(null);
     clearAvatarCache(userId);
     announce(null);
+    notify.success("Foto de perfil eliminada");
     setBusy(false);
   }
 
@@ -149,7 +161,7 @@ export default function ProfilePreferences({
             <p className="mt-2 text-xs text-slate-500">
               Opcional. Desde el celular podés sacarla en el momento. Solo la ves vos.
             </p>
-            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+            {error && <p role="alert" className="animate-shake mt-2 text-sm text-red-600">{error}</p>}
           </div>
         </div>
 

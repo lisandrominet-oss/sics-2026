@@ -41,13 +41,13 @@ export default function FilePreview({
       </button>
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
+          className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-black/70 p-6 backdrop-blur-sm"
           onClick={() => setOpen(false)}
         >
           <img
             src={url}
             alt={fileName}
-            className="max-h-full max-w-full rounded-lg shadow-2xl"
+            className="max-h-full max-w-full animate-scale-in rounded-lg shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
