@@ -28,7 +28,7 @@ export default async function NuevaSicPage() {
       fullName={profile.full_name}
     >
       <div className="mx-auto max-w-2xl">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Sistema de Compras</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Servicios Industriales</p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">Nueva solicitud interna de compra</h1>
         <p className="mt-2 text-sm text-slate-500">
           {role === "operativo" || role === "panol"

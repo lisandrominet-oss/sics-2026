@@ -12,7 +12,7 @@ import { THEME_INIT_SCRIPT } from "@/lib/theme";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Sistema de Compras",
+  title: "Servicios Industriales",
   description: "Gestión de solicitudes internas de compra",
 };
 

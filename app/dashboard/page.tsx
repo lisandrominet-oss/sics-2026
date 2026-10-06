@@ -92,7 +92,7 @@ export default async function DashboardPage({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Sistema de Compras
+              Servicios Industriales
             </p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">Tablero</h1>
           </div>

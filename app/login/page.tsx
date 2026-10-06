@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { IconGoogle } from "@/components/icons";
+import BrandLogoFull from "@/components/BrandLogoFull";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -53,12 +54,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       <div className="hidden w-1/2 flex-col justify-between bg-slate-900 p-12 lg:flex">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500 text-base font-bold text-white">
-            SC
-          </div>
-          <span className="text-lg font-semibold text-white">Sistema de Compras</span>
-        </div>
+        <img src="/brand/logo-completo-negativo.svg" alt="Servicios Industriales" className="h-16 w-auto self-start" />
         <div className="max-w-md animate-enter [animation-delay:120ms]">
           <p className="text-3xl font-bold leading-snug text-white">
             Toda la gestión de compras de Servicios Industriales, de punta a punta.
@@ -73,11 +69,8 @@ export default function LoginPage() {
 
       <div className="flex flex-1 items-center justify-center bg-slate-50 px-4 py-12">
         <div className="w-full max-w-sm">
-          <div className="mb-8 flex items-center justify-center gap-2.5 lg:hidden">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500 text-sm font-bold text-white">
-              SC
-            </div>
-            <span className="text-sm font-semibold text-slate-900">Sistema de Compras</span>
+          <div className="mb-8 flex justify-center lg:hidden">
+            <BrandLogoFull className="h-14 w-auto" />
           </div>
 
           <Suspense fallback={null}>

@@ -70,15 +70,8 @@ export default function AppShell({
     <div className="min-h-screen bg-slate-50 lg:flex">
       <InactivityGuard />
       <aside className="flex w-full shrink-0 flex-col bg-slate-900 px-4 py-6 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:self-start lg:overflow-y-auto dark:lg:border-r dark:lg:border-white/10">
-        <Link href="/dashboard" className="flex items-center gap-2.5 px-2">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500 text-sm font-bold text-white">
-            SC
-          </div>
-          <span className="text-sm font-semibold leading-tight text-white">
-            Sistema de
-            <br />
-            Compras
-          </span>
+        <Link href="/dashboard" className="block px-2" aria-label="Servicios Industriales: ir al Tablero">
+          <img src="/brand/logo-completo-negativo.svg" alt="" className="h-14 w-auto" />
         </Link>
 
         <div className="mt-6">
