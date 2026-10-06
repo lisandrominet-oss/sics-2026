@@ -19,7 +19,7 @@ export default function SignOutButton({ variant = "dark" }: { variant?: "dark" |
       onClick={signOut}
       className={`flex items-center gap-2 text-sm font-medium ${
         variant === "dark"
-          ? "text-slate-400 hover:text-white"
+          ? "text-[#94a3b8] hover:text-white"
           : "text-slate-500 hover:text-slate-900"
       }`}
     >

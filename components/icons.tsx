@@ -186,3 +186,29 @@ export function IconBarChart({ className = "h-5 w-5" }: { className?: string }) 
     </svg>
   );
 }
+
+export function IconSun({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconMoon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className}>
+      <path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconMonitor({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className}>
+      <rect x="3" y="4.5" width="18" height="12" rx="2" />
+      <path d="M8.5 20h7M12 16.5V20" strokeLinecap="round" />
+    </svg>
+  );
+}

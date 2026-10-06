@@ -553,6 +553,7 @@ export type Database = {
         Row: {
           acting_as_role: Database["public"]["Enums"]["user_role"] | null
           active: boolean
+          avatar_path: string | null
           created_at: string
           department: string | null
           email: string
@@ -564,6 +565,7 @@ export type Database = {
         Insert: {
           acting_as_role?: Database["public"]["Enums"]["user_role"] | null
           active?: boolean
+          avatar_path?: string | null
           created_at?: string
           department?: string | null
           email: string
@@ -575,6 +577,7 @@ export type Database = {
         Update: {
           acting_as_role?: Database["public"]["Enums"]["user_role"] | null
           active?: boolean
+          avatar_path?: string | null
           created_at?: string
           department?: string | null
           email?: string
@@ -2059,6 +2062,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      set_my_avatar: { Args: { p_path?: string }; Returns: undefined }
       set_sic_current_account_amount: {
         Args: { p_amount: number; p_note?: string; p_sic_id: string }
         Returns: {
@@ -2129,6 +2133,7 @@ export type Database = {
         Returns: {
           acting_as_role: Database["public"]["Enums"]["user_role"] | null
           active: boolean
+          avatar_path: string | null
           created_at: string
           department: string | null
           email: string

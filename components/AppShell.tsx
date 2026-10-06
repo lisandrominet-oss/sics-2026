@@ -6,6 +6,7 @@ import SignOutButton from "@/components/SignOutButton";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import NotificationsBell from "@/components/NotificationsBell";
 import InactivityGuard from "@/components/InactivityGuard";
+import UserAvatar from "@/components/UserAvatar";
 import {
   IconBadge,
   IconBarChart,
@@ -21,12 +22,6 @@ import {
 } from "@/components/icons";
 import { CAN_CREATE_SIC, ROLE_LABELS, type UserRole } from "@/lib/constants";
 import { DEMO_MODULE_ROLES } from "@/lib/modules";
-
-function initials(name: string | null) {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
-}
 
 function NavLink({
   href,
@@ -46,7 +41,7 @@ function NavLink({
       className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
         active
           ? "bg-white/10 text-white"
-          : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
+          : "text-[#94a3b8] hover:bg-white/5 hover:text-[#f1f5f9]"
       }`}
     >
       {icon}
@@ -73,7 +68,7 @@ export default function AppShell({
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
       <InactivityGuard />
-      <aside className="flex w-full shrink-0 flex-col bg-slate-900 px-4 py-6 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:self-start lg:overflow-y-auto">
+      <aside className="flex w-full shrink-0 flex-col bg-slate-900 px-4 py-6 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:self-start lg:overflow-y-auto dark:lg:border-r dark:lg:border-white/10">
         <Link href="/dashboard" className="flex items-center gap-2.5 px-2">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500 text-sm font-bold text-white">
             SC
@@ -90,7 +85,7 @@ export default function AppShell({
         </div>
 
         <nav className="mt-6 flex-1 space-y-1">
-          <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-[#64748b]">
             Principal
           </p>
           <NavLink href="/dashboard" label="Tablero" icon={<IconGrid />} />
@@ -100,7 +95,7 @@ export default function AppShell({
 
           {(role === "compras" || role === "admin") && (
             <>
-              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#64748b]">
                 Compras
               </p>
               <NavLink href="/proveedores" label="Proveedores" icon={<IconTruck />} />
@@ -110,7 +105,7 @@ export default function AppShell({
 
           {(DEMO_MODULE_ROLES as readonly string[]).includes(role) && (
             <>
-              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#64748b]">
                 Módulos
               </p>
               <NavLink href="/modulos/recursos-humanos" label="Recursos Humanos" icon={<IconBadge />} />
@@ -121,7 +116,7 @@ export default function AppShell({
 
           {role === "gerencia" && (
             <>
-              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#64748b]">
                 Sistema
               </p>
               <NavLink href="/usuarios" label="Usuarios" icon={<IconUsers />} />
@@ -130,7 +125,7 @@ export default function AppShell({
 
           {role === "admin" && (
             <>
-              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#64748b]">
                 Sistema
               </p>
               <NavLink href="/admin/usuarios" label="Usuarios" icon={<IconUsers />} />
@@ -143,15 +138,17 @@ export default function AppShell({
 
         <div className="mt-6 space-y-3 border-t border-white/10 pt-4">
           {realRole === "admin" && <RoleSwitcher userId={userId} actingAsRole={actingAsRole} />}
-          <div className="flex items-center gap-2.5 px-2">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-700 text-xs font-semibold text-white">
-              {initials(fullName)}
-            </div>
+          <Link
+            href="/preferencias"
+            title="Preferencias"
+            className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/5"
+          >
+            <UserAvatar userId={userId} fullName={fullName} />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-white">{fullName ?? "Usuario"}</p>
-              <p className="truncate text-xs text-slate-400">{ROLE_LABELS[role]}</p>
+              <p className="truncate text-xs text-[#94a3b8]">{ROLE_LABELS[role]}</p>
             </div>
-          </div>
+          </Link>
           <div className="px-2">
             <SignOutButton />
           </div>
