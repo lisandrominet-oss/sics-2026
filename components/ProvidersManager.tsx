@@ -1,10 +1,12 @@
 "use client";
 
-import { inputClass } from "@/lib/ui";
+import { inputClass, labelClass } from "@/lib/ui";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import EmptyState from "@/components/ui/EmptyState";
+import Button from "@/components/ui/Button";
+import Card, { cardClass } from "@/components/ui/Card";
 import { notify, reportResult } from "@/lib/notify";
 import ProviderCategoryPicker from "@/components/ProviderCategoryPicker";
 import ProviderRow from "@/components/ProviderRow";
@@ -115,20 +117,12 @@ export default function ProvidersManager({
             ))}
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowCategoriesManager((v) => !v)}
-            className="rounded-lg border border-slate-300 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
+          <Button variant="secondary" onClick={() => setShowCategoriesManager((v) => !v)}>
             Categorías
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowAddForm((v) => !v)}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-          >
+          </Button>
+          <Button onClick={() => setShowAddForm((v) => !v)}>
             {showAddForm ? "Cancelar" : "+ Agregar proveedor"}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -154,7 +148,7 @@ export default function ProvidersManager({
         Mostrar archivados
       </label>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <Card padding="none" className="overflow-hidden">
         {filtered.length === 0 ? (
           <EmptyState title="No hay proveedores para mostrar" description="Probá con otro filtro o agregá un proveedor nuevo." className="!border-0" />
         ) : (
@@ -173,7 +167,7 @@ export default function ProvidersManager({
             ))}
           </ul>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
@@ -246,11 +240,11 @@ function AddProviderForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-xl border border-slate-200 bg-white p-5">
+    <form onSubmit={handleSubmit} className={cardClass({ className: "space-y-3" })}>
       <h2 className="text-sm font-semibold text-slate-900">Nuevo proveedor</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Nombre / Razón social</label>
+          <label className={labelClass}>Nombre / Razón social</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -259,7 +253,7 @@ function AddProviderForm({
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Contacto</label>
+          <label className={labelClass}>Contacto</label>
           <input
             value={contactName}
             onChange={(e) => setContactName(e.target.value)}
@@ -268,7 +262,7 @@ function AddProviderForm({
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Mail</label>
+          <label className={labelClass}>Mail</label>
           <input
             type="email"
             value={email}
@@ -277,7 +271,7 @@ function AddProviderForm({
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Teléfono</label>
+          <label className={labelClass}>Teléfono</label>
           <input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -285,7 +279,7 @@ function AddProviderForm({
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">CUIT</label>
+          <label className={labelClass}>CUIT</label>
           <input
             value={taxId}
             onChange={(e) => setTaxId(e.target.value)}
@@ -293,7 +287,7 @@ function AddProviderForm({
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Condición ante IVA</label>
+          <label className={labelClass}>Condición ante IVA</label>
           <input
             value={taxStatus}
             onChange={(e) => setTaxStatus(e.target.value)}
@@ -302,7 +296,7 @@ function AddProviderForm({
           />
         </div>
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-slate-700">Forma de pago</label>
+          <label className={labelClass}>Forma de pago</label>
           <input
             value={paymentTerms}
             onChange={(e) => setPaymentTerms(e.target.value)}
@@ -332,13 +326,9 @@ function AddProviderForm({
       </label>
 
       {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button type="submit" loading={loading}>
         {loading ? "Guardando…" : "Guardar proveedor"}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -382,18 +372,15 @@ function CategoriesManager({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
+    <Card>
       <h2 className="text-sm font-semibold text-slate-900">Categorías de proveedores</h2>
       <ul className="mt-3 divide-y divide-slate-100">
         {categories.map((c) => (
           <li key={c.id} className="flex items-center justify-between py-2 text-sm">
             <span className={c.active ? "text-slate-700" : "text-slate-400"}>{c.name}</span>
-            <button
-              onClick={() => toggleActive(c)}
-              className="text-xs font-medium text-slate-600 underline"
-            >
+            <Button variant="ghost" size="sm" onClick={() => toggleActive(c)}>
               {c.active ? "Desactivar" : "Activar"}
-            </button>
+            </Button>
           </li>
         ))}
         {categories.length === 0 && <p className="py-2 text-sm text-slate-400">Sin categorías todavía.</p>}
@@ -405,15 +392,11 @@ function CategoriesManager({
           placeholder="Nueva categoría"
           className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-sm"
         />
-        <button
-          type="submit"
-          disabled={loading}
-          className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-        >
+        <Button type="submit" loading={loading} className="shrink-0">
           Agregar
-        </button>
+        </Button>
       </form>
       {error && <p role="alert" className="animate-shake mt-1 text-xs text-red-600">{error}</p>}
-    </div>
+    </Card>
   );
 }

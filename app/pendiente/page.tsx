@@ -1,10 +1,11 @@
 import SignOutButton from "@/components/SignOutButton";
 import BrandLogoFull from "@/components/BrandLogoFull";
+import Card from "@/components/ui/Card";
 
 export default function PendientePage() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-slate-50 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <Card padding="none" elevated className="w-full max-w-md p-8 text-center">
         <div className="flex justify-center">
           <BrandLogoFull className="h-14 w-auto" />
         </div>
@@ -16,7 +17,7 @@ export default function PendientePage() {
         <div className="mt-6 flex justify-center">
           <SignOutButton variant="light" />
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

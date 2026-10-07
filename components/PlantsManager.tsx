@@ -1,10 +1,12 @@
 "use client";
 
-import { inputClass } from "@/lib/ui";
+import { inputClass, labelClass } from "@/lib/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify, reportResult } from "@/lib/notify";
+import Button from "@/components/ui/Button";
+import Card, { cardClass } from "@/components/ui/Card";
 import type { Database } from "@/lib/database.types";
 
 type Plant = Database["public"]["Tables"]["plants"]["Row"];
@@ -14,12 +16,10 @@ export default function PlantsManager({ plants }: { plants: Plant[] }) {
   const [name, setName] = useState("");
   const [prefix, setPrefix] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function addPlant(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
     const supabase = createClient();
     const { error } = await supabase.from("plants").insert({
       name,
@@ -27,7 +27,7 @@ export default function PlantsManager({ plants }: { plants: Plant[] }) {
     });
     setLoading(false);
     if (error) {
-      setError(error.message);
+      notify.error("No se pudo crear la planta", error.message);
       return;
     }
     setName("");
@@ -45,7 +45,7 @@ export default function PlantsManager({ plants }: { plants: Plant[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <Card padding="none" className="overflow-x-auto">
         <table className="tabla-fija-1 w-full min-w-[480px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase text-slate-500">
             <tr>
@@ -62,24 +62,21 @@ export default function PlantsManager({ plants }: { plants: Plant[] }) {
                 <td className="px-4 py-3 font-mono text-slate-700">{p.prefix}</td>
                 <td className="px-4 py-3">{p.active ? "Sí" : "No"}</td>
                 <td className="px-4 py-3">
-                  <button
-                    onClick={() => toggleActive(p)}
-                    className="text-xs font-medium text-slate-600 underline"
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => toggleActive(p)}>
                     {p.active ? "Desactivar" : "Activar"}
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </Card>
 
-      <form onSubmit={addPlant} className="space-y-3 rounded-xl border border-slate-200 bg-white p-5">
+      <form onSubmit={addPlant} className={cardClass({ className: "space-y-3" })}>
         <h2 className="text-sm font-semibold text-slate-900">Agregar planta</h2>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-700">Nombre</label>
+            <label className={labelClass}>Nombre</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -88,7 +85,7 @@ export default function PlantsManager({ plants }: { plants: Plant[] }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700">Prefijo</label>
+            <label className={labelClass}>Prefijo</label>
             <input
               value={prefix}
               onChange={(e) => setPrefix(e.target.value)}
@@ -98,14 +95,9 @@ export default function PlantsManager({ plants }: { plants: Plant[] }) {
             />
           </div>
         </div>
-        {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-        >
+        <Button type="submit" loading={loading}>
           Agregar
-        </button>
+        </Button>
       </form>
     </div>
   );

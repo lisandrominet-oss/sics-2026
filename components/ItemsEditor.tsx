@@ -1,6 +1,7 @@
 "use client";
 
 import { inputClass } from "@/lib/ui";
+import Button from "@/components/ui/Button";
 import { MAX_SIC_ITEMS } from "@/lib/constants";
 
 export type ItemDraft = {
@@ -56,13 +57,9 @@ export default function ItemsEditor({
               Artículo {index + 1}
             </span>
             {items.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeItem(index)}
-                className="text-xs font-medium text-red-600 hover:underline"
-              >
+              <Button variant="link-danger" size="sm" onClick={() => removeItem(index)}>
                 Quitar
-              </button>
+              </Button>
             )}
           </div>
 
@@ -149,14 +146,9 @@ export default function ItemsEditor({
         </div>
       ))}
 
-      <button
-        type="button"
-        onClick={addItem}
-        disabled={items.length >= MAX_SIC_ITEMS}
-        className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-      >
+      <Button variant="secondary" size="sm" onClick={addItem} disabled={items.length >= MAX_SIC_ITEMS}>
         Agregar artículo ({items.length}/{MAX_SIC_ITEMS})
-      </button>
+      </Button>
     </div>
   );
 }

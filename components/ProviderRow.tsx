@@ -11,6 +11,7 @@ import ProviderCategoryPicker from "@/components/ProviderCategoryPicker";
 import { sanitizeFileName } from "@/lib/constants";
 import type { Database } from "@/lib/database.types";
 import InfoItem from "@/components/ui/InfoItem";
+import Button from "@/components/ui/Button";
 
 type Provider = Database["public"]["Tables"]["providers"]["Row"];
 type Category = { id: string; name: string; active: boolean };
@@ -55,7 +56,6 @@ export default function ProviderRow({
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState(provider.name);
   const [contactName, setContactName] = useState(provider.contact_name ?? "");
@@ -110,7 +110,6 @@ export default function ProviderRow({
 
   async function save() {
     setSaving(true);
-    setError(null);
     const supabase = createClient();
 
     const { error: updateError } = await supabase
@@ -129,7 +128,7 @@ export default function ProviderRow({
 
     if (updateError) {
       setSaving(false);
-      setError(updateError.message);
+      notify.error("No se pudo guardar el proveedor", updateError.message);
       return;
     }
 
@@ -165,7 +164,7 @@ export default function ProviderRow({
       .insert({ provider_id: provider.id, author_id: currentUserId, comment: text });
     setCommentLoading(false);
     if (error) {
-      setError(error.message);
+      notify.error("No se pudo agregar el comentario", error.message);
       return;
     }
     setNewComment("");
@@ -175,7 +174,6 @@ export default function ProviderRow({
 
   async function uploadFile(file: File) {
     setUploading(true);
-    setError(null);
     const supabase = createClient();
     const path = `${provider.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
     const { error: upErr } = await supabase.storage
@@ -183,7 +181,7 @@ export default function ProviderRow({
       .upload(path, file, { contentType: file.type || "application/octet-stream" });
     if (upErr) {
       setUploading(false);
-      setError(upErr.message);
+      notify.error("No se pudo subir el archivo", upErr.message);
       return;
     }
     const { error: insertErr } = await supabase.from("provider_files").insert({
@@ -194,7 +192,7 @@ export default function ProviderRow({
     });
     setUploading(false);
     if (insertErr) {
-      setError(insertErr.message);
+      notify.error("No se pudo registrar el archivo", insertErr.message);
       return;
     }
     if (fileInput.current) fileInput.current.value = "";
@@ -205,23 +203,16 @@ export default function ProviderRow({
   return (
     <li className={`px-6 py-4 ${!provider.active ? "opacity-60" : ""}`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left"
-        >
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleFavorite();
-            }}
+            onClick={toggleFavorite}
             title={provider.favorite ? "Quitar de favoritos" : "Marcar como favorito"}
             className={`shrink-0 text-lg ${provider.favorite ? "text-amber-500" : "text-slate-300"}`}
           >
             ★
           </button>
-          <div className="min-w-0">
+          <button type="button" onClick={() => setExpanded((v) => !v)} className="min-w-0 flex-1 text-left">
             <p className="truncate text-sm font-semibold text-slate-900">
               {provider.name}
               {!provider.active && <span className="ml-2 text-xs font-normal text-slate-400">(archivado)</span>}
@@ -229,8 +220,8 @@ export default function ProviderRow({
             <p className="truncate text-xs text-slate-500">
               {[provider.contact_name, provider.email, provider.phone].filter(Boolean).join(" · ") || "-"}
             </p>
-          </div>
-        </button>
+          </button>
+        </div>
         <div className="flex flex-wrap items-center gap-1.5">
           {provider.has_current_account && (
             <span className="rounded-full bg-violet-100 px-2.5 py-1 text-xs font-semibold text-violet-700">
@@ -255,24 +246,15 @@ export default function ProviderRow({
               <InfoItem label="Contacto" value={provider.contact_name || "-"} />
               <InfoItem label="Cuenta corriente" value={provider.has_current_account ? "Habilitada" : "No"} />
               <div className="col-span-2 flex flex-wrap gap-2 pt-1">
-                <button
-                  onClick={() => setEditing(true)}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                >
+                <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
                   Editar datos
-                </button>
-                <button
-                  onClick={toggleActive}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                >
+                </Button>
+                <Button variant="secondary" size="sm" onClick={toggleActive}>
                   {provider.active ? "Archivar" : "Reactivar"}
-                </button>
-                <button
-                  onClick={remove}
-                  className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
-                >
+                </Button>
+                <Button variant="danger-outline" size="sm" onClick={remove}>
                   Eliminar definitivamente
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -316,24 +298,15 @@ export default function ProviderRow({
                 Tiene cuenta corriente (compras habituales, factura mensual)
               </label>
               <div className="flex gap-2">
-                <button
-                  onClick={save}
-                  disabled={saving}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-                >
+                <Button onClick={save} loading={saving}>
                   {saving ? "Guardando…" : "Guardar"}
-                </button>
-                <button
-                  onClick={() => setEditing(false)}
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-white"
-                >
+                </Button>
+                <Button variant="secondary" onClick={() => setEditing(false)}>
                   Cancelar
-                </button>
+                </Button>
               </div>
             </div>
           )}
-
-          {error && <p role="alert" className="animate-shake text-xs text-red-600">{error}</p>}
 
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -358,13 +331,16 @@ export default function ProviderRow({
                 onKeyDown={(e) => e.key === "Enter" && addComment()}
                 className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
               />
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={addComment}
-                disabled={commentLoading || !newComment.trim()}
-                className="shrink-0 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                loading={commentLoading}
+                disabled={!newComment.trim()}
+                className="shrink-0"
               >
                 Agregar
-              </button>
+              </Button>
             </div>
           </div>
 

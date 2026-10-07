@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
+import Button from "@/components/ui/Button";
+import { inputCompactClass } from "@/lib/ui";
 import { ROLE_LABELS, type UserRole } from "@/lib/constants";
 import type { Database } from "@/lib/database.types";
 
@@ -59,11 +61,9 @@ function UserRow({
   const [plantId, setPlantId] = useState(profile.plant_id ?? "");
   const [active, setActive] = useState(profile.active);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function save() {
     setSaving(true);
-    setError(null);
     const supabase = createClient();
     const { error } = await supabase
       .from("profiles")
@@ -76,7 +76,7 @@ function UserRow({
       .eq("id", profile.id);
     setSaving(false);
     if (error) {
-      setError(error.message);
+      notify.error("No se pudo guardar el usuario", error.message);
       return;
     }
     notify.success("Usuario actualizado");
@@ -93,7 +93,7 @@ function UserRow({
         <select
           value={role}
           onChange={(e) => setRole(e.target.value as UserRole)}
-          className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+          className={inputCompactClass}
         >
           <option value="">Sin rol</option>
           {ROLES.map((r) => (
@@ -108,14 +108,14 @@ function UserRow({
           value={department}
           onChange={(e) => setDepartment(e.target.value)}
           placeholder="Ej: Mantenimiento"
-          className="w-36 rounded-md border border-slate-300 px-2 py-1 text-sm"
+          className={`w-36 ${inputCompactClass}`}
         />
       </td>
       <td className="px-4 py-3">
         <select
           value={plantId}
           onChange={(e) => setPlantId(e.target.value)}
-          className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+          className={inputCompactClass}
         >
           <option value="">-</option>
           {plants.map((pl) => (
@@ -134,14 +134,9 @@ function UserRow({
         />
       </td>
       <td className="px-4 py-3">
-        <button
-          onClick={save}
-          disabled={saving}
-          className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-        >
+        <Button size="sm" onClick={save} loading={saving}>
           Guardar
-        </button>
-        {error && <p role="alert" className="animate-shake mt-1 text-xs text-red-600">{error}</p>}
+        </Button>
       </td>
     </tr>
   );

@@ -1,11 +1,13 @@
 "use client";
 
-import { inputClass } from "@/lib/ui";
+import { inputClass, inputCompactClass, labelClass } from "@/lib/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify, reportResult } from "@/lib/notify";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import { ROLE_LABELS, type UserRole } from "@/lib/constants";
 import type { Database } from "@/lib/database.types";
 
@@ -25,7 +27,7 @@ export default function ProvisioningManager({
   const [showForm, setShowForm] = useState(false);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white">
+    <Card padding="none">
       <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Accesos</p>
@@ -37,12 +39,9 @@ export default function ProvisioningManager({
             corporativa, van a tener el rol y el cargo asignados automáticamente.
           </p>
         </div>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-        >
+        <Button onClick={() => setShowForm((v) => !v)} className="shrink-0">
           {showForm ? "Cancelar" : "+ Añadir usuario"}
-        </button>
+        </Button>
       </div>
 
       {showForm && (
@@ -67,7 +66,7 @@ export default function ProvisioningManager({
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -110,7 +109,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
     <form onSubmit={handleSubmit} className="space-y-3 border-b border-slate-100 bg-slate-50 px-6 py-5">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Nombre</label>
+          <label className={labelClass}>Nombre</label>
           <input
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
@@ -119,7 +118,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Cuenta de Gmail</label>
+          <label className={labelClass}>Cuenta de Gmail</label>
           <input
             type="email"
             value={email}
@@ -132,7 +131,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Rol</label>
+          <label className={labelClass}>Rol</label>
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as UserRole)}
@@ -146,7 +145,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Departamento / Cargo</label>
+          <label className={labelClass}>Departamento / Cargo</label>
           <input
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
@@ -155,7 +154,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Planta por defecto</label>
+          <label className={labelClass}>Planta por defecto</label>
           <select
             value={plantId}
             onChange={(e) => setPlantId(e.target.value)}
@@ -175,13 +174,9 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
         Activo (si está desmarcado, va a quedar pausado apenas inicie sesión)
       </label>
       {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button type="submit" loading={loading}>
         {loading ? "Guardando…" : "Guardar"}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -194,11 +189,9 @@ function ProvisionedRow({ entry, plants }: { entry: Provisioned; plants: Plant[]
   const [plantId, setPlantId] = useState(entry.plant_id ?? "");
   const [active, setActive] = useState(entry.active);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function save() {
     setSaving(true);
-    setError(null);
     const supabase = createClient();
     const { error } = await supabase
       .from("user_provisioning")
@@ -206,7 +199,7 @@ function ProvisionedRow({ entry, plants }: { entry: Provisioned; plants: Plant[]
       .eq("id", entry.id);
     setSaving(false);
     if (error) {
-      setError(error.message);
+      notify.error("No se pudo guardar el acceso", error.message);
       return;
     }
     notify.success("Acceso actualizado");
@@ -238,7 +231,7 @@ function ProvisionedRow({ entry, plants }: { entry: Provisioned; plants: Plant[]
       <select
         value={role}
         onChange={(e) => setRole(e.target.value as UserRole)}
-        className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+        className={inputCompactClass}
       >
         {ROLES.map((r) => (
           <option key={r} value={r}>
@@ -250,12 +243,12 @@ function ProvisionedRow({ entry, plants }: { entry: Provisioned; plants: Plant[]
         value={department}
         onChange={(e) => setDepartment(e.target.value)}
         placeholder="Departamento"
-        className="w-40 rounded-md border border-slate-300 px-2 py-1 text-sm"
+        className={`w-40 ${inputCompactClass}`}
       />
       <select
         value={plantId}
         onChange={(e) => setPlantId(e.target.value)}
-        className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+        className={inputCompactClass}
       >
         <option value="">Sin planta</option>
         {plants.map((p) => (
@@ -268,17 +261,12 @@ function ProvisionedRow({ entry, plants }: { entry: Provisioned; plants: Plant[]
         <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
         Activo
       </label>
-      <button
-        onClick={save}
-        disabled={saving}
-        className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button size="sm" onClick={save} loading={saving}>
         Guardar
-      </button>
-      <button onClick={remove} className="text-xs font-medium text-red-600 hover:underline">
+      </Button>
+      <Button variant="link-danger" size="sm" onClick={remove}>
         Eliminar
-      </button>
-      {error && <p role="alert" className="animate-shake w-full text-xs text-red-600">{error}</p>}
+      </Button>
     </li>
   );
 }

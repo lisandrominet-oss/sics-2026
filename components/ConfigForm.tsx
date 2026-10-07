@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
+import Button from "@/components/ui/Button";
+import { cardClass } from "@/components/ui/Card";
 
 export default function ConfigForm({
   threshold,
@@ -53,7 +55,7 @@ export default function ConfigForm({
   }
 
   return (
-    <form onSubmit={save} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+    <form onSubmit={save} className={cardClass({ padding: "lg", className: "space-y-4" })}>
       <div>
         <label className="block text-sm font-medium text-slate-700">
           Monto tope para aprobación de Gerencia (ARS)
@@ -78,13 +80,9 @@ export default function ConfigForm({
       </div>
       {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
       {saved && <p className="text-sm text-emerald-600">Guardado.</p>}
-      <button
-        type="submit"
-        disabled={saving}
-        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button type="submit" loading={saving}>
         Guardar
-      </button>
+      </Button>
     </form>
   );
 }

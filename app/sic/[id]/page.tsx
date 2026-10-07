@@ -19,6 +19,8 @@ import {
 } from "@/lib/constants";
 import type { SicExportRow } from "@/lib/exportSics";
 import InfoItem from "@/components/ui/InfoItem";
+import Badge from "@/components/ui/Badge";
+import Card from "@/components/ui/Card";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -114,20 +116,16 @@ export default async function SicDetailPage({ params }: { params: { id: string }
               <ExportSicButton rows={exportRows} filename={`${sic.code}.xlsx`} label="Exportar a Excel" />
             )}
             {isCurrentAccount && (
-              <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-700">
-                Cuenta corriente
-              </span>
+              <Badge tone="violet">Cuenta corriente</Badge>
             )}
             {isDirect && (
-              <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700">
-                Compra directa
-              </span>
+              <Badge tone="sky">Compra directa</Badge>
             )}
             <StatusBadge status={sic.status} />
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+        <Card className="mt-6 grid grid-cols-2 gap-4 text-sm">
           <InfoItem label="Planta" value={plant ? `${plant.name} (${plant.prefix})` : "-"} />
           <InfoItem label="Proyecto" value={project?.name ?? "-"} />
           <InfoItem label="Solicitante" value={requester?.full_name ?? requester?.email ?? "-"} />
@@ -142,7 +140,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           <InfoItem label="Monto final" value={formatAmount(sic.final_amount, sic.currency)} />
           <InfoItem label="Orden de compra" value={sic.po_number ?? "-"} />
           <InfoItem label="Última actualización" value={formatDate(sic.updated_at)} />
-        </div>
+        </Card>
 
         {(parentSic || (children ?? []).length > 0) && (
           <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
@@ -173,7 +171,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           </div>
         )}
 
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+        <Card className="mt-4 text-sm">
           <h2 className="font-semibold text-slate-900">Artículos solicitados</h2>
           <div className="mt-3 space-y-3">
             {(items ?? []).map((item, i) => {
@@ -230,9 +228,9 @@ export default async function SicDetailPage({ params }: { params: { id: string }
               );
             })}
           </div>
-        </div>
+        </Card>
 
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+        <Card className="mt-4 text-sm">
           <h2 className="font-semibold text-slate-900">Archivos de la SIC</h2>
           {filesWithUrls.filter((f) => !f.item_id).length === 0 ? (
             <p className="mt-2 text-slate-400">Todavía no hay archivos adjuntos.</p>
@@ -250,7 +248,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
                 ))}
             </ul>
           )}
-        </div>
+        </Card>
 
         <div className="mt-6">
           <SicActions
@@ -304,7 +302,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           />
         </div>
 
-        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+        <Card className="mt-6 text-sm">
           <h2 className="font-semibold text-slate-900">Historial</h2>
           <ul className="mt-3 space-y-3">
             {events?.map((ev) => (
@@ -318,7 +316,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
               </li>
             ))}
           </ul>
-        </div>
+        </Card>
       </div>
     </AppShell>
   );

@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { IconGoogle } from "@/components/icons";
 import BrandLogoFull from "@/components/BrandLogoFull";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -32,21 +34,17 @@ function LoginForm() {
   }
 
   return (
-    <div className="animate-enter rounded-xl border border-slate-200 bg-white p-8 text-center shadow-soft">
+    <Card padding="none" elevated className="animate-enter p-8 text-center">
       <h1 className="text-xl font-bold text-slate-900">Bienvenido</h1>
       <p className="mt-2 text-sm text-slate-500">
         Ingresá con tu cuenta de Google corporativa para continuar.
       </p>
-      <button
-        onClick={signInWithGoogle}
-        disabled={loading}
-        className="mt-6 flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
-      >
+      <Button variant="secondary" size="lg" onClick={signInWithGoogle} loading={loading} className="mt-6 w-full">
         <IconGoogle />
         {loading ? "Redirigiendo…" : "Ingresar con Google"}
-      </button>
+      </Button>
       {error && <p role="alert" className="animate-shake mt-4 text-sm text-red-600">{error}</p>}
-    </div>
+    </Card>
   );
 }
 

@@ -1,11 +1,13 @@
 "use client";
 
-import { inputClass } from "@/lib/ui";
+import { inputClass, inputCompactClass, labelClass } from "@/lib/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import EmptyState from "@/components/ui/EmptyState";
 import { notify } from "@/lib/notify";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 import {
   ROLES_REQUIRING_PLANT,
@@ -18,8 +20,6 @@ import type { Database } from "@/lib/database.types";
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type Provisioned = Database["public"]["Tables"]["user_provisioning"]["Row"];
 type Plant = { id: string; name: string; prefix: string };
-
-const SELECT_CLASS = "rounded-md border border-slate-300 px-2 py-1 text-sm";
 
 function needsPlant(role: UserRole | "") {
   return !!role && ROLES_REQUIRING_PLANT.includes(role);
@@ -41,7 +41,7 @@ export default function StaffUsersManager({
 
   return (
     <div className="space-y-8">
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <Card padding="none" className="overflow-x-auto">
         <div className="border-b border-slate-100 px-6 py-4">
           <h2 className="text-base font-semibold text-slate-900">Usuarios de la empresa</h2>
           <p className="mt-1 text-xs text-slate-500">Los que ya iniciaron sesión.</p>
@@ -67,9 +67,9 @@ export default function StaffUsersManager({
             </tbody>
           </table>
         )}
-      </div>
+      </Card>
 
-      <div className="rounded-xl border border-slate-200 bg-white">
+      <Card padding="none">
         <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-4">
           <div>
             <h2 className="text-base font-semibold text-slate-900">Accesos pendientes</h2>
@@ -78,12 +78,9 @@ export default function StaffUsersManager({
               rol y el área asignados.
             </p>
           </div>
-          <button
-            onClick={() => setShowForm((v) => !v)}
-            className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-          >
+          <Button onClick={() => setShowForm((v) => !v)} className="shrink-0">
             {showForm ? "Cancelar" : "+ Añadir usuario"}
-          </button>
+          </Button>
         </div>
 
         {showForm && (
@@ -106,7 +103,7 @@ export default function StaffUsersManager({
             ))}
           </ul>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
@@ -115,7 +112,7 @@ function RoleSelect({
   value,
   onChange,
   disabled,
-  className = SELECT_CLASS,
+  className = inputCompactClass,
 }: {
   value: UserRole | "";
   onChange: (r: UserRole) => void;
@@ -143,7 +140,7 @@ function PlantSelect({
   value,
   onChange,
   plants,
-  className = SELECT_CLASS,
+  className = inputCompactClass,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -169,16 +166,14 @@ function UserRow({ user, plants, isSelf }: { user: Profile; plants: Plant[]; isS
   const [plantId, setPlantId] = useState(user.plant_id ?? "");
   const [active, setActive] = useState(user.active);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function save() {
-    setError(null);
     if (!role) {
-      setError("Indicá el rol.");
+      notify.warning("Indicá el rol");
       return;
     }
     if (needsPlant(role) && !plantId) {
-      setError("Este rol necesita un área.");
+      notify.warning("Este rol necesita un área");
       return;
     }
     setSaving(true);
@@ -192,7 +187,7 @@ function UserRow({ user, plants, isSelf }: { user: Profile; plants: Plant[]; isS
     });
     setSaving(false);
     if (rpcError) {
-      setError(rpcError.message);
+      notify.error("No se pudo guardar el usuario", rpcError.message);
       return;
     }
     notify.success("Usuario actualizado");
@@ -216,7 +211,7 @@ function UserRow({ user, plants, isSelf }: { user: Profile; plants: Plant[]; isS
           value={department}
           onChange={(e) => setDepartment(e.target.value)}
           placeholder="Ej: Jefe de Taller"
-          className="w-40 rounded-md border border-slate-300 px-2 py-1 text-sm"
+          className={`w-40 ${inputCompactClass}`}
         />
       </td>
       <td className="px-4 py-3">
@@ -229,14 +224,9 @@ function UserRow({ user, plants, isSelf }: { user: Profile; plants: Plant[]; isS
         </label>
       </td>
       <td className="px-4 py-3">
-        <button
-          onClick={save}
-          disabled={saving}
-          className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-        >
+        <Button size="sm" onClick={save} loading={saving}>
           Guardar
-        </button>
-        {error && <p role="alert" className="animate-shake mt-1 max-w-[12rem] text-xs text-red-600">{error}</p>}
+        </Button>
       </td>
     </tr>
   );
@@ -251,12 +241,10 @@ function PendingRow({ entry, plants }: { entry: Provisioned; plants: Plant[] }) 
   const [plantId, setPlantId] = useState(entry.plant_id ?? "");
   const [active, setActive] = useState(entry.active);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function save() {
-    setError(null);
     if (needsPlant(role) && !plantId) {
-      setError("Este rol necesita un área.");
+      notify.warning("Este rol necesita un área");
       return;
     }
     setSaving(true);
@@ -271,7 +259,7 @@ function PendingRow({ entry, plants }: { entry: Provisioned; plants: Plant[] }) 
     });
     setSaving(false);
     if (rpcError) {
-      setError(rpcError.message);
+      notify.error("No se pudo guardar el acceso", rpcError.message);
       return;
     }
     notify.success("Acceso actualizado");
@@ -291,7 +279,7 @@ function PendingRow({ entry, plants }: { entry: Provisioned; plants: Plant[] }) 
     const supabase = createClient();
     const { error: rpcError } = await supabase.rpc("staff_delete_user_access", { p_id: entry.id });
     if (rpcError) {
-      setError(rpcError.message);
+      notify.error("No se pudo eliminar el acceso", rpcError.message);
       return;
     }
     notify.success("Acceso pendiente eliminado");
@@ -305,7 +293,7 @@ function PendingRow({ entry, plants }: { entry: Provisioned; plants: Plant[] }) 
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           placeholder="Nombre"
-          className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm font-semibold text-slate-900"
+          className={`w-full ${inputCompactClass} font-semibold text-slate-900`}
         />
         <p className="mt-0.5 text-xs text-slate-500">{entry.email}</p>
       </div>
@@ -314,24 +302,19 @@ function PendingRow({ entry, plants }: { entry: Provisioned; plants: Plant[] }) 
         value={department}
         onChange={(e) => setDepartment(e.target.value)}
         placeholder="Cargo"
-        className="w-40 rounded-md border border-slate-300 px-2 py-1 text-sm"
+        className={`w-40 ${inputCompactClass}`}
       />
       <PlantSelect value={plantId} onChange={setPlantId} plants={plants} />
       <label className="flex items-center gap-1.5 text-xs text-slate-600">
         <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
         Activo
       </label>
-      <button
-        onClick={save}
-        disabled={saving}
-        className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button size="sm" onClick={save} loading={saving}>
         Guardar
-      </button>
-      <button onClick={remove} className="text-xs font-medium text-red-600 hover:underline">
+      </Button>
+      <Button variant="link-danger" size="sm" onClick={remove}>
         Eliminar
-      </button>
-      {error && <p role="alert" className="animate-shake w-full text-xs text-red-600">{error}</p>}
+      </Button>
     </li>
   );
 }
@@ -373,11 +356,11 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
     <form onSubmit={handleSubmit} className="space-y-3 border-b border-slate-100 bg-slate-50 px-6 py-5">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Nombre</label>
+          <label className={labelClass}>Nombre</label>
           <input value={fullName} onChange={(e) => setFullName(e.target.value)} required className={inputClass} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Cuenta de Google corporativa</label>
+          <label className={labelClass}>Cuenta de Google corporativa</label>
           <input
             type="email"
             value={email}
@@ -390,11 +373,11 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Rol</label>
+          <label className={labelClass}>Rol</label>
           <RoleSelect value={role} onChange={setRole} className={inputClass} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Cargo</label>
+          <label className={labelClass}>Cargo</label>
           <input
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
@@ -403,18 +386,14 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Área</label>
+          <label className={labelClass}>Área</label>
           <PlantSelect value={plantId} onChange={setPlantId} plants={plants} className={inputClass} />
         </div>
       </div>
       {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button type="submit" loading={loading}>
         {loading ? "Guardando…" : "Guardar"}
-      </button>
+      </Button>
     </form>
   );
 }

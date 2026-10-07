@@ -2,7 +2,7 @@ import { forwardRef, type ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 import Spinner from "./Spinner";
 
-export type ButtonVariant = "primary" | "secondary" | "danger" | "warning" | "ghost" | "link" | "link-danger";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "danger-outline" | "warning" | "ghost" | "link" | "link-danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 // Sin sombra: la estética (sombras, bordes) se decide en un solo lugar más adelante. La presión al tocar está en globals.css.
@@ -10,6 +10,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-indigo-600 text-white hover:bg-indigo-500",
   secondary: "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400",
   danger: "bg-red-600 text-white hover:bg-red-500",
+  "danger-outline": "border border-red-200 bg-white text-red-600 hover:bg-red-50",
   warning: "bg-amber-600 text-white hover:bg-amber-500",
   ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
   link: "text-indigo-600 hover:underline",

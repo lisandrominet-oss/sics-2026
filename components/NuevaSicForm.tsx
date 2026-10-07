@@ -1,6 +1,7 @@
 "use client";
 
 import { inputClass } from "@/lib/ui";
+import Button from "@/components/ui/Button";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -261,13 +262,9 @@ export default function NuevaSicForm({
         </Link>
       )}
 
-      <button
-        type="submit"
-        disabled={loading || !!createdId}
-        className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button type="submit" size="lg" loading={loading} disabled={!!createdId} className="w-full">
         {loading ? "Enviando…" : "Enviar solicitud"}
-      </button>
+      </Button>
     </form>
   );
 }

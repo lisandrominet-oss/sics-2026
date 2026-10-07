@@ -14,6 +14,19 @@ type Props = Omit<HTMLAttributes<HTMLDivElement>, "title"> & {
 
 const PADDING = { none: "", md: "p-5", lg: "p-6" } as const;
 
+/** Clases de una tarjeta, para usarla en elementos que no son un <div> (por ejemplo un <form> o <section>). */
+export function cardClass({
+  padding = "md",
+  elevated = false,
+  className,
+}: {
+  padding?: keyof typeof PADDING;
+  elevated?: boolean;
+  className?: string;
+} = {}) {
+  return cn("rounded-xl border border-slate-200 bg-white", PADDING[padding], elevated && "shadow-soft", className);
+}
+
 export default function Card({
   padding = "md",
   elevated = false,
@@ -26,9 +39,7 @@ export default function Card({
   return (
     <div
       className={cn(
-        "rounded-xl border border-slate-200 bg-white",
-        PADDING[padding],
-        elevated && "shadow-soft",
+        cardClass({ padding, elevated }),
         interactive &&
           "cursor-pointer transition-all duration-base ease-out-expo hover:-translate-y-0.5 hover:shadow-lift",
         className

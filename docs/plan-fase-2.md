@@ -3,13 +3,14 @@
 > Detalle de la Fase 2 de `docs/plan-ux-nivel-2.md`. Aprobado por Lisandro el 2026-10-07. Se ejecuta en un chat nuevo (un chat por fase).
 
 ## Estado al corte (2026-10-07)
-Fases 0 y 1 y el acordeón de Contratos están hechos y en `origin/main`. **Commit A hecho y verificado, pendiente del ok de Lisandro para commitear** (`tsc` = 83, build compila, Chrome en 1280/390 px claro y oscuro, revisor-sics sin hallazgos importantes):
-- `components/ui/Button.tsx`: variantes `warning`, `link`, `link-danger`; sin sombra; `transition-colors`; exporta `buttonClass()` para estilar `<Link>`.
-- `components/ui/Badge.tsx`: `text-xs`, tonos `muted` y `critical`, punto con `bg-current`.
-- `components/StatusBadge.tsx`: envuelve `Badge`; `STATUS_TONES` vive **dentro de este archivo** (no en `lib/constants.ts`); se borró `STATUS_COLORS`.
-- `components/ui/Card.tsx` (`rounded-xl`, `padding`, `elevated`, `interactive`, `title`) e `InfoItem.tsx` (reemplaza `Info`/`Field` locales de SIC, ContractDetail, ProfilePreferences y ProviderRow).
-- `lib/ui.ts`: `inputCompactClass`, `labelClass`. Tokens `sidebar-*` en `tailwind.config.ts`. Íconos en línea a `components/icons.tsx`. `rounded-2xl`→`xl` (salvo Modal) y textos de 10-11 px→`text-xs` (salvo el contador de la campana).
-Para B y C (avisos del revisor): `Card` ya no lleva `shadow-soft` por defecto (usar `elevated` donde había sombra); `Button warning` es blanco sobre ámbar-600 (contraste ~3,2:1, mirarlo en "Exportar" de `SicsList`); el `Card` local de `ContractDetail` y las píldoras de estado sueltas (`ContractDetail`, `ContractsList`, SIC, `SicsList`, `ProviderRow`) siguen sin migrar; `shadow-[inset_3px_0_0_0_#818cf8]` en `AppShell.tsx:48` queda como hex (sombra del ítem activo); `ProviderRow` tiene un `<button>` dentro de otro `<button>` (error de hidratación previo): corregir en B; badge largo en `SicsList` a 390 px sin ver con datos reales.
+Fases 0 y 1 y el acordeón de Contratos están en `origin/main`. **Commit A hecho** (`5e1d237`, local, sin push). **Commit B hecho y verificado, pendiente del ok de Lisandro** (`tsc` = 83, build compila, Chrome claro/oscuro 1280 y 390 px). Falta el **Commit C** (Contratos + 3 `prompt()` a Modal).
+Qué quedó en B (para recordar en C):
+- `Card` exporta `cardClass()` para `<form>`/`<section>`; `Button` suma `danger-outline`; `Badge` suma tonos `violet`/`sky` y `size="sm"`.
+- Errores de acciones → `notify.error` en `SicActions`, `SicsList` (exportar), `UsersTable`, `StaffUsersManager` (filas), `ProviderRow` (guardar/comentario/archivo), `ProvisioningManager` (fila), `PlantsManager`/`ProjectsManager` (altas). Validación de formulario sigue en línea.
+- Botones que se dejaron crudos a propósito: chips de filtro/selección (`ProvidersManager`, `ProviderCategoryPicker`), segmentado Aprobar/Observar/Rechazar de `SicActions`, estrella y fila expandible de `ProviderRow`. Fuera de alcance: `SignOutButton`, `FilePreview`, `ThemeSelector`, `NotificationsBell`, `ModuleSections`, `AppShell`, `Modal`.
+- Se arregló el `<button>` anidado de `ProviderRow` (error de hidratación en Proveedores).
+- No se pudo ver con datos reales: detalle de SIC, login (redirige con sesión), toasts de error de RPC reales.
+Pendiente para C: `Card` local y píldoras de estado de `ContractDetail`/`ContractsList` (`CONTRACT_*_STATUS_COLORS` → tonos de `Badge`), `aria-controls` de las tarjetas de dinero, los 3 `prompt()` → `PromptDialog`, `shadow-[inset_3px_0_0_0_#818cf8]` de `AppShell` (hex), ~40 `<button>` crudos de Contratos.
 
 ## Cosas aprendidas (evitan perder tiempo)
 - **Reiniciar el dev server** cuando cambia `tailwind.config.ts` (`preview_stop` + `preview_start`); si no, las utilidades nuevas no se generan.

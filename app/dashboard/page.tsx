@@ -8,6 +8,8 @@ import DashboardControls from "@/components/DashboardControls";
 import SicsList, { type SicRow } from "@/components/SicsList";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { Skeleton } from "@/components/ui/Skeleton";
+import Card from "@/components/ui/Card";
+import { buttonClass } from "@/components/ui/Button";
 import { IconPlusCircle } from "@/components/icons";
 import { CAN_CREATE_SIC, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
 import { PENDING_STATUSES_BY_ROLE, applyPendingFilter, getPendingSicsCount } from "@/lib/pendingSics";
@@ -99,7 +101,7 @@ export default async function DashboardPage({
           {CAN_CREATE_SIC.includes(role) && (
             <Link
               href="/sic/nueva"
-              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+              className={buttonClass()}
             >
               <IconPlusCircle className="h-4 w-4" />
               Nueva SIC
@@ -152,13 +154,13 @@ export default async function DashboardPage({
 
         {error && <p role="alert" className="animate-shake mt-4 text-sm text-red-600">{error.message}</p>}
 
-        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <Card padding="none" className="mt-4 overflow-hidden">
           <div className="border-b border-slate-100 px-6 py-5">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Actividad</p>
             <h2 className="text-base font-semibold text-slate-900">Solicitudes recientes</h2>
           </div>
           <SicsList sics={(sics ?? []) as unknown as SicRow[]} role={role} />
-        </div>
+        </Card>
       </div>
     </AppShell>
   );
@@ -178,16 +180,18 @@ function StatCard({
   delay?: number;
 }) {
   return (
-    <div
+    <Card
+      padding="lg"
+      elevated
       style={{ animationDelay: `${delay}ms` }}
-      className="animate-enter rounded-xl border border-slate-200 bg-white p-6 shadow-soft transition-all duration-base ease-out-expo hover:-translate-y-0.5 hover:shadow-lift"
+      className="animate-enter transition-all duration-base ease-out-expo hover:-translate-y-0.5 hover:shadow-lift"
     >
       <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
       <p className={`mt-2 text-3xl font-bold ${accent ? "text-indigo-600" : "text-slate-900"}`}>
         <AnimatedNumber value={value} />
       </p>
       <p className="mt-1 text-xs text-slate-400">{caption}</p>
-    </div>
+    </Card>
   );
 }
 

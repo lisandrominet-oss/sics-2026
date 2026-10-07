@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SORT_OPTIONS } from "@/lib/constants";
 import { startNavProgress } from "@/lib/navProgress";
 import { IconSearch } from "@/components/icons";
+import Button from "@/components/ui/Button";
 
 export default function DashboardControls({
   defaultQuery,
@@ -69,14 +70,13 @@ export default function DashboardControls({
         ))}
       </select>
 
-      <button
-        type="button"
+      <Button
+        variant="secondary"
         onClick={() => pushParams({ dir: dir === "asc" ? "desc" : "asc" })}
         title={dir === "asc" ? "Ascendente" : "Descendente"}
-        className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
       >
         {dir === "asc" ? "↑ Ascendente" : "↓ Descendente"}
-      </button>
+      </Button>
     </div>
   );
 }

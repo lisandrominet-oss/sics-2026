@@ -4,6 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import { notify } from "@/lib/notify";
 import { IconArrowRight } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { downloadSicsXlsx, type SicExportRow } from "@/lib/exportSics";
@@ -37,7 +40,6 @@ export type SicRow = {
 export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRole }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const canExport = role === "compras" || role === "admin";
 
   function toggle(id: string) {
@@ -52,7 +54,6 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
   async function handleExport() {
     if (selected.size === 0) return;
     setExporting(true);
-    setError(null);
     try {
       const supabase = createClient();
       const ids = Array.from(selected);
@@ -63,7 +64,7 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
         .order("position", { ascending: true });
 
       if (itemsError) {
-        setError(itemsError.message);
+        notify.error("No se pudo exportar", itemsError.message);
         return;
       }
 
@@ -99,15 +100,9 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-100 bg-amber-50 px-6 py-3">
           <p className="text-sm text-amber-800">{selected.size} SIC(s) seleccionada(s)</p>
           <div className="flex items-center gap-3">
-            {error && <p role="alert" className="animate-shake text-xs text-red-600">{error}</p>}
-            <button
-              type="button"
-              onClick={handleExport}
-              disabled={exporting}
-              className="rounded-lg bg-amber-600 px-3.5 py-1.5 text-sm font-medium text-white hover:bg-amber-500 disabled:opacity-50"
-            >
+            <Button variant="warning" onClick={handleExport} loading={exporting}>
               {exporting ? "Generando…" : "Exportar a Excel"}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -143,14 +138,14 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                   <p className="truncate text-sm font-semibold text-slate-900">
                     {sic.code}
                     {sic.purchase_type === "directa" && (
-                      <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold uppercase text-sky-700">
+                      <Badge tone="sky" size="sm" className="ml-2">
                         Directa
-                      </span>
+                      </Badge>
                     )}
                     {sic.purchase_type === "cuenta_corriente" && (
-                      <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold uppercase text-violet-700">
+                      <Badge tone="violet" size="sm" className="ml-2">
                         Cta. cte.
-                      </span>
+                      </Badge>
                     )}
                   </p>
                   <p className="truncate text-xs text-slate-500">{sic.subject}</p>

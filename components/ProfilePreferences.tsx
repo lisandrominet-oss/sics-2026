@@ -7,6 +7,8 @@ import { useConfirm } from "@/components/ui/ConfirmProvider";
 import ThemeSelector from "@/components/ThemeSelector";
 import UserAvatar, { AVATAR_EVENT, clearAvatarCache, setAvatarCache } from "@/components/UserAvatar";
 import InfoItem from "@/components/ui/InfoItem";
+import Button from "@/components/ui/Button";
+import { cardClass } from "@/components/ui/Card";
 
 const MAX_INPUT_BYTES = 25 * 1024 * 1024;
 const AVATAR_SIZE = 256;
@@ -124,7 +126,7 @@ export default function ProfilePreferences({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <section className={cardClass({ padding: "lg" })}>
         <h2 className="text-sm font-semibold text-slate-900">Perfil</h2>
         <div className="mt-4 flex flex-wrap items-center gap-5">
           <UserAvatar userId={userId} fullName={fullName} size="h-24 w-24" text="text-2xl" />
@@ -140,23 +142,13 @@ export default function ProfilePreferences({
                   if (f) void handleFile(f);
                 }}
               />
-              <button
-                type="button"
-                onClick={() => inputRef.current?.click()}
-                disabled={busy}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-              >
+              <Button onClick={() => inputRef.current?.click()} loading={busy}>
                 {busy ? "Guardando…" : currentPath ? "Cambiar foto" : "Subir foto"}
-              </button>
+              </Button>
               {currentPath && (
-                <button
-                  type="button"
-                  onClick={removePhoto}
-                  disabled={busy}
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-                >
+                <Button variant="secondary" onClick={removePhoto} disabled={busy}>
                   Quitar foto
-                </button>
+                </Button>
               )}
             </div>
             <p className="mt-2 text-xs text-slate-500">
@@ -178,7 +170,7 @@ export default function ProfilePreferences({
         </p>
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <section className={cardClass({ padding: "lg" })}>
         <h2 className="text-sm font-semibold text-slate-900">Preferencias</h2>
         <p className="mt-1 text-xs text-slate-500">Tema. Se guarda en este dispositivo.</p>
         <div className="mt-4">

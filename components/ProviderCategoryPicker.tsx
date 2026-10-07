@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Button from "@/components/ui/Button";
 
 type Category = { id: string; name: string; active: boolean };
 
@@ -71,14 +72,16 @@ export default function ProviderCategoryPicker({
           placeholder="Nueva categoría (ej: Ferretería industrial)"
           className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-1.5 text-xs"
         />
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={addCategory}
-          disabled={creating || !newName.trim()}
-          className="shrink-0 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          loading={creating}
+          disabled={!newName.trim()}
+          className="shrink-0"
         >
           {creating ? "Creando…" : "+ Crear"}
-        </button>
+        </Button>
       </div>
       {error && <p role="alert" className="animate-shake mt-1 text-xs text-red-600">{error}</p>}
     </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { inputClass } from "@/lib/ui";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -74,7 +76,6 @@ export default function SicActions({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [finalAmount, setFinalAmount] = useState("");
   const [poNumber, setPoNumber] = useState("");
@@ -116,18 +117,17 @@ export default function SicActions({
 
   async function run(action: () => Promise<{ error: { message: string } | null }>) {
     setLoading(true);
-    setError(null);
     try {
       const { error } = await action();
       if (error) {
-        setError(error.message);
+        notify.error("No se pudo completar la acción", error.message);
         return;
       }
       setNote("");
       notify.success("Cambios guardados");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Ocurrió un error");
+      notify.error("No se pudo completar la acción", e instanceof Error ? e.message : "Ocurrió un error");
     } finally {
       setLoading(false);
     }
@@ -152,7 +152,6 @@ export default function SicActions({
   const canValidateTechnically = role === "admin" || isRequester || isAreaBoss;
   const itemsRequiringCert = editData.items.filter((it) => it.requiresQualityCert);
   const canManageCerts = ["compras", "admin"].includes(role) && itemsRequiringCert.length > 0;
-
 
   const CurrentAccountBlock = (
     <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
@@ -185,7 +184,7 @@ export default function SicActions({
                 })
               )
             }
-            loading={loading || !ccProviderId}
+            loading={loading} disabled={!ccProviderId}
           >
             Aceptar como cuenta corriente
           </Btn>
@@ -230,7 +229,7 @@ export default function SicActions({
               })
             )
           }
-          loading={loading || !directAmount || Number(directAmount) <= 0}
+          loading={loading} disabled={!directAmount || Number(directAmount) <= 0}
         >
           Aceptar como compra directa
         </Btn>
@@ -259,7 +258,7 @@ export default function SicActions({
           <Btn
             variant="warning"
             onClick={() => run(() => supabase.rpc("compras_review_sic", { p_sic_id: sicId, p_decision: "observar", p_note: note || null }))}
-            loading={loading || note.trim().length === 0}
+            loading={loading} disabled={note.trim().length === 0}
           >
             Pedir corrección
           </Btn>
@@ -276,7 +275,6 @@ export default function SicActions({
         )}
         {CurrentAccountBlock}
         {DirectBlock}
-        {error && <Err>{error}</Err>}
       </ActionCard>
     );
   }
@@ -301,14 +299,14 @@ export default function SicActions({
           <Btn
             variant="warning"
             onClick={() => run(() => supabase.rpc("jefe_review_sic", { p_sic_id: sicId, p_decision: "observar", p_note: note || null }))}
-            loading={loading || note.trim().length === 0}
+            loading={loading} disabled={note.trim().length === 0}
           >
             Pedir corrección
           </Btn>
           <Btn
             variant="danger"
             onClick={() => run(() => supabase.rpc("jefe_review_sic", { p_sic_id: sicId, p_decision: "rechazar", p_note: note || null }))}
-            loading={loading || note.trim().length === 0}
+            loading={loading} disabled={note.trim().length === 0}
           >
             Rechazar
           </Btn>
@@ -319,7 +317,6 @@ export default function SicActions({
         {editData.items.length > 1 && (
           <ItemReviewPanel items={editData.items} sicId={sicId} stage="jefe" onDone={() => { notify.success("Revisión por ítem registrada"); router.refresh(); }} />
         )}
-        {error && <Err>{error}</Err>}
       </ActionCard>
     );
   }
@@ -376,14 +373,13 @@ export default function SicActions({
                 })
               )
             }
-            loading={loading || !finalAmount}
+            loading={loading} disabled={!finalAmount}
           >
             Enviar a validación técnica
           </Btn>
         </div>
         {CurrentAccountBlock}
         {DirectBlock}
-        {error && <Err>{error}</Err>}
       </ActionCard>
     );
   }
@@ -401,7 +397,6 @@ export default function SicActions({
             Pedir corrección
           </Btn>
         </div>
-        {error && <Err>{error}</Err>}
       </ActionCard>
     );
   }
@@ -418,7 +413,6 @@ export default function SicActions({
             Rechazar
           </Btn>
         </div>
-        {error && <Err>{error}</Err>}
       </ActionCard>
     );
   }
@@ -456,7 +450,6 @@ export default function SicActions({
             </span>
           )}
         </div>
-        {error && <Err>{error}</Err>}
       </ActionCard>
     );
   }
@@ -489,7 +482,7 @@ export default function SicActions({
         <div className="mt-3">
           <Btn
             onClick={() => run(() => supabase.rpc("close_sic", { p_sic_id: sicId, p_note: note || null }))}
-            loading={loading || (isCurrentAccount ? savedAmount === null : !hasFactura)}
+            loading={loading} disabled={(isCurrentAccount ? savedAmount === null : !hasFactura)}
           >
             Cerrar SIC
           </Btn>
@@ -497,7 +490,6 @@ export default function SicActions({
         {isCurrentAccount
           ? savedAmount === null && <p className="mt-2 text-xs text-amber-600">Cargá el monto de la compra antes de cerrar la SIC.</p>
           : !hasFactura && <p className="mt-2 text-xs text-amber-600">Subí la factura antes de cerrar la SIC.</p>}
-        {error && <Err>{error}</Err>}
       </ActionCard>
     );
   }
@@ -528,12 +520,11 @@ export default function SicActions({
                   supabase.rpc("set_sic_current_account_amount", { p_sic_id: sicId, p_amount: Number(ccAmount), p_note: null })
                 )
               }
-              loading={loading || ccAmount === ""}
+              loading={loading} disabled={ccAmount === ""}
             >
               {savedAmount === null ? "Guardar monto" : "Actualizar monto"}
             </Btn>
           </div>
-          {error && <Err>{error}</Err>}
         </ActionCard>
       )}
       {renderStatusPanel()}
@@ -568,7 +559,6 @@ function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void })
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleCancel() {
     if (!reason.trim()) return;
@@ -582,12 +572,11 @@ function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void })
     )
       return;
     setLoading(true);
-    setError(null);
     const supabase = createClient();
     const { error } = await supabase.rpc("cancel_sic", { p_sic_id: sicId, p_note: reason.trim() });
     setLoading(false);
     if (error) {
-      setError(error.message);
+      notify.error("No se pudo completar la acción", error.message);
       return;
     }
     onDone();
@@ -596,13 +585,9 @@ function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void })
   if (!open) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-4">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="text-sm font-medium text-red-700 hover:underline"
-        >
+        <Button variant="link-danger" onClick={() => setOpen(true)}>
           Anular esta SIC
-        </button>
+        </Button>
       </div>
     );
   }
@@ -622,23 +607,13 @@ function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void })
         className="mt-3 w-full rounded-lg border border-red-300 px-3 py-2 text-sm"
       />
       <div className="mt-3 flex gap-2">
-        <button
-          type="button"
-          onClick={handleCancel}
-          disabled={loading || !reason.trim()}
-          className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
-        >
+        <Button variant="danger" onClick={handleCancel} loading={loading} disabled={!reason.trim()}>
           {loading ? "Anulando…" : "Confirmar anulación"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-white"
-        >
+        </Button>
+        <Button variant="secondary" onClick={() => setOpen(false)}>
           Cancelar
-        </button>
+        </Button>
       </div>
-      {error && <Err>{error}</Err>}
     </div>
   );
 }
@@ -667,11 +642,9 @@ function RecepcionEditor({
   );
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit() {
     setLoading(true);
-    setError(null);
     const supabase = createClient();
     const deliveries = items
       .map((it) => ({ item_id: it.id, quantity_received: Number(qty[it.id] || 0) }))
@@ -684,7 +657,7 @@ function RecepcionEditor({
     });
     setLoading(false);
     if (error) {
-      setError(error.message);
+      notify.error("No se pudo completar la acción", error.message);
       return;
     }
     onDone();
@@ -743,7 +716,7 @@ function RecepcionEditor({
       />
 
       <div className="mt-3">
-        <Btn onClick={handleSubmit} loading={loading || remitoFiles.length === 0}>
+        <Btn onClick={handleSubmit} loading={loading} disabled={remitoFiles.length === 0}>
           Registrar recepción
         </Btn>
       </div>
@@ -754,7 +727,6 @@ function RecepcionEditor({
         Si llega menos de lo pedido, dejá cargada solo la cantidad que llegó ahora — la SIC queda abierta hasta
         recibir el resto.
       </p>
-      {error && <Err>{error}</Err>}
     </ActionCard>
   );
 }
@@ -791,12 +763,10 @@ function ObservacionEditor({
       : [{ ...EMPTY_ITEM }]
   );
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     const supabase = createClient();
     const payloadItems = items.map((it) => ({
@@ -817,7 +787,7 @@ function ObservacionEditor({
     });
 
     if (updateError || !sic) {
-      setError(updateError?.message ?? "No se pudo guardar");
+      notify.error("No se pudo guardar", updateError?.message);
       setLoading(false);
       return;
     }
@@ -917,16 +887,10 @@ function ObservacionEditor({
         <ItemsEditor items={items} onChange={setItems} />
       </div>
 
-      {error && <Err>{error}</Err>}
-
       <div className="mt-4">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-        >
+        <Button type="submit" loading={loading}>
           {loading ? "Guardando…" : "Guardar y reenviar"}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -958,7 +922,6 @@ function ItemReviewPanel({
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [generalNote, setGeneralNote] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const count = (d: ItemDecision) => items.filter((it) => decisions[it.id] === d).length;
   const nAcc = count("aceptar");
@@ -978,7 +941,6 @@ function ItemReviewPanel({
 
   async function submit() {
     setLoading(true);
-    setError(null);
     const supabase = createClient();
     const { error } = await supabase.rpc("review_sic_items", {
       p_sic_id: sicId,
@@ -991,7 +953,7 @@ function ItemReviewPanel({
     });
     setLoading(false);
     if (error) {
-      setError(error.message);
+      notify.error("No se pudo completar la acción", error.message);
       return;
     }
     onDone();
@@ -1000,13 +962,9 @@ function ItemReviewPanel({
   if (!open) {
     return (
       <div className="mt-4 border-t border-slate-100 pt-3">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="text-sm font-medium text-indigo-600 hover:underline"
-        >
+        <Button variant="link" onClick={() => setOpen(true)}>
           Revisar artículo por artículo
-        </button>
+        </Button>
         <p className="mt-1 text-xs text-slate-400">
           Aprobá unos, observá otros y rechazá los que no correspondan, todo en una sola revisión.
         </p>
@@ -1018,9 +976,9 @@ function ItemReviewPanel({
     <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Revisión por artículo</p>
-        <button type="button" onClick={() => setOpen(false)} className="text-xs text-slate-500 hover:underline">
+        <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
           Cerrar
-        </button>
+        </Button>
       </div>
       <div className="mt-3 space-y-2">
         {items.map((it, i) => {
@@ -1071,22 +1029,18 @@ function ItemReviewPanel({
       </p>
       <p className="mt-1 text-xs text-slate-500">{consequence}</p>
       <div className="mt-3">
-        <Btn onClick={submit} loading={loading || missingNote}>
+        <Btn onClick={submit} loading={loading} disabled={missingNote}>
           Confirmar revisión
         </Btn>
       </div>
       {missingNote && <p className="mt-2 text-xs text-amber-600">Falta el motivo de algún artículo observado o rechazado.</p>}
-      {error && <Err>{error}</Err>}
     </div>
   );
 }
 
 function ActionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
-      <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
-      <div className="mt-3">{children}</div>
-    </div>
+    <Card title={title}>{children}</Card>
   );
 }
 
@@ -1094,32 +1048,20 @@ function Btn({
   children,
   onClick,
   loading,
+  disabled,
   variant = "primary",
 }: {
   children: React.ReactNode;
   onClick: () => void;
   loading?: boolean;
+  disabled?: boolean;
   variant?: "primary" | "danger" | "warning";
 }) {
-  const colors =
-    variant === "danger"
-      ? "bg-red-600 hover:bg-red-500"
-      : variant === "warning"
-        ? "bg-amber-600 hover:bg-amber-500"
-        : "bg-indigo-600 hover:bg-indigo-500";
   return (
-    <button
-      onClick={onClick}
-      disabled={loading}
-      className={`rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50 ${colors}`}
-    >
+    <Button variant={variant} onClick={onClick} loading={loading} disabled={disabled}>
       {children}
-    </button>
+    </Button>
   );
-}
-
-function Err({ children }: { children: React.ReactNode }) {
-  return <p role="alert" className="animate-shake mt-2 text-sm text-red-600">{children}</p>;
 }
 
 function MultiFileRow({
@@ -1150,13 +1092,9 @@ function MultiFileRow({
               e.target.value = "";
             }}
           />
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-          >
+          <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()}>
             + Agregar
-          </button>
+          </Button>
         </div>
       </div>
       {files.length > 0 ? (
@@ -1164,13 +1102,9 @@ function MultiFileRow({
           {files.map((f) => (
             <li key={f.id} className="flex items-center justify-between text-sm">
               <span className="text-emerald-600">✓ {f.file_name}</span>
-              <button
-                type="button"
-                onClick={() => onDelete(f)}
-                className="text-xs font-medium text-red-600 underline"
-              >
+              <Button variant="link-danger" size="sm" onClick={() => onDelete(f)}>
                 Eliminar
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -1201,13 +1135,9 @@ function FileRow({
         {file && (
           <span className="ml-1 text-emerald-600">
             ✓ {file.file_name}{" "}
-            <button
-              type="button"
-              onClick={() => onDelete(file)}
-              className="ml-1 text-red-600 underline"
-            >
+            <Button variant="link-danger" size="sm" onClick={() => onDelete(file)} className="ml-1">
               Eliminar
-            </button>
+            </Button>
           </span>
         )}
       </span>
@@ -1224,13 +1154,9 @@ function FileRow({
             e.target.value = "";
           }}
         />
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-        >
+        <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()}>
           {file ? "Reemplazar" : "Subir archivo"}
-        </button>
+        </Button>
       </div>
     </div>
   );
