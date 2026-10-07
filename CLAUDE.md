@@ -31,3 +31,9 @@ Circuito de compras interno: SIC (Solicitud Interna de Compras) con roles emisor
 2. Cambio de schema o RPC: probado en transacción reversible, tipos regenerados, migración guardada.
 3. Cambio visual o de flujo: probar en `http://localhost:3000` con la skill `probar-en-chrome`, en claro y oscuro. Con Chrome se usa tu sesión real; el login con Google no se automatiza.
 4. Devolución con `/confirmar`.
+
+## Interfaz
+- Movimiento con CSS nativo y los tokens de `tailwind.config.ts`; toasts con Sonner (`lib/notify.ts`); componentes de `components/ui/*`. Tailwind 3: no migrar a v4.
+- Sin Motion/GSAP ni librerías nuevas sin consultar a Lisandro, aunque una skill las sugiera.
+- Tras agregar clases de color, regenerar `app/dark-theme.css` (`node scripts/generar-modo-oscuro.js`).
+- Skills de interfaz instaladas (`emil-design-eng`, `mobile-native`, `ask-sonner`, y manuales `/review-animations`, `/improve-animations`, `/break-ui`, `/redesign-existing-projects`) **asesoran, no deciden**: no cambian el sistema de diseño ni instalan paquetes por su cuenta. Las auditorías se entregan como informe o plan y esperan aprobación.
