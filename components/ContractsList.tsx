@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -50,6 +50,7 @@ type AttendedAlert = { kind: string; target_id: string };
 type Provider = { id: string; name: string };
 type PanelKey = "deuda" | "facturado" | "pagado";
 type ProviderRow = { name: string; amount: number };
+type PanelData = { title: string; rows: ProviderRow[]; total: number; format: (n: number) => string };
 export type InvoiceLine = {
   contract_id: string;
   net_amount: number | null;
@@ -161,7 +162,7 @@ export default function ContractsList({
     };
   }, [invoiceLines, providerOf]);
 
-  const panels: Record<PanelKey, { title: string; rows: ProviderRow[]; total: number; format: (n: number) => string }> = {
+  const panels: Record<PanelKey, PanelData> = {
     deuda: { title: "Deuda por proveedor (USD)", rows: debt.rows, total: debt.total, format: formatUsd },
     facturado: { title: "Facturado por proveedor (ARS)", rows: billed.rows, total: billed.total, format: formatArs },
     pagado: { title: "Pagado por proveedor (ARS)", rows: paidTotals.rows, total: paidTotals.total, format: formatArs },
@@ -207,32 +208,38 @@ export default function ContractsList({
     <div className="space-y-6">
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr_200px]">
-          <MoneyCard
-            label="Total de deuda de contratos"
-            value={formatUsd(debt.total)}
-            caption="Histórico y futuro, sin IVA · en USD"
-            valueClass="text-red-600"
-            open={openPanel === "deuda"}
-            onToggle={() => setOpenPanel((p) => (p === "deuda" ? null : "deuda"))}
-            expandable={debt.rows.length > 0}
-          />
-          <MoneyCard
-            label="Total facturado por proveedores"
-            value={formatArs(billed.total)}
-            caption={`Sin IVA · de los cuales sin pagar: ${formatArs(unpaidArs)}`}
-            open={openPanel === "facturado"}
-            onToggle={() => setOpenPanel((p) => (p === "facturado" ? null : "facturado"))}
-            expandable={billed.rows.length > 0}
-          />
-          <MoneyCard
-            label="Total pagado"
-            value={formatArs(paidTotals.total)}
-            caption="Pagos cargados, sin IVA"
-            valueClass="text-emerald-600"
-            open={openPanel === "pagado"}
-            onToggle={() => setOpenPanel((p) => (p === "pagado" ? null : "pagado"))}
-            expandable={paidTotals.rows.length > 0}
-          />
+          <PanelSlot panel={panels.deuda} open={openPanel === "deuda"}>
+            <MoneyCard
+              label="Total de deuda de contratos"
+              value={formatUsd(debt.total)}
+              caption="Histórico y futuro, sin IVA · en USD"
+              valueClass="text-red-600"
+              open={openPanel === "deuda"}
+              onToggle={() => setOpenPanel((p) => (p === "deuda" ? null : "deuda"))}
+              expandable={debt.rows.length > 0}
+            />
+          </PanelSlot>
+          <PanelSlot panel={panels.facturado} open={openPanel === "facturado"}>
+            <MoneyCard
+              label="Total facturado por proveedores"
+              value={formatArs(billed.total)}
+              caption={`Sin IVA · de los cuales sin pagar: ${formatArs(unpaidArs)}`}
+              open={openPanel === "facturado"}
+              onToggle={() => setOpenPanel((p) => (p === "facturado" ? null : "facturado"))}
+              expandable={billed.rows.length > 0}
+            />
+          </PanelSlot>
+          <PanelSlot panel={panels.pagado} open={openPanel === "pagado"}>
+            <MoneyCard
+              label="Total pagado"
+              value={formatArs(paidTotals.total)}
+              caption="Pagos cargados, sin IVA"
+              valueClass="text-emerald-600"
+              open={openPanel === "pagado"}
+              onToggle={() => setOpenPanel((p) => (p === "pagado" ? null : "pagado"))}
+              expandable={paidTotals.rows.length > 0}
+            />
+          </PanelSlot>
           <div className="flex flex-col justify-center divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-5 py-2">
             <div className="py-3">
               <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Contratos activos</p>
@@ -248,29 +255,10 @@ export default function ContractsList({
           </div>
         </div>
 
-        <div
-          className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${activePanel && activePanel.rows.length > 0 ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
-        >
-          <div className="overflow-hidden">
-            {activePanel && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-6">
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{activePanel.title}</p>
-                <ul className="mt-3 divide-y divide-slate-100 text-sm">
-                  {activePanel.rows.map((r) => (
-                    <li key={r.name} className="flex items-center justify-between gap-4 py-2">
-                      <span className="truncate text-slate-700">{r.name}</span>
-                      <span className="shrink-0 font-semibold text-slate-900">{activePanel.format(r.amount)}</span>
-                    </li>
-                  ))}
-                  <li className="flex items-center justify-between gap-4 pt-3 text-sm font-bold text-slate-900">
-                    <span>Total</span>
-                    <span>{activePanel.format(activePanel.total)}</span>
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Escritorio: un panel compartido debajo de la fila de tarjetas. En celular el detalle se abre debajo de cada tarjeta (PanelSlot). */}
+        <CollapsibleRows open={!!activePanel && activePanel.rows.length > 0} className="max-lg:hidden">
+          {activePanel && <ProviderPanel panel={activePanel} />}
+        </CollapsibleRows>
       </div>
 
       {totalAlerts > 0 && (
@@ -425,6 +413,66 @@ export default function ContractsList({
   );
 }
 
+function CollapsibleRows({ open, className = "", children }: { open: boolean; className?: string; children: ReactNode }) {
+  return (
+    <div
+      className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"} ${className}`}
+    >
+      <div className="overflow-hidden">{children}</div>
+    </div>
+  );
+}
+
+function ProviderPanel({ panel }: { panel: PanelData }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-6">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{panel.title}</p>
+      <ul className="mt-3 divide-y divide-slate-100 text-sm">
+        {panel.rows.map((r) => (
+          <li key={r.name} className="flex items-center justify-between gap-4 py-2">
+            <span className="truncate text-slate-700">{r.name}</span>
+            <span className="shrink-0 font-semibold text-slate-900">{panel.format(r.amount)}</span>
+          </li>
+        ))}
+        <li className="flex items-center justify-between gap-4 pt-3 text-sm font-bold text-slate-900">
+          <span>Total</span>
+          <span>{panel.format(panel.total)}</span>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+// Tarjeta + su detalle. En celular (< lg) el detalle se abre justo debajo de la tarjeta tocada (acordeón);
+// desde lg el envoltorio desaparece (`contents`) y el detalle lo muestra el panel compartido de la fila.
+function PanelSlot({ panel, open, children }: { panel: PanelData; open: boolean; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Al abrir en celular, deja a la vista tarjeta y detalle (al cerrar el panel que estaba abierto, el contenido se corre).
+  useEffect(() => {
+    if (!open || !window.matchMedia("(max-width: 1023px)").matches) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = setTimeout(
+      () => ref.current?.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" }),
+      320
+    );
+    return () => clearTimeout(timer);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="scroll-mt-20 lg:contents">
+      {children}
+      <div className="lg:hidden" aria-hidden={!open}>
+        <CollapsibleRows open={open && panel.rows.length > 0}>
+          <div className="pt-4">
+            <ProviderPanel panel={panel} />
+          </div>
+        </CollapsibleRows>
+      </div>
+    </div>
+  );
+}
+
 function MoneyCard({
   label,
   value,
@@ -460,7 +508,7 @@ function MoneyCard({
       type="button"
       onClick={onToggle}
       aria-expanded={open}
-      className="rounded-2xl border border-slate-200 bg-white p-6 text-left hover:bg-slate-50"
+      className="block w-full rounded-2xl border border-slate-200 bg-white p-6 text-left hover:bg-slate-50"
     >
       {content}
     </button>
