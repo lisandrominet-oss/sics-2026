@@ -24,7 +24,13 @@ Compila. El build no valida tipos ni lint (`ignoreBuildErrors`/`ignoreDuringBuil
 Para la Fase 6: `/dashboard`, `/contratos` y `/sic/[id]` pesan ~90-100 kB más que el resto; revisar si `xlsx` se carga de entrada en vez de al exportar.
 
 ## Capturas
-Se guardan fuera del repo. Estado:
+Se guardan fuera del repo. Tomadas desde el sitio de Vercel (código de `main`, rol "Ver como: Compras"), porque el dev server no tenía sesión hasta configurar la redirección de Supabase. El ancho de 390 px se simula con un iframe de 390 px en la misma sesión (Chrome no deja achicar la ventana); no reemplaza una prueba en iPhone.
 - Login, escritorio (1456 px), claro y oscuro: tomadas.
-- Login 390 px: **pendiente** (la ventana de Chrome no se pudo achicar con `resize_window`; se simula con un iframe de 390 px).
-- Dashboard, detalle de SIC, nueva SIC y usuarios, escritorio y 390 px, claro y oscuro: **pendientes** (hace falta iniciar sesión con Google en `localhost:3000`).
+- Dashboard, escritorio, claro y oscuro: tomadas. Nueva SIC, escritorio, claro y oscuro: tomadas.
+- Dashboard 390 px, claro y oscuro: tomadas. Nueva SIC 390 px, claro: tomada.
+- **No tomadas:** login 390 px, Nueva SIC 390 px oscuro, detalle de SIC (el Tablero tiene 0 SIC; crear una escribiría en producción) y Usuarios (el rol "Compras" no tiene esa pantalla; ver como Admin/Gerencia implica cambiar `acting_as_role` en el perfil real).
+
+## Mediciones en 390 px (código de `main`)
+- Sin scroll horizontal de página en Tablero y Nueva SIC (`scrollWidth` 390).
+- Menú lateral apilado arriba: ocupa casi toda la primera pantalla antes del contenido.
+- Campos de Nueva SIC con `font-size` de 14 px (uno de 12 px): iOS hace zoom al enfocarlos.
