@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit *)",
+      "Bash(node scripts/generar-modo-oscuro.js)",
+      "Bash(bash docs/flujograma-sic-src/regenerar.sh)"
+    ]
+  }
+}
