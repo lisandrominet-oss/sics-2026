@@ -18,6 +18,7 @@ import {
   type SicFileType,
 } from "@/lib/constants";
 import type { SicExportRow } from "@/lib/exportSics";
+import InfoItem from "@/components/ui/InfoItem";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -113,12 +114,12 @@ export default async function SicDetailPage({ params }: { params: { id: string }
               <ExportSicButton rows={exportRows} filename={`${sic.code}.xlsx`} label="Exportar a Excel" />
             )}
             {isCurrentAccount && (
-              <span className="rounded-full bg-violet-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-violet-700">
+              <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-violet-700">
                 Cuenta corriente
               </span>
             )}
             {isDirect && (
-              <span className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-700">
+              <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700">
                 Compra directa
               </span>
             )}
@@ -126,25 +127,25 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm">
-          <Info label="Planta" value={plant ? `${plant.name} (${plant.prefix})` : "-"} />
-          <Info label="Proyecto" value={project?.name ?? "-"} />
-          <Info label="Solicitante" value={requester?.full_name ?? requester?.email ?? "-"} />
-          <Info label="Área / Departamento" value={sic.department ?? "-"} />
-          {sic.on_behalf_of && <Info label="Solicitado en nombre de" value={sic.on_behalf_of} />}
-          <Info label="Necesaria para" value={sic.needed_by_date ? formatDate(sic.needed_by_date) : "-"} />
-          <Info label="Creada" value={formatDate(sic.created_at)} />
+        <div className="mt-6 grid grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+          <InfoItem label="Planta" value={plant ? `${plant.name} (${plant.prefix})` : "-"} />
+          <InfoItem label="Proyecto" value={project?.name ?? "-"} />
+          <InfoItem label="Solicitante" value={requester?.full_name ?? requester?.email ?? "-"} />
+          <InfoItem label="Área / Departamento" value={sic.department ?? "-"} />
+          {sic.on_behalf_of && <InfoItem label="Solicitado en nombre de" value={sic.on_behalf_of} />}
+          <InfoItem label="Necesaria para" value={sic.needed_by_date ? formatDate(sic.needed_by_date) : "-"} />
+          <InfoItem label="Creada" value={formatDate(sic.created_at)} />
           {(isCurrentAccount || isDirect) && (
-            <Info label="Tipo de compra" value={isDirect ? "Compra directa" : "Cuenta corriente"} />
+            <InfoItem label="Tipo de compra" value={isDirect ? "Compra directa" : "Cuenta corriente"} />
           )}
-          {(isCurrentAccount || isDirect) && <Info label="Proveedor" value={provider?.name ?? "-"} />}
-          <Info label="Monto final" value={formatAmount(sic.final_amount, sic.currency)} />
-          <Info label="Orden de compra" value={sic.po_number ?? "-"} />
-          <Info label="Última actualización" value={formatDate(sic.updated_at)} />
+          {(isCurrentAccount || isDirect) && <InfoItem label="Proveedor" value={provider?.name ?? "-"} />}
+          <InfoItem label="Monto final" value={formatAmount(sic.final_amount, sic.currency)} />
+          <InfoItem label="Orden de compra" value={sic.po_number ?? "-"} />
+          <InfoItem label="Última actualización" value={formatDate(sic.updated_at)} />
         </div>
 
         {(parentSic || (children ?? []).length > 0) && (
-          <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
+          <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
             {parentSic && (
               <p>
                 Desprendida de{" "}
@@ -172,7 +173,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           </div>
         )}
 
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm">
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 text-sm">
           <h2 className="font-semibold text-slate-900">Artículos solicitados</h2>
           <div className="mt-3 space-y-3">
             {(items ?? []).map((item, i) => {
@@ -231,7 +232,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           </div>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm">
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 text-sm">
           <h2 className="font-semibold text-slate-900">Archivos de la SIC</h2>
           {filesWithUrls.filter((f) => !f.item_id).length === 0 ? (
             <p className="mt-2 text-slate-400">Todavía no hay archivos adjuntos.</p>
@@ -303,7 +304,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           />
         </div>
 
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 text-sm">
+        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 text-sm">
           <h2 className="font-semibold text-slate-900">Historial</h2>
           <ul className="mt-3 space-y-3">
             {events?.map((ev) => (
@@ -320,14 +321,5 @@ export default async function SicDetailPage({ params }: { params: { id: string }
         </div>
       </div>
     </AppShell>
-  );
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-xs uppercase text-slate-400">{label}</p>
-      <p className="text-slate-700">{value}</p>
-    </div>
   );
 }

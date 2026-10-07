@@ -143,12 +143,12 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                   <p className="truncate text-sm font-semibold text-slate-900">
                     {sic.code}
                     {sic.purchase_type === "directa" && (
-                      <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-sky-700">
+                      <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold uppercase text-sky-700">
                         Directa
                       </span>
                     )}
                     {sic.purchase_type === "cuenta_corriente" && (
-                      <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-violet-700">
+                      <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold uppercase text-violet-700">
                         Cta. cte.
                       </span>
                     )}

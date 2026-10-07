@@ -154,7 +154,7 @@ export default function ProvidersManager({
         Mostrar archivados
       </label>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         {filtered.length === 0 ? (
           <EmptyState title="No hay proveedores para mostrar" description="Probá con otro filtro o agregá un proveedor nuevo." className="!border-0" />
         ) : (
@@ -246,7 +246,7 @@ function AddProviderForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-xl border border-slate-200 bg-white p-5">
       <h2 className="text-sm font-semibold text-slate-900">Nuevo proveedor</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
@@ -382,7 +382,7 @@ function CategoriesManager({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
       <h2 className="text-sm font-semibold text-slate-900">Categorías de proveedores</h2>
       <ul className="mt-3 divide-y divide-slate-100">
         {categories.map((c) => (

@@ -240,16 +240,16 @@ export default function ContractsList({
               expandable={paidTotals.rows.length > 0}
             />
           </PanelSlot>
-          <div className="flex flex-col justify-center divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-5 py-2">
+          <div className="flex flex-col justify-center divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white px-5 py-2">
             <div className="py-3">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Contratos activos</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Contratos activos</p>
               <p className="mt-0.5 text-lg font-bold text-slate-900">
                 {summaries.filter((s) => s.status === "vigente" || s.status === "por_vencer").length}
                 <span className="ml-1.5 text-xs font-normal text-slate-400">de {summaries.length}</span>
               </p>
             </div>
             <div className="py-3">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Avisos sin atender</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Avisos sin atender</p>
               <p className={`mt-0.5 text-lg font-bold ${totalAlerts > 0 ? "text-amber-600" : "text-slate-900"}`}>{totalAlerts}</p>
             </div>
           </div>
@@ -262,7 +262,7 @@ export default function ContractsList({
       </div>
 
       {totalAlerts > 0 && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
           <h2 className="text-sm font-semibold text-amber-900">Avisos</h2>
           <ul className="mt-3 space-y-2 text-sm">
             {renewalAlerts.map((c) => {
@@ -366,7 +366,7 @@ export default function ContractsList({
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         {filtered.length === 0 ? (
           <EmptyState title="No hay contratos para mostrar" description="Probá con otro filtro o cargá un contrato nuevo." className="!border-0" />
         ) : (
@@ -398,7 +398,7 @@ export default function ContractsList({
                       {s.paid}/{s.paid + s.remaining} cuotas
                     </span>
                     <span
-                      className={`inline-block whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${CONTRACT_DISPLAY_STATUS_COLORS[s.status]}`}
+                      className={`inline-block whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${CONTRACT_DISPLAY_STATUS_COLORS[s.status]}`}
                     >
                       {CONTRACT_DISPLAY_STATUS_LABELS[s.status]}
                     </span>
@@ -425,7 +425,7 @@ function CollapsibleRows({ open, className = "", children }: { open: boolean; cl
 
 function ProviderPanel({ panel }: { panel: PanelData }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6">
+    <div className="rounded-xl border border-slate-200 bg-white p-6">
       <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{panel.title}</p>
       <ul className="mt-3 divide-y divide-slate-100 text-sm">
         {panel.rows.map((r) => (
@@ -502,13 +502,13 @@ function MoneyCard({
       <p className="mt-1 text-xs text-slate-400">{caption}</p>
     </>
   );
-  if (!expandable) return <div className="rounded-2xl border border-slate-200 bg-white p-6">{content}</div>;
+  if (!expandable) return <div className="rounded-xl border border-slate-200 bg-white p-6">{content}</div>;
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-expanded={open}
-      className="block w-full rounded-2xl border border-slate-200 bg-white p-6 text-left hover:bg-slate-50"
+      className="block w-full rounded-xl border border-slate-200 bg-white p-6 text-left hover:bg-slate-50"
     >
       {content}
     </button>

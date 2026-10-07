@@ -22,23 +22,6 @@ export const STATUS_LABELS: Record<SicStatus, string> = {
   anulada: "Anulada",
 };
 
-export const STATUS_COLORS: Record<SicStatus, string> = {
-  enviada: "bg-slate-100 text-slate-700",
-  en_observacion: "bg-amber-100 text-amber-700",
-  pendiente_aprobacion_jefe: "bg-amber-100 text-amber-700",
-  rechazada_jefe: "bg-red-100 text-red-700",
-  rechazada_compras: "bg-red-100 text-red-700",
-  cotizando: "bg-amber-100 text-amber-700",
-  pendiente_validacion_tecnica: "bg-amber-100 text-amber-700",
-  pendiente_aprobacion_gerencia: "bg-amber-100 text-amber-700",
-  rechazada_gerencia: "bg-red-100 text-red-700",
-  aprobada: "bg-emerald-100 text-emerald-700",
-  orden_emitida: "bg-blue-100 text-blue-700",
-  recibida: "bg-blue-100 text-blue-700",
-  cerrada: "bg-slate-200 text-slate-600",
-  anulada: "bg-red-200 text-red-800",
-};
-
 export const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Administrador",
   gerencia: "Gerencia",

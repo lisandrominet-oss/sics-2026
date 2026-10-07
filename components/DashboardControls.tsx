@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SORT_OPTIONS } from "@/lib/constants";
 import { startNavProgress } from "@/lib/navProgress";
+import { IconSearch } from "@/components/icons";
 
 export default function DashboardControls({
   defaultQuery,
@@ -47,16 +48,7 @@ export default function DashboardControls({
   return (
     <div className="mt-4 flex flex-wrap items-center gap-3">
       <div className="relative min-w-[16rem] flex-1">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.75}
-          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-        >
-          <circle cx="10.5" cy="10.5" r="6.5" />
-          <path d="M20 20l-4.5-4.5" strokeLinecap="round" />
-        </svg>
+        <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}

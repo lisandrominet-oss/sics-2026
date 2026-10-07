@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Button from "@/components/ui/Button";
+import { IconAlertTriangle } from "@/components/icons";
 
 export default function Error({
   error,
@@ -18,12 +19,10 @@ export default function Error({
     <div className="flex min-h-dvh items-center justify-center bg-slate-50 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
       <div
         role="alert"
-        className="w-full max-w-lg animate-scale-in rounded-2xl border border-red-200 bg-white p-6 text-center shadow-soft"
+        className="w-full max-w-lg animate-scale-in rounded-xl border border-red-200 bg-white p-6 text-center shadow-soft"
       >
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500">
-          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-            <path d="M12 9v4m0 4h.01M10.3 3.9L2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <IconAlertTriangle />
         </div>
         <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-red-500">Ocurrió un error</p>
         <p className="mt-2 text-sm text-slate-700">

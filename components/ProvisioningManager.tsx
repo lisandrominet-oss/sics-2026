@@ -25,7 +25,7 @@ export default function ProvisioningManager({
   const [showForm, setShowForm] = useState(false);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white">
+    <div className="rounded-xl border border-slate-200 bg-white">
       <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Accesos</p>

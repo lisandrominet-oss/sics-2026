@@ -6,6 +6,7 @@ import { notify } from "@/lib/notify";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 import ThemeSelector from "@/components/ThemeSelector";
 import UserAvatar, { AVATAR_EVENT, clearAvatarCache, setAvatarCache } from "@/components/UserAvatar";
+import InfoItem from "@/components/ui/InfoItem";
 
 const MAX_INPUT_BYTES = 25 * 1024 * 1024;
 const AVATAR_SIZE = 256;
@@ -123,7 +124,7 @@ export default function ProfilePreferences({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6">
+      <section className="rounded-xl border border-slate-200 bg-white p-6">
         <h2 className="text-sm font-semibold text-slate-900">Perfil</h2>
         <div className="mt-4 flex flex-wrap items-center gap-5">
           <UserAvatar userId={userId} fullName={fullName} size="h-24 w-24" text="text-2xl" />
@@ -166,33 +167,24 @@ export default function ProfilePreferences({
         </div>
 
         <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
-          <Field label="Nombre" value={fullName ?? "-"} />
-          <Field label="Email" value={email} />
-          <Field label="Rol" value={roleLabel} />
-          <Field label="Área" value={plantName ?? "-"} />
-          {department && <Field label="Cargo" value={department} />}
+          <InfoItem definition label="Nombre" value={fullName ?? "-"} />
+          <InfoItem definition label="Email" value={email} />
+          <InfoItem definition label="Rol" value={roleLabel} />
+          <InfoItem definition label="Área" value={plantName ?? "-"} />
+          {department && <InfoItem definition label="Cargo" value={department} />}
         </dl>
         <p className="mt-4 text-xs text-slate-400">
           Si tu nombre, área o cargo no son correctos, pedile a Gerencia que los corrija.
         </p>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6">
+      <section className="rounded-xl border border-slate-200 bg-white p-6">
         <h2 className="text-sm font-semibold text-slate-900">Preferencias</h2>
         <p className="mt-1 text-xs text-slate-500">Tema. Se guarda en este dispositivo.</p>
         <div className="mt-4">
           <ThemeSelector />
         </div>
       </section>
-    </div>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-xs uppercase text-slate-400">{label}</dt>
-      <dd className="mt-0.5 text-slate-800">{value}</dd>
     </div>
   );
 }

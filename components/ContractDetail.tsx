@@ -26,6 +26,7 @@ import {
   type ProviderInvoiceKind,
 } from "@/lib/contracts";
 import type { Database } from "@/lib/database.types";
+import InfoItem from "@/components/ui/InfoItem";
 
 type Contract = Database["public"]["Tables"]["contracts"]["Row"] & {
   provider: { id: string; name: string; email: string | null; phone: string | null } | null;
@@ -97,17 +98,17 @@ export default function ContractDetail({
           </h1>
         </div>
         <span
-          className={`inline-block whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${CONTRACT_DISPLAY_STATUS_COLORS[status]}`}
+          className={`inline-block whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${CONTRACT_DISPLAY_STATUS_COLORS[status]}`}
         >
           {CONTRACT_DISPLAY_STATUS_LABELS[status]}
         </span>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-sm sm:grid-cols-4">
-        <Info label="Inicio" value={formatDateOnly(contract.start_date)} />
-        <Info label="Vencimiento" value={formatDateOnly(contract.end_date)} />
-        <Info label="Cuotas" value={`${paid}/${installments.length} pagadas`} />
-        <Info label="Responsable" value={contract.owner?.full_name ?? "-"} />
+      <div className="mt-4 grid grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white p-5 text-sm sm:grid-cols-4">
+        <InfoItem label="Inicio" value={formatDateOnly(contract.start_date)} />
+        <InfoItem label="Vencimiento" value={formatDateOnly(contract.end_date)} />
+        <InfoItem label="Cuotas" value={`${paid}/${installments.length} pagadas`} />
+        <InfoItem label="Responsable" value={contract.owner?.full_name ?? "-"} />
       </div>
 
       <div className="mt-6 flex gap-2 border-b border-slate-200 text-sm">
@@ -162,15 +163,6 @@ export default function ContractDetail({
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-xs uppercase text-slate-400">{label}</p>
-      <p className="text-slate-700">{value}</p>
-    </div>
-  );
-}
-
 function Card({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5">
@@ -212,12 +204,12 @@ function DatosTab({
     <div className="space-y-4">
       <Card title="Detalle">
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <Info label="Planta" value={contract.plant ? `${contract.plant.name} (${contract.plant.prefix})` : "-"} />
-          <Info label="Proyecto" value={contract.project?.name ?? "-"} />
-          <Info label="Contacto proveedor" value={contract.provider?.email ?? contract.provider?.phone ?? "-"} />
-          <Info label="Renovación" value={CONTRACT_RENEWAL_TYPE_LABELS[contract.renewal_type]} />
-          <Info label="Días de preaviso" value={String(contract.notice_days)} />
-          <Info label="Plazo de renovación" value={contract.renewal_months ? `${contract.renewal_months} meses` : "-"} />
+          <InfoItem label="Planta" value={contract.plant ? `${contract.plant.name} (${contract.plant.prefix})` : "-"} />
+          <InfoItem label="Proyecto" value={contract.project?.name ?? "-"} />
+          <InfoItem label="Contacto proveedor" value={contract.provider?.email ?? contract.provider?.phone ?? "-"} />
+          <InfoItem label="Renovación" value={CONTRACT_RENEWAL_TYPE_LABELS[contract.renewal_type]} />
+          <InfoItem label="Días de preaviso" value={String(contract.notice_days)} />
+          <InfoItem label="Plazo de renovación" value={contract.renewal_months ? `${contract.renewal_months} meses` : "-"} />
         </div>
         {contract.notes && (
           <p className="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-600">{contract.notes}</p>
@@ -535,10 +527,10 @@ function ItemCard({
 
       {current && (
         <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-          <Info label="Tarifa mensual" value={formatUsd(current.monthly_rate_usd)} />
-          <Info label="Horas incluidas" value={current.included_hours ? String(current.included_hours) : "-"} />
-          <Info label="Hora excedida" value={current.overage_rate_usd ? formatUsd(current.overage_rate_usd) : "-"} />
-          <Info label="Regla" value={current.excess_rule === "manual" ? "Manual" : "Franquicia + hora excedida"} />
+          <InfoItem label="Tarifa mensual" value={formatUsd(current.monthly_rate_usd)} />
+          <InfoItem label="Horas incluidas" value={current.included_hours ? String(current.included_hours) : "-"} />
+          <InfoItem label="Hora excedida" value={current.overage_rate_usd ? formatUsd(current.overage_rate_usd) : "-"} />
+          <InfoItem label="Regla" value={current.excess_rule === "manual" ? "Manual" : "Franquicia + hora excedida"} />
         </div>
       )}
 
@@ -1098,7 +1090,7 @@ function CuotasTab({
                   </div>
                   <div className="border-b border-slate-100 py-2 pr-3">
                     <span
-                      className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${CONTRACT_INSTALLMENT_STATUS_COLORS[inst.status]}`}
+                      className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${CONTRACT_INSTALLMENT_STATUS_COLORS[inst.status]}`}
                     >
                       {CONTRACT_INSTALLMENT_STATUS_LABELS[inst.status]}
                     </span>
@@ -1222,7 +1214,7 @@ function InstallmentDetail({
               {PROVIDER_INVOICE_KIND_LABELS[inv.kind]} {inv.number ?? ""} — {formatDateOnly(inv.issue_date)} — {formatArs(inv.total_amount)}
             </span>
             {inv.kind === "factura" && inv.status === "vigente" && !paidFacturaIds.has(inv.id) && (
-              <span className="inline-block whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700">
+              <span className="inline-block whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-700">
                 Pendiente de pago
               </span>
             )}
@@ -1401,7 +1393,7 @@ function EditComprobanteForm({
             <label className="block text-xs font-medium text-slate-700">% IVA</label>
             <input type="number" step="0.01" value={vatPct} onChange={(e) => setVatPct(e.target.value)} className={inputClass} />
           </div>
-          <Info label="Total (ARS)" value={formatArs(computedTotal)} />
+          <InfoItem label="Total (ARS)" value={formatArs(computedTotal)} />
         </div>
       )}
       <div className="mt-3">
@@ -1557,9 +1549,9 @@ function InvoiceForm({
       </div>
 
       <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
-        <Info label="Neto (ARS)" value={formatArs(netArs)} />
-        <Info label="IVA (ARS)" value={formatArs(vatArs)} />
-        <Info label="Total (ARS)" value={formatArs(totalArs)} />
+        <InfoItem label="Neto (ARS)" value={formatArs(netArs)} />
+        <InfoItem label="IVA (ARS)" value={formatArs(vatArs)} />
+        <InfoItem label="Total (ARS)" value={formatArs(totalArs)} />
       </div>
       {!isUsd && !fxRate && (
         <p className="mt-2 text-xs text-slate-400">

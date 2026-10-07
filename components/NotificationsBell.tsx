@@ -5,7 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { STATUS_LABELS } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { IconBell } from "@/components/icons";
+import { IconBell, IconCheck } from "@/components/icons";
 import type { Database } from "@/lib/database.types";
 
 type Notification = {
@@ -84,12 +84,13 @@ export default function NotificationsBell({
         aria-label={bar ? (count > 0 ? `Notificaciones: ${count} pendientes` : "Notificaciones") : undefined}
         className={
           bar
-            ? "flex h-11 w-11 items-center justify-center rounded-lg text-[#cbd5e1] transition-colors hover:bg-white/5 hover:text-white"
-            : "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[#cbd5e1] transition-colors hover:bg-white/5 hover:text-white"
+            ? "flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-fg transition-colors hover:bg-white/5 hover:text-white"
+            : "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-fg transition-colors hover:bg-white/5 hover:text-white"
         }
       >
         <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
           <IconBell />
+          {/* Contador a 10 px a propósito: círculo de 16 px (el botón ya tiene aria-label). */}
           {count > 0 && (
             <span
               key={count}
@@ -128,9 +129,7 @@ export default function NotificationsBell({
             {items?.length === 0 && (
               <div className="flex flex-col items-center px-4 py-8 text-center">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <IconCheck />
                 </span>
                 <p className="mt-3 text-sm font-medium text-slate-700">Estás al día</p>
                 <p className="mt-0.5 text-xs text-slate-500">No tenés pendientes por ahora.</p>
@@ -146,7 +145,7 @@ export default function NotificationsBell({
               >
                 <p className="text-sm font-semibold text-slate-900">{item.code}</p>
                 <p className="truncate text-xs text-slate-500">{item.subject}</p>
-                <p className="mt-1 text-[11px] font-medium text-indigo-600">
+                <p className="mt-1 text-xs font-medium text-indigo-600">
                   {STATUS_LABELS[item.status]}
                 </p>
               </Link>

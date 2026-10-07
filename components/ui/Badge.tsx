@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-export type BadgeTone = "neutral" | "info" | "success" | "warning" | "danger" | "brand";
+export type BadgeTone = "neutral" | "info" | "success" | "warning" | "danger" | "brand" | "muted" | "critical";
 
 const TONES: Record<BadgeTone, string> = {
   neutral: "bg-slate-100 text-slate-700",
@@ -10,15 +10,10 @@ const TONES: Record<BadgeTone, string> = {
   warning: "bg-amber-100 text-amber-700",
   danger: "bg-red-100 text-red-700",
   brand: "bg-indigo-100 text-indigo-700",
-};
-
-const DOTS: Record<BadgeTone, string> = {
-  neutral: "bg-slate-400",
-  info: "bg-blue-500",
-  success: "bg-emerald-500",
-  warning: "bg-amber-500",
-  danger: "bg-red-500",
-  brand: "bg-indigo-500",
+  /** Estados terminales o inactivos (cerrada, devuelto). */
+  muted: "bg-slate-200 text-slate-600",
+  /** Estados negativos definitivos (anulada). */
+  critical: "bg-red-200 text-red-800",
 };
 
 export default function Badge({
@@ -28,7 +23,7 @@ export default function Badge({
   children,
 }: {
   tone?: BadgeTone;
-  /** Punto de color previo al texto: el estado no depende solo del color de fondo. */
+  /** Punto previo al texto: el estado no depende solo del color de fondo. */
   dot?: boolean;
   className?: string;
   children: ReactNode;
@@ -36,12 +31,12 @@ export default function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition-colors duration-base",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-colors duration-base",
         TONES[tone],
         className
       )}
     >
-      {dot && <span className={cn("h-1.5 w-1.5 rounded-full", DOTS[tone])} aria-hidden="true" />}
+      {dot && <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" aria-hidden="true" />}
       {children}
     </span>
   );

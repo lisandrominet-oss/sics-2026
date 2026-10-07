@@ -10,6 +10,7 @@ import FilePreview from "@/components/FilePreview";
 import ProviderCategoryPicker from "@/components/ProviderCategoryPicker";
 import { sanitizeFileName } from "@/lib/constants";
 import type { Database } from "@/lib/database.types";
+import InfoItem from "@/components/ui/InfoItem";
 
 type Provider = Database["public"]["Tables"]["providers"]["Row"];
 type Category = { id: string; name: string; active: boolean };
@@ -232,12 +233,12 @@ export default function ProviderRow({
         </button>
         <div className="flex flex-wrap items-center gap-1.5">
           {provider.has_current_account && (
-            <span className="rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-semibold text-violet-700">
+            <span className="rounded-full bg-violet-100 px-2.5 py-1 text-xs font-semibold text-violet-700">
               Cuenta corriente
             </span>
           )}
           {categoryNames.map((name) => (
-            <span key={name} className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] text-slate-600">
+            <span key={name} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
               {name}
             </span>
           ))}
@@ -248,11 +249,11 @@ export default function ProviderRow({
         <div className="mt-4 space-y-5 border-t border-slate-100 pt-4">
           {!editing ? (
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <Field label="CUIT" value={provider.tax_id} />
-              <Field label="Condición ante IVA" value={provider.tax_status} />
-              <Field label="Forma de pago" value={provider.payment_terms} />
-              <Field label="Contacto" value={provider.contact_name} />
-              <Field label="Cuenta corriente" value={provider.has_current_account ? "Habilitada" : "No"} />
+              <InfoItem label="CUIT" value={provider.tax_id || "-"} />
+              <InfoItem label="Condición ante IVA" value={provider.tax_status || "-"} />
+              <InfoItem label="Forma de pago" value={provider.payment_terms || "-"} />
+              <InfoItem label="Contacto" value={provider.contact_name || "-"} />
+              <InfoItem label="Cuenta corriente" value={provider.has_current_account ? "Habilitada" : "No"} />
               <div className="col-span-2 flex flex-wrap gap-2 pt-1">
                 <button
                   onClick={() => setEditing(true)}
@@ -342,7 +343,7 @@ export default function ProviderRow({
               {comments.map((c) => (
                 <div key={c.id} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
                   <p className="text-slate-700">{c.comment}</p>
-                  <p className="mt-0.5 text-[11px] text-slate-400">
+                  <p className="mt-0.5 text-xs text-slate-400">
                     {c.author?.full_name ?? "Alguien"} · {formatDate(c.created_at)}
                   </p>
                 </div>
@@ -396,15 +397,6 @@ export default function ProviderRow({
         </div>
       )}
     </li>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string | null }) {
-  return (
-    <div>
-      <p className="text-xs uppercase text-slate-400">{label}</p>
-      <p className="text-slate-700">{value || "-"}</p>
-    </div>
   );
 }
 

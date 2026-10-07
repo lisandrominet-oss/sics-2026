@@ -71,7 +71,7 @@ export default async function UsuariosPage() {
           <ProvisioningManager entries={provisioning ?? []} plants={plants ?? []} />
         </div>
 
-        <div className="mt-8 rounded-2xl border border-slate-200 bg-white">
+        <div className="mt-8 rounded-xl border border-slate-200 bg-white">
           <div className="border-b border-slate-100 px-6 py-4">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Auditoría</p>
             <h2 className="text-base font-semibold text-slate-900">Registro de cambios de usuarios</h2>

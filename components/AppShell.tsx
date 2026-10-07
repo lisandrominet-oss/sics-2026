@@ -46,7 +46,7 @@ function NavLink({
       className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-base ${
         active
           ? "bg-white/10 text-white shadow-[inset_3px_0_0_0_#818cf8]"
-          : "text-[#94a3b8] hover:bg-white/5 hover:text-[#f1f5f9]"
+          : "text-sidebar-muted hover:bg-white/5 hover:text-sidebar-strong"
       }`}
     >
       <span className="transition-transform duration-base ease-out-expo group-hover:scale-110">{icon}</span>
@@ -129,7 +129,7 @@ export default function AppShell({
           aria-label="Abrir menú"
           aria-expanded={menuOpen}
           aria-controls="menu-lateral"
-          className="flex h-11 w-11 items-center justify-center rounded-lg text-[#cbd5e1] hover:bg-white/5 hover:text-white"
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-fg hover:bg-white/5 hover:text-white"
         >
           <IconMenu />
         </button>
@@ -167,7 +167,7 @@ export default function AppShell({
             type="button"
             onClick={() => setMenuOpen(false)}
             aria-label="Cerrar menú"
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-[#cbd5e1] hover:bg-white/5 hover:text-white lg:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-fg hover:bg-white/5 hover:text-white lg:hidden"
           >
             <IconX />
           </button>
@@ -178,7 +178,7 @@ export default function AppShell({
         </div>
 
         <nav className="mt-6 flex-1 space-y-1">
-          <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-[#64748b]">
+          <p className="px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-subtle">
             Principal
           </p>
           <NavLink href="/dashboard" label="Tablero" icon={<IconGrid />} />
@@ -188,7 +188,7 @@ export default function AppShell({
 
           {(role === "compras" || role === "admin") && (
             <>
-              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#64748b]">
+              <p className="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-subtle">
                 Compras
               </p>
               <NavLink href="/proveedores" label="Proveedores" icon={<IconTruck />} />
@@ -198,7 +198,7 @@ export default function AppShell({
 
           {(DEMO_MODULE_ROLES as readonly string[]).includes(role) && (
             <>
-              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#64748b]">
+              <p className="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-subtle">
                 Módulos
               </p>
               <NavLink href="/modulos/recursos-humanos" label="Recursos Humanos" icon={<IconBadge />} />
@@ -209,7 +209,7 @@ export default function AppShell({
 
           {role === "gerencia" && (
             <>
-              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#64748b]">
+              <p className="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-subtle">
                 Sistema
               </p>
               <NavLink href="/usuarios" label="Usuarios" icon={<IconUsers />} />
@@ -218,7 +218,7 @@ export default function AppShell({
 
           {role === "admin" && (
             <>
-              <p className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#64748b]">
+              <p className="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-subtle">
                 Sistema
               </p>
               <NavLink href="/admin/usuarios" label="Usuarios" icon={<IconUsers />} />
@@ -239,7 +239,7 @@ export default function AppShell({
             <UserAvatar userId={userId} fullName={fullName} />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-white">{fullName ?? "Usuario"}</p>
-              <p className="truncate text-xs text-[#94a3b8]">{ROLE_LABELS[role]}</p>
+              <p className="truncate text-xs text-sidebar-muted">{ROLE_LABELS[role]}</p>
             </div>
           </Link>
           <div className="px-2">

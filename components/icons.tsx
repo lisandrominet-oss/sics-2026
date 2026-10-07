@@ -228,3 +228,41 @@ export function IconX({ className = "h-5 w-5" }: { className?: string }) {
     </svg>
   );
 }
+
+export function IconSearch({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className} aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M20 20l-4.5-4.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconCheck({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className} aria-hidden="true">
+      <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconAlertTriangle({ className = "h-6 w-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className} aria-hidden="true">
+      <path
+        d="M12 9v4m0 4h.01M10.3 3.9L2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconInbox({ className = "h-6 w-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className} aria-hidden="true">
+      <path d="M3 13l2.5-7.5A2 2 0 0 1 7.4 4h9.2a2 2 0 0 1 1.9 1.5L21 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5z" strokeLinejoin="round" />
+      <path d="M3 13h5l1.5 2.5h5L16 13h5" strokeLinejoin="round" />
+    </svg>
+  );
+}

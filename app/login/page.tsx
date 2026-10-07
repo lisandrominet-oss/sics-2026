@@ -32,7 +32,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="animate-enter rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-soft">
+    <div className="animate-enter rounded-xl border border-slate-200 bg-white p-8 text-center shadow-soft">
       <h1 className="text-xl font-bold text-slate-900">Bienvenido</h1>
       <p className="mt-2 text-sm text-slate-500">
         Ingresá con tu cuenta de Google corporativa para continuar.

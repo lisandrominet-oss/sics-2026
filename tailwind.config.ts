@@ -10,6 +10,10 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
+      // Menú lateral (siempre oscuro, no pasa por el parche de modo oscuro).
+      colors: {
+        sidebar: { fg: "#cbd5e1", muted: "#94a3b8", subtle: "#64748b", strong: "#f1f5f9" },
+      },
       // Movimiento: curvas y duraciones compartidas para que toda la app se sienta igual.
       transitionTimingFunction: {
         "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",

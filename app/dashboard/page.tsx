@@ -152,7 +152,7 @@ export default async function DashboardPage({
 
         {error && <p role="alert" className="animate-shake mt-4 text-sm text-red-600">{error.message}</p>}
 
-        <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
           <div className="border-b border-slate-100 px-6 py-5">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Actividad</p>
             <h2 className="text-base font-semibold text-slate-900">Solicitudes recientes</h2>
@@ -180,7 +180,7 @@ function StatCard({
   return (
     <div
       style={{ animationDelay: `${delay}ms` }}
-      className="animate-enter rounded-2xl border border-slate-200 bg-white p-6 shadow-soft transition-all duration-base ease-out-expo hover:-translate-y-0.5 hover:shadow-lift"
+      className="animate-enter rounded-xl border border-slate-200 bg-white p-6 shadow-soft transition-all duration-base ease-out-expo hover:-translate-y-0.5 hover:shadow-lift"
     >
       <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
       <p className={`mt-2 text-3xl font-bold ${accent ? "text-indigo-600" : "text-slate-900"}`}>
