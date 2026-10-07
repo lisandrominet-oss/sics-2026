@@ -52,7 +52,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-dvh">
       <div className="hidden w-1/2 flex-col justify-between bg-slate-900 p-12 lg:flex">
         <img src="/brand/logo-completo-negativo.svg" alt="Servicios Industriales" className="h-16 w-auto self-start" />
         <div className="max-w-md animate-enter [animation-delay:120ms]">

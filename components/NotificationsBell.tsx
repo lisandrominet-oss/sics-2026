@@ -16,16 +16,33 @@ type Notification = {
   updated_at: string;
 };
 
-export default function NotificationsBell({ userId }: { userId: string }) {
+// `sidebar`: fila con texto dentro del menú lateral. `bar`: solo el ícono, para la barra superior del celular.
+export default function NotificationsBell({
+  userId,
+  variant = "sidebar",
+}: {
+  userId: string;
+  variant?: "sidebar" | "bar";
+}) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Notification[] | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const loadedRef = useRef(false);
 
+  // AppShell monta una campana en la barra y otra en el menú; la que queda oculta (display: none) no consulta.
+  // Si cambia el ancho de pantalla y pasa a verse, carga entonces.
   useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .rpc("get_pending_notifications", { p_limit: 20 })
-      .then(({ data }) => setItems(data ?? []));
+    function load() {
+      if (loadedRef.current || !ref.current || ref.current.offsetParent === null) return;
+      loadedRef.current = true;
+      createClient()
+        .rpc("get_pending_notifications", { p_limit: 20 })
+        .then(({ data }) => setItems(data ?? []));
+    }
+    load();
+    const mq = window.matchMedia("(min-width: 1024px)");
+    mq.addEventListener("change", load);
+    return () => mq.removeEventListener("change", load);
   }, []);
 
   useEffect(() => {
@@ -53,6 +70,9 @@ export default function NotificationsBell({ userId }: { userId: string }) {
 
   const count = items?.length ?? 0;
 
+  const bar = variant === "bar";
+  const panelId = `notifications-panel-${variant}`;
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -60,8 +80,13 @@ export default function NotificationsBell({ userId }: { userId: string }) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="true"
-        aria-controls="notifications-panel"
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[#cbd5e1] transition-colors hover:bg-white/5 hover:text-white"
+        aria-controls={panelId}
+        aria-label={bar ? (count > 0 ? `Notificaciones: ${count} pendientes` : "Notificaciones") : undefined}
+        className={
+          bar
+            ? "flex h-11 w-11 items-center justify-center rounded-lg text-[#cbd5e1] transition-colors hover:bg-white/5 hover:text-white"
+            : "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[#cbd5e1] transition-colors hover:bg-white/5 hover:text-white"
+        }
       >
         <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
           <IconBell />
@@ -74,13 +99,15 @@ export default function NotificationsBell({ userId }: { userId: string }) {
             </span>
           )}
         </span>
-        Notificaciones
+        {!bar && "Notificaciones"}
       </button>
 
       {open && (
         <div
-          id="notifications-panel"
-          className="absolute left-0 top-full z-50 mt-2 w-full animate-slide-down overflow-hidden rounded-xl border border-slate-200 bg-white shadow-pop"
+          id={panelId}
+          className={`absolute top-full z-50 mt-2 animate-slide-down overflow-hidden rounded-xl border border-slate-200 bg-white shadow-pop ${
+            bar ? "right-0 w-[min(22rem,calc(100vw-1.5rem))]" : "left-0 w-full"
+          }`}
         >
           <div className="border-b border-slate-100 px-4 py-3">
             <p className="text-sm font-semibold text-slate-900">Notificaciones</p>

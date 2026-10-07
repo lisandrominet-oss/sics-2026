@@ -22,8 +22,8 @@ export default function UsersTable({
   currentUserId: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <table className="w-full text-left text-sm">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <table className="tabla-fija-1 w-full min-w-[720px] text-left text-sm">
         <thead className="bg-slate-50 text-xs uppercase text-slate-500">
           <tr>
             <th className="px-4 py-3">Usuario</th>

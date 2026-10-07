@@ -38,7 +38,7 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
       aria-busy={loading || undefined}
       className={cn(
         "inline-flex items-center justify-center gap-2 font-medium transition-all duration-base ease-out-expo",
-        "active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100",
+        "disabled:cursor-not-allowed disabled:opacity-50",
         VARIANTS[variant],
         SIZES[size],
         className

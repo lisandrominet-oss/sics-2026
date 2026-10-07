@@ -1,5 +1,6 @@
 "use client";
 
+import { inputClass } from "@/lib/ui";
 import { Fragment, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -309,11 +310,11 @@ function EditContractForm({
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-slate-700">Inicio</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Vencimiento</label>
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputClass} />
         </div>
       </div>
       <div className="mt-3 grid grid-cols-3 gap-3">
@@ -322,7 +323,7 @@ function EditContractForm({
           <select
             value={renewalType}
             onChange={(e) => setRenewalType(e.target.value as ContractRenewalType)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           >
             {(Object.keys(CONTRACT_RENEWAL_TYPE_LABELS) as ContractRenewalType[]).map((t) => (
               <option key={t} value={t}>{CONTRACT_RENEWAL_TYPE_LABELS[t]}</option>
@@ -331,16 +332,16 @@ function EditContractForm({
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Plazo renovación (meses)</label>
-          <input type="number" min="0" value={renewalMonths} onChange={(e) => setRenewalMonths(e.target.value)} disabled={renewalType === "sin_renovacion"} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50" />
+          <input type="number" min="0" value={renewalMonths} onChange={(e) => setRenewalMonths(e.target.value)} disabled={renewalType === "sin_renovacion"} className={`${inputClass} disabled:bg-slate-50`} />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Días de preaviso</label>
-          <input type="number" min="0" value={noticeDays} onChange={(e) => setNoticeDays(e.target.value)} disabled={renewalType === "sin_renovacion"} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50" />
+          <input type="number" min="0" value={noticeDays} onChange={(e) => setNoticeDays(e.target.value)} disabled={renewalType === "sin_renovacion"} className={`${inputClass} disabled:bg-slate-50`} />
         </div>
       </div>
       <div className="mt-3">
         <label className="block text-xs font-medium text-slate-700">Notas (opcional)</label>
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={inputClass} />
       </div>
       <button onClick={submit} disabled={loading} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
         {loading ? "Guardando…" : "Guardar cambios"}
@@ -369,11 +370,11 @@ function RenewForm({ contractId, onDone, onError }: { contractId: string; onDone
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-slate-700">Nuevo vencimiento</label>
-          <input type="date" value={newEndDate} onChange={(e) => setNewEndDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="date" value={newEndDate} onChange={(e) => setNewEndDate(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Nota (opcional)</label>
-          <input value={note} onChange={(e) => setNote(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input value={note} onChange={(e) => setNote(e.target.value)} className={inputClass} />
         </div>
       </div>
       <button onClick={submit} disabled={loading || !newEndDate} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
@@ -414,7 +415,7 @@ function ReturnForm({ contractId, onDone, onError }: { contractId: string; onDon
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-slate-700">Fecha de devolución</label>
-          <input type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Acta de devolución (obligatoria)</label>
@@ -423,7 +424,7 @@ function ReturnForm({ contractId, onDone, onError }: { contractId: string; onDon
       </div>
       <div className="mt-3">
         <label className="block text-xs font-medium text-slate-700">Nota (opcional)</label>
-        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={inputClass} />
       </div>
       <p className="mt-2 text-xs text-slate-500">Esto cancela las cuotas futuras que todavía no fueron facturadas.</p>
       <button onClick={submit} disabled={loading || !returnDate || !file} className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50">
@@ -629,25 +630,25 @@ function EditItemForm({
       <p className="text-xs font-semibold text-slate-700">Editar datos del equipo</p>
       <div className="mt-2">
         <label className="block text-xs font-medium text-slate-700">Descripción</label>
-        <input value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        <input value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} />
       </div>
       <div className="mt-2">
         <label className="block text-xs font-medium text-slate-700">Número de serie / identificador</label>
-        <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} className={inputClass} />
       </div>
       {showVehicleFields && (
         <div className="mt-2 grid grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-medium text-slate-700">N° de chasis</label>
-            <input value={chassisNumber} onChange={(e) => setChassisNumber(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input value={chassisNumber} onChange={(e) => setChassisNumber(e.target.value)} className={inputClass} />
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-700">Dominio</label>
-            <input value={domain} onChange={(e) => setDomain(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input value={domain} onChange={(e) => setDomain(e.target.value)} className={inputClass} />
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-700">N° de motor</label>
-            <input value={engineNumber} onChange={(e) => setEngineNumber(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input value={engineNumber} onChange={(e) => setEngineNumber(e.target.value)} className={inputClass} />
           </div>
         </div>
       )}
@@ -760,34 +761,34 @@ function RateForm({ itemId, onDone, onError }: { itemId: string; onDone: () => v
       <div className="mt-2 grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-slate-700">Vigente desde</label>
-          <input type="date" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="date" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Regla</label>
-          <select value={excessRule} onChange={(e) => setExcessRule(e.target.value as typeof excessRule)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <select value={excessRule} onChange={(e) => setExcessRule(e.target.value as typeof excessRule)} className={inputClass}>
             <option value="franquicia_hora">Franquicia + hora excedida</option>
             <option value="manual">Manual</option>
           </select>
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Tarifa mensual (USD)</label>
-          <input type="number" step="0.01" value={monthlyRate} onChange={(e) => setMonthlyRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="number" step="0.01" value={monthlyRate} onChange={(e) => setMonthlyRate(e.target.value)} className={inputClass} />
         </div>
         {excessRule === "franquicia_hora" && (
           <>
             <div>
               <label className="block text-xs font-medium text-slate-700">Horas incluidas</label>
-              <input type="number" step="0.01" value={includedHours} onChange={(e) => setIncludedHours(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <input type="number" step="0.01" value={includedHours} onChange={(e) => setIncludedHours(e.target.value)} className={inputClass} />
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-700">Tarifa hora excedida (USD)</label>
-              <input type="number" step="0.01" value={overageRate} onChange={(e) => setOverageRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <input type="number" step="0.01" value={overageRate} onChange={(e) => setOverageRate(e.target.value)} className={inputClass} />
             </div>
           </>
         )}
         <div className="col-span-2">
           <label className="block text-xs font-medium text-slate-700">Nota</label>
-          <input value={note} onChange={(e) => setNote(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input value={note} onChange={(e) => setNote(e.target.value)} className={inputClass} />
         </div>
       </div>
       <button onClick={submit} disabled={loading || !validFrom || !monthlyRate} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
@@ -855,7 +856,7 @@ function UsageForm({
       <div className="mt-2 grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-slate-700">Período</label>
-          <select value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <select value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className={inputClass}>
             {installments.map((i) => (
               <option key={i.id} value={i.period_start}>
                 {formatDateOnly(i.period_start)} — {formatDateOnly(i.period_end)}
@@ -865,7 +866,7 @@ function UsageForm({
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Horas usadas</label>
-          <input type="number" step="0.01" value={hours} onChange={(e) => setHours(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="number" step="0.01" value={hours} onChange={(e) => setHours(e.target.value)} className={inputClass} />
         </div>
         <div className="col-span-2">
           <label className="block text-xs font-medium text-slate-700">Informe del sector (opcional)</label>
@@ -873,11 +874,11 @@ function UsageForm({
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Monto esperado manual (USD, si aplica)</label>
-          <input type="number" step="0.01" value={manualExpected} onChange={(e) => setManualExpected(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="number" step="0.01" value={manualExpected} onChange={(e) => setManualExpected(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Nota (obligatoria en modo manual)</label>
-          <input value={manualNote} onChange={(e) => setManualNote(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input value={manualNote} onChange={(e) => setManualNote(e.target.value)} className={inputClass} />
         </div>
       </div>
       <button onClick={submit} disabled={loading || !periodStart || !hours} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
@@ -937,7 +938,7 @@ function DocumentosTab({
         <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-medium text-slate-700">Tipo</label>
-            <select value={docType} onChange={(e) => setDocType(e.target.value as ContractDocumentType)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <select value={docType} onChange={(e) => setDocType(e.target.value as ContractDocumentType)} className={inputClass}>
               {uploadableTypes.map((t) => (
                 <option key={t} value={t}>
                   {CONTRACT_DOCUMENT_TYPE_LABELS[t]}
@@ -947,7 +948,7 @@ function DocumentosTab({
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-700">Vencimiento (opcional)</label>
-            <input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className={inputClass} />
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-700">Archivo</label>
@@ -1352,16 +1353,16 @@ function EditComprobanteForm({
       <div className="mt-2 grid grid-cols-3 gap-3">
         <div>
           <label className="block text-xs font-medium text-slate-700">Número</label>
-          <input value={number} onChange={(e) => setNumber(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input value={number} onChange={(e) => setNumber(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Fecha</label>
-          <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className={inputClass} />
         </div>
         {isPago ? (
           <div>
             <label className="block text-xs font-medium text-slate-700">Monto pagado sin IVA (ARS)</label>
-            <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className={inputClass} />
           </div>
         ) : (
           <div>
@@ -1369,7 +1370,7 @@ function EditComprobanteForm({
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value as "ars" | "usd")}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className={inputClass}
             >
               <option value="ars">ARS</option>
               <option value="usd">USD</option>
@@ -1383,22 +1384,22 @@ function EditComprobanteForm({
             <label className="block text-xs font-medium text-slate-700">
               Dólar venta BNA {!isUsd && "(opcional)"}
             </label>
-            <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className={inputClass} />
           </div>
           {isUsd ? (
             <div>
               <label className="block text-xs font-medium text-slate-700">Subtotal USD</label>
-              <input type="number" step="0.01" value={subtotalUsd} onChange={(e) => setSubtotalUsd(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <input type="number" step="0.01" value={subtotalUsd} onChange={(e) => setSubtotalUsd(e.target.value)} className={inputClass} />
             </div>
           ) : (
             <div>
               <label className="block text-xs font-medium text-slate-700">Neto (ARS)</label>
-              <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className={inputClass} />
             </div>
           )}
           <div>
             <label className="block text-xs font-medium text-slate-700">% IVA</label>
-            <input type="number" step="0.01" value={vatPct} onChange={(e) => setVatPct(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input type="number" step="0.01" value={vatPct} onChange={(e) => setVatPct(e.target.value)} className={inputClass} />
           </div>
           <Info label="Total (ARS)" value={formatArs(computedTotal)} />
         </div>
@@ -1490,7 +1491,7 @@ function InvoiceForm({
           <select
             value={kind}
             onChange={(e) => setKind(e.target.value as "factura" | "nota_credito")}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           >
             <option value="factura">{PROVIDER_INVOICE_KIND_LABELS.factura}</option>
             <option value="nota_credito">{PROVIDER_INVOICE_KIND_LABELS.nota_credito}</option>
@@ -1498,18 +1499,18 @@ function InvoiceForm({
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Número</label>
-          <input value={number} onChange={(e) => setNumber(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input value={number} onChange={(e) => setNumber(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Fecha</label>
-          <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className={inputClass} />
         </div>
       </div>
 
       {items.length > 1 && (
         <div className="mt-3">
           <label className="block text-xs font-medium text-slate-700">Equipo</label>
-          <select value={itemId} onChange={(e) => setItemId(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <select value={itemId} onChange={(e) => setItemId(e.target.value)} className={inputClass}>
             <option value="">Total del contrato</option>
             {items.map((i) => (
               <option key={i.id} value={i.id}>
@@ -1526,7 +1527,7 @@ function InvoiceForm({
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value as "ars" | "usd")}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           >
             <option value="ars">ARS</option>
             <option value="usd">USD</option>
@@ -1536,22 +1537,22 @@ function InvoiceForm({
           <label className="block text-xs font-medium text-slate-700">
             Dólar venta BNA {!isUsd && "(opcional)"}
           </label>
-          <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className={inputClass} />
         </div>
         {isUsd ? (
           <div>
             <label className="block text-xs font-medium text-slate-700">Subtotal USD</label>
-            <input type="number" step="0.01" value={subtotalUsd} onChange={(e) => setSubtotalUsd(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input type="number" step="0.01" value={subtotalUsd} onChange={(e) => setSubtotalUsd(e.target.value)} className={inputClass} />
           </div>
         ) : (
           <div>
             <label className="block text-xs font-medium text-slate-700">Neto (ARS)</label>
-            <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className={inputClass} />
           </div>
         )}
         <div>
           <label className="block text-xs font-medium text-slate-700">% IVA</label>
-          <input type="number" step="0.01" value={vatPct} onChange={(e) => setVatPct(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="number" step="0.01" value={vatPct} onChange={(e) => setVatPct(e.target.value)} className={inputClass} />
         </div>
       </div>
 
@@ -1645,7 +1646,7 @@ function RegisterPaymentForm({
     <Card title={`Registrar pago — período ${formatDateOnly(periodStart)}`}>
       <div>
         <label className="block text-xs font-medium text-slate-700">Factura que cancela</label>
-        <select value={paidInvoiceId} onChange={(e) => setPaidInvoiceId(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <select value={paidInvoiceId} onChange={(e) => setPaidInvoiceId(e.target.value)} className={inputClass}>
           {providerInvoices.length === 0 && <option value="">Sin facturas vigentes de este proveedor</option>}
           {providerInvoices.map((inv) => (
             <option key={inv.id} value={inv.id}>
@@ -1658,7 +1659,7 @@ function RegisterPaymentForm({
       {items.length > 1 && (
         <div className="mt-3">
           <label className="block text-xs font-medium text-slate-700">Equipo</label>
-          <select value={itemId} onChange={(e) => setItemId(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <select value={itemId} onChange={(e) => setItemId(e.target.value)} className={inputClass}>
             <option value="">Total del contrato</option>
             {items.map((i) => (
               <option key={i.id} value={i.id}>
@@ -1672,15 +1673,15 @@ function RegisterPaymentForm({
       <div className="mt-3 grid grid-cols-3 gap-3">
         <div>
           <label className="block text-xs font-medium text-slate-700">Número de recibo (opcional)</label>
-          <input value={number} onChange={(e) => setNumber(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input value={number} onChange={(e) => setNumber(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Fecha de pago</label>
-          <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-700">Monto pagado sin IVA (ARS)</label>
-          <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className={inputClass} />
         </div>
       </div>
       <div className="mt-3">

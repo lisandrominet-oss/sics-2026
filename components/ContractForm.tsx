@@ -1,5 +1,6 @@
 "use client";
 
+import { inputClass } from "@/lib/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -122,7 +123,7 @@ export default function ContractForm({
           value={providerId}
           onChange={(e) => setProviderId(e.target.value)}
           required
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={inputClass}
         >
           {providers.length === 0 && <option value="">No hay proveedores activos</option>}
           {providers.map((p) => (
@@ -133,13 +134,13 @@ export default function ContractForm({
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-slate-700">Planta (opcional)</label>
           <select
             value={plantId}
             onChange={(e) => setPlantId(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           >
             <option value="">Sin planta</option>
             {plants.map((p) => (
@@ -154,7 +155,7 @@ export default function ContractForm({
           <select
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           >
             <option value="">Sin proyecto</option>
             {projects.map((p) => (
@@ -166,7 +167,7 @@ export default function ContractForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-slate-700">Inicio</label>
           <input
@@ -174,7 +175,7 @@ export default function ContractForm({
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
@@ -184,18 +185,18 @@ export default function ContractForm({
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
           <label className="block text-sm font-medium text-slate-700">Renovación</label>
           <select
             value={renewalType}
             onChange={(e) => setRenewalType(e.target.value as ContractRenewalType)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           >
             {(Object.keys(CONTRACT_RENEWAL_TYPE_LABELS) as ContractRenewalType[]).map((t) => (
               <option key={t} value={t}>
@@ -212,7 +213,7 @@ export default function ContractForm({
             value={renewalMonths}
             onChange={(e) => setRenewalMonths(e.target.value)}
             disabled={renewalType === "sin_renovacion"}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50"
+            className={`${inputClass} disabled:bg-slate-50`}
           />
         </div>
         <div>
@@ -223,7 +224,7 @@ export default function ContractForm({
             value={noticeDays}
             onChange={(e) => setNoticeDays(e.target.value)}
             disabled={renewalType === "sin_renovacion"}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50"
+            className={`${inputClass} disabled:bg-slate-50`}
           />
         </div>
       </div>
@@ -234,7 +235,7 @@ export default function ContractForm({
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
 
@@ -255,13 +256,13 @@ export default function ContractForm({
                   </button>
                 )}
               </div>
-              <div className="mt-2 grid grid-cols-3 gap-3">
+              <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-700">Tipo</label>
                   <select
                     value={item.type}
                     onChange={(e) => updateItem(index, { type: e.target.value as ContractItemType })}
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={inputClass}
                   >
                     {(Object.keys(CONTRACT_ITEM_TYPE_LABELS) as ContractItemType[]).map((t) => (
                       <option key={t} value={t}>
@@ -277,7 +278,7 @@ export default function ContractForm({
                     onChange={(e) => updateItem(index, { description: e.target.value })}
                     required
                     placeholder="Ej: Retroexcavadora JCB 3CX"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={inputClass}
                   />
                 </div>
               </div>
@@ -286,17 +287,17 @@ export default function ContractForm({
                 <input
                   value={item.identifier}
                   onChange={(e) => updateItem(index, { identifier: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className={inputClass}
                 />
               </div>
               {(item.type === "maquina" || item.type === "camioneta") && (
-                <div className="mt-3 grid grid-cols-3 gap-3">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div>
                     <label className="block text-xs font-medium text-slate-700">N° de chasis (opcional)</label>
                     <input
                       value={item.chassisNumber}
                       onChange={(e) => updateItem(index, { chassisNumber: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className={inputClass}
                     />
                   </div>
                   <div>
@@ -304,7 +305,7 @@ export default function ContractForm({
                     <input
                       value={item.domain}
                       onChange={(e) => updateItem(index, { domain: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className={inputClass}
                     />
                   </div>
                   <div>
@@ -312,18 +313,18 @@ export default function ContractForm({
                     <input
                       value={item.engineNumber}
                       onChange={(e) => updateItem(index, { engineNumber: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className={inputClass}
                     />
                   </div>
                 </div>
               )}
-              <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-medium text-slate-700">Regla de exceso</label>
                   <select
                     value={item.excessRule}
                     onChange={(e) => updateItem(index, { excessRule: e.target.value as ItemDraft["excessRule"] })}
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={inputClass}
                   >
                     <option value="franquicia_hora">Franquicia + hora excedida</option>
                     <option value="manual">Manual (monto cargado a mano)</option>
@@ -338,12 +339,12 @@ export default function ContractForm({
                     value={item.monthlyRateUsd}
                     onChange={(e) => updateItem(index, { monthlyRateUsd: e.target.value })}
                     required
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={inputClass}
                   />
                 </div>
               </div>
               {item.excessRule === "franquicia_hora" && (
-                <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label className="block text-xs font-medium text-slate-700">Horas incluidas por mes</label>
                     <input
@@ -352,7 +353,7 @@ export default function ContractForm({
                       min="0"
                       value={item.includedHours}
                       onChange={(e) => updateItem(index, { includedHours: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className={inputClass}
                     />
                   </div>
                   <div>
@@ -363,7 +364,7 @@ export default function ContractForm({
                       min="0"
                       value={item.overageRateUsd}
                       onChange={(e) => updateItem(index, { overageRateUsd: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      className={inputClass}
                     />
                   </div>
                 </div>

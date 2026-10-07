@@ -1,5 +1,6 @@
 "use client";
 
+import { inputClass } from "@/lib/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -40,7 +41,7 @@ export default function StaffUsersManager({
 
   return (
     <div className="space-y-8">
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <div className="border-b border-slate-100 px-6 py-4">
           <h2 className="text-base font-semibold text-slate-900">Usuarios de la empresa</h2>
           <p className="mt-1 text-xs text-slate-500">Los que ya iniciaron sesión.</p>
@@ -48,7 +49,7 @@ export default function StaffUsersManager({
         {users.length === 0 ? (
           <EmptyState title="No hay usuarios para mostrar" className="!border-0 py-8" />
         ) : (
-          <table className="w-full text-left text-sm">
+          <table className="tabla-fija-1 w-full min-w-[720px] text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
                 <th className="px-4 py-3">Usuario</th>
@@ -199,7 +200,7 @@ function UserRow({ user, plants, isSelf }: { user: Profile; plants: Plant[]; isS
   }
 
   return (
-    <tr className={!user.active ? "bg-slate-50/70" : ""}>
+    <tr data-inactiva={!user.active || undefined} className={!user.active ? "bg-slate-50/70" : ""}>
       <td className="px-4 py-3">
         <p className="font-medium text-slate-900">
           {user.full_name ?? "-"}
@@ -368,7 +369,6 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
     onDone();
   }
 
-  const inputClass = "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm";
   return (
     <form onSubmit={handleSubmit} className="space-y-3 border-b border-slate-100 bg-slate-50 px-6 py-5">
       <div className="grid grid-cols-2 gap-3">

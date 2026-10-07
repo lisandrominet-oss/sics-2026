@@ -1,5 +1,6 @@
 "use client";
 
+import { inputClass } from "@/lib/ui";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -152,7 +153,7 @@ export default function NuevaSicForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-slate-700">Área</label>
           {plantEditable ? (
@@ -160,7 +161,7 @@ export default function NuevaSicForm({
               value={plantId}
               onChange={(e) => setPlantId(e.target.value)}
               required
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className={inputClass}
             >
               {plants.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -180,7 +181,7 @@ export default function NuevaSicForm({
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           >
             <option value="">Taller</option>
             {projects.map((p) => (
@@ -199,7 +200,7 @@ export default function NuevaSicForm({
             value={onBehalfOf}
             onChange={(e) => setOnBehalfOf(e.target.value)}
             placeholder="Ej: Martín Vargas (no tiene acceso a su mail)"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
           <p className="mt-1 text-xs text-slate-400">
             Completalo solo si estás cargando esta SIC por un área que no puede ingresar con su propio mail.
@@ -214,7 +215,7 @@ export default function NuevaSicForm({
           onChange={(e) => setSubject(e.target.value)}
           required
           placeholder="Ej: Repuestos para torno CNC"
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
 
@@ -225,7 +226,7 @@ export default function NuevaSicForm({
           value={neededByDate}
           onChange={(e) => setNeededByDate(e.target.value)}
           required
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
 

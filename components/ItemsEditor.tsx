@@ -1,5 +1,6 @@
 "use client";
 
+import { inputClass } from "@/lib/ui";
 import { MAX_SIC_ITEMS } from "@/lib/constants";
 
 export type ItemDraft = {
@@ -79,7 +80,7 @@ export default function ItemsEditor({
                 onChange={(e) => updateItem(index, { description: e.target.value })}
                 required
                 placeholder="Ej: Rodamiento 6205-2RS"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={inputClass}
               />
             </div>
             <div>
@@ -91,7 +92,7 @@ export default function ItemsEditor({
                 value={item.quantity}
                 onChange={(e) => updateItem(index, { quantity: e.target.value })}
                 required
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={inputClass}
               />
             </div>
           </div>
@@ -104,11 +105,11 @@ export default function ItemsEditor({
               value={item.specs}
               onChange={(e) => updateItem(index, { specs: e.target.value })}
               rows={2}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="block text-xs font-medium text-slate-700">
                 Link de referencia (opcional)
@@ -117,7 +118,7 @@ export default function ItemsEditor({
                 value={item.referenceLink}
                 onChange={(e) => updateItem(index, { referenceLink: e.target.value })}
                 placeholder="https://..."
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={inputClass}
               />
             </div>
             <div>

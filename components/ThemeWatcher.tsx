@@ -7,6 +7,8 @@ import { THEME_STORAGE_KEY, applyTheme, getStoredTheme } from "@/lib/theme";
 // se sincroniza entre pestañas.
 export default function ThemeWatcher() {
   useEffect(() => {
+    // El script del <head> ya fijó la clase; esto además sincroniza el color de la barra de estado del navegador.
+    applyTheme(getStoredTheme());
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const onSystemChange = () => {
       if (getStoredTheme() === "auto") applyTheme("auto");

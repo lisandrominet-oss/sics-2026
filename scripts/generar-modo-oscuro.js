@@ -102,7 +102,9 @@ for (const t of [...found.values()].sort((a, b) => a.full.localeCompare(b.full))
   const pseudo = t.variant ? HANDLED_VARIANTS[t.variant] : "";
   let sel = `.dark ${cls}${pseudo}`;
   if (t.prop === "divide") sel = `.dark ${cls} > :not([hidden]) ~ :not([hidden])`;
-  rules.push(`${sel} { ${decl}: ${value}; }`);
+  // Tailwind (hoverOnlyWhenSupported) emite los hover dentro de @media (hover: hover); el parche oscuro igual, para que no se "peguen" en táctil.
+  const rule = `${sel} { ${decl}: ${value}; }`;
+  rules.push(t.variant === "hover" ? `@media (hover: hover) { ${rule} }` : rule);
 }
 
 const base = `/* Generado por scripts/generar-modo-oscuro.js — no editar a mano. */

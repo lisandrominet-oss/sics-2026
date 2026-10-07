@@ -1,5 +1,6 @@
 "use client";
 
+import { inputClass } from "@/lib/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -61,7 +62,7 @@ export default function ConfigForm({
           type="number"
           value={thresholdValue}
           onChange={(e) => setThresholdValue(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
       <div>
@@ -72,7 +73,7 @@ export default function ConfigForm({
           value={domainsValue}
           onChange={(e) => setDomainsValue(e.target.value)}
           placeholder="miconect.com, ser-ind.com.ar"
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
       {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}

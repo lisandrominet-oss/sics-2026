@@ -2,7 +2,9 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   darkMode: "class",
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  // `hover:` solo aplica en dispositivos con puntero: en táctil no queda el estado "pegado" tras tocar.
+  future: { hoverOnlyWhenSupported: true },
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
   theme: {
     extend: {
       fontFamily: {
@@ -32,6 +34,10 @@ const config: Config = {
         "scale-in": {
           from: { opacity: "0", transform: "scale(0.96) translateY(4px)" },
           to: { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+        "slide-up": {
+          from: { transform: "translateY(100%)" },
+          to: { transform: "translateY(0)" },
         },
         "slide-down": {
           from: { opacity: "0", transform: "translateY(-6px)" },
@@ -63,6 +69,7 @@ const config: Config = {
         enter: "fade-up 360ms cubic-bezier(0.16, 1, 0.3, 1) backwards",
         "scale-in": "scale-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both",
         "slide-down": "slide-down 200ms cubic-bezier(0.16, 1, 0.3, 1) both",
+        "slide-up": "slide-up 280ms cubic-bezier(0.16, 1, 0.3, 1) both",
         shimmer: "shimmer 1.6s linear infinite",
         shake: "shake 360ms ease-in-out",
         "check-pop": "check-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both",

@@ -1,5 +1,6 @@
 "use client";
 
+import { inputClass } from "@/lib/ui";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -247,14 +248,14 @@ function AddProviderForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5">
       <h2 className="text-sm font-semibold text-slate-900">Nuevo proveedor</h2>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="block text-xs font-medium text-slate-700">Nombre / Razón social</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
@@ -263,7 +264,7 @@ function AddProviderForm({
             value={contactName}
             onChange={(e) => setContactName(e.target.value)}
             placeholder="Nombre de quien atiende"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
@@ -272,7 +273,7 @@ function AddProviderForm({
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
@@ -280,7 +281,7 @@ function AddProviderForm({
           <input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
@@ -288,7 +289,7 @@ function AddProviderForm({
           <input
             value={taxId}
             onChange={(e) => setTaxId(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
@@ -297,7 +298,7 @@ function AddProviderForm({
             value={taxStatus}
             onChange={(e) => setTaxStatus(e.target.value)}
             placeholder="Ej: Responsable Inscripto"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div className="col-span-2">
@@ -306,7 +307,7 @@ function AddProviderForm({
             value={paymentTerms}
             onChange={(e) => setPaymentTerms(e.target.value)}
             placeholder="Ej: Cta. cte. 30 días, Contado"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
       </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { inputClass } from "@/lib/ui";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -275,7 +276,7 @@ export default function ProviderRow({
             </div>
           ) : (
             <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <LabeledInput label="Nombre" value={name} onChange={setName} />
                 <LabeledInput label="Contacto" value={contactName} onChange={setContactName} />
                 <LabeledInput label="Mail" value={email} onChange={setEmail} />
@@ -425,7 +426,7 @@ function LabeledInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        className={inputClass}
       />
     </div>
   );

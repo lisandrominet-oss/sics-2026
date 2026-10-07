@@ -3,7 +3,7 @@ import BrandLogoFull from "@/components/BrandLogoFull";
 
 export default function PendientePage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-slate-50 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
         <div className="flex justify-center">
           <BrandLogoFull className="h-14 w-auto" />

@@ -1,5 +1,6 @@
 "use client";
 
+import { inputClass } from "@/lib/ui";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -361,7 +362,7 @@ export default function SicActions({
           step="0.01"
           value={finalAmount}
           onChange={(e) => setFinalAmount(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={inputClass}
         />
         {NoteBox}
         <div className="mt-3">
@@ -436,7 +437,7 @@ export default function SicActions({
         <input
           value={poNumber}
           onChange={(e) => setPoNumber(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={inputClass}
         />
         {NoteBox}
         <div className="mt-3">
@@ -872,14 +873,14 @@ function ObservacionEditor({
         Los archivos de referencia ya subidos se conservan. Adjuntá uno nuevo solo si querés reemplazar el anterior.
       </p>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="block text-xs font-medium text-slate-700">Asunto</label>
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
@@ -889,7 +890,7 @@ function ObservacionEditor({
             value={neededByDate}
             onChange={(e) => setNeededByDate(e.target.value)}
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
       </div>
@@ -901,7 +902,7 @@ function ObservacionEditor({
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           >
             {projects.map((p) => (
               <option key={p.id} value={p.id}>

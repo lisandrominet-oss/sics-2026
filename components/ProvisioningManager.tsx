@@ -1,5 +1,6 @@
 "use client";
 
+import { inputClass } from "@/lib/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -107,14 +108,14 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 border-b border-slate-100 bg-slate-50 px-6 py-5">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="block text-xs font-medium text-slate-700">Nombre</label>
           <input
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
@@ -125,17 +126,17 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="nombre@ser-ind.com.ar"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
           <label className="block text-xs font-medium text-slate-700">Rol</label>
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as UserRole)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           >
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -150,7 +151,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
             placeholder="Ej: Jefe de Mantenimiento"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
@@ -158,7 +159,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
           <select
             value={plantId}
             onChange={(e) => setPlantId(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={inputClass}
           >
             <option value="">Sin definir</option>
             {plants.map((p) => (
