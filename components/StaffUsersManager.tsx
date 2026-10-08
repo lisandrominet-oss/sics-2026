@@ -70,8 +70,8 @@ export default function StaffUsersManager({
       </Card>
 
       <Card padding="none">
-        <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-4">
-          <div>
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-6 py-4">
+          <div className="min-w-[14rem] flex-1">
             <h2 className="text-base font-semibold text-slate-900">Accesos pendientes</h2>
             <p className="mt-1 text-xs text-slate-500">
               Gente cargada antes de su primer ingreso: apenas entren con su cuenta de Google corporativa, tienen el
@@ -140,7 +140,7 @@ function PlantSelect({
   value,
   onChange,
   plants,
-  className = inputCompactClass,
+  className = `${inputCompactClass} max-w-[12rem]`,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -197,11 +197,13 @@ function UserRow({ user, plants, isSelf }: { user: Profile; plants: Plant[]; isS
   return (
     <tr data-inactiva={!user.active || undefined} className={!user.active ? "bg-slate-50/70" : ""}>
       <td className="px-4 py-3">
-        <p className="font-medium text-slate-900">
-          {user.full_name ?? "-"}
-          {isSelf && <span className="ml-2 text-xs font-normal text-slate-400">(vos)</span>}
-        </p>
-        <p className="text-xs text-slate-400">{user.email}</p>
+        <div className="min-w-[9rem] max-w-[11rem] [overflow-wrap:anywhere] sm:max-w-xs">
+          <p className="font-medium text-slate-900">
+            {user.full_name || "-"}
+            {isSelf && <span className="ml-2 text-xs font-normal text-slate-400">(vos)</span>}
+          </p>
+          <p className="text-xs text-slate-400" title={user.email}>{user.email}</p>
+        </div>
       </td>
       <td className="px-4 py-3">
         <RoleSelect value={role} onChange={setRole} disabled={isSelf} />
@@ -211,7 +213,8 @@ function UserRow({ user, plants, isSelf }: { user: Profile; plants: Plant[]; isS
           value={department}
           onChange={(e) => setDepartment(e.target.value)}
           placeholder="Ej: Jefe de Taller"
-          className={`w-40 ${inputCompactClass}`}
+          title={department}
+          className={`w-44 ${inputCompactClass}`}
         />
       </td>
       <td className="px-4 py-3">
@@ -295,14 +298,15 @@ function PendingRow({ entry, plants }: { entry: Provisioned; plants: Plant[] }) 
           placeholder="Nombre"
           className={`w-full ${inputCompactClass} font-semibold text-slate-900`}
         />
-        <p className="mt-0.5 text-xs text-slate-500">{entry.email}</p>
+        <p className="mt-0.5 text-xs text-slate-500 [overflow-wrap:anywhere]">{entry.email}</p>
       </div>
       <RoleSelect value={role} onChange={(r) => setRole(r)} />
       <input
         value={department}
         onChange={(e) => setDepartment(e.target.value)}
         placeholder="Cargo"
-        className={`w-40 ${inputCompactClass}`}
+        title={department}
+        className={`w-44 ${inputCompactClass}`}
       />
       <PlantSelect value={plantId} onChange={setPlantId} plants={plants} />
       <label className="flex items-center gap-1.5 text-xs text-slate-600">
@@ -354,7 +358,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 border-b border-slate-100 bg-slate-50 px-6 py-5">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className={labelClass}>Nombre</label>
           <input value={fullName} onChange={(e) => setFullName(e.target.value)} required className={inputClass} />
@@ -371,7 +375,7 @@ function AddForm({ plants, onDone }: { plants: Plant[]; onDone: () => void }) {
           />
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
           <label className={labelClass}>Rol</label>
           <RoleSelect value={role} onChange={setRole} className={inputClass} />

@@ -243,11 +243,14 @@ export default function NuevaSicForm({
           <p className="font-medium text-amber-900">Puede que ya exista un pedido parecido en tu área:</p>
           <ul className="mt-1 space-y-0.5 text-xs text-amber-800">
             {similar.map((sic) => (
-              <li key={sic.id}>
+              <li key={sic.id} className="[overflow-wrap:anywhere]">
                 <Link href={`/sic/${sic.id}`} target="_blank" className="font-semibold underline">
                   {sic.code}
                 </Link>{" "}
-                — {sic.description} ({STATUS_LABELS[sic.status]})
+                ({STATUS_LABELS[sic.status]})
+                <span className="line-clamp-2 block" title={sic.description}>
+                  {sic.description}
+                </span>
               </li>
             ))}
           </ul>
@@ -255,7 +258,7 @@ export default function NuevaSicForm({
         </div>
       )}
 
-      {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="animate-shake text-sm text-red-600 [overflow-wrap:anywhere]">{error}</p>}
       {createdId && (
         <Link href={`/sic/${createdId}`} className="inline-block text-sm font-medium text-indigo-600 underline">
           Ir a la SIC creada

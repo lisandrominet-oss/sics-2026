@@ -64,13 +64,13 @@ export default function ItemsEditor({
           </div>
 
           {item.reviewNote && (
-            <p className="mt-2 rounded-md bg-amber-100 px-3 py-2 text-xs text-amber-800">
+            <p className="mt-2 rounded-md bg-amber-100 px-3 py-2 text-xs text-amber-800 [overflow-wrap:anywhere]">
               <span className="font-semibold">Observación:</span> {item.reviewNote}
             </p>
           )}
 
-          <div className="mt-2 grid grid-cols-3 gap-3">
-            <div className="col-span-2">
+          <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="sm:col-span-2">
               <label className="block text-xs font-medium text-slate-700">Artículo</label>
               <input
                 value={item.description}
@@ -102,7 +102,7 @@ export default function ItemsEditor({
               value={item.specs}
               onChange={(e) => updateItem(index, { specs: e.target.value })}
               rows={2}
-              className={inputClass}
+              className={`${inputClass} resize-y`}
             />
           </div>
 
@@ -128,7 +128,7 @@ export default function ItemsEditor({
                 className="mt-1 w-full text-xs"
               />
               {item.existingFileName && !item.file && (
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-400 [overflow-wrap:anywhere]">
                   Ya subido: {item.existingFileName} (se reemplaza si elegís otro)
                 </p>
               )}

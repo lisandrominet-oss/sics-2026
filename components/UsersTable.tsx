@@ -86,8 +86,10 @@ function UserRow({
   return (
     <tr>
       <td className="px-4 py-3">
-        <p className="font-medium text-slate-900">{profile.full_name ?? "-"}</p>
-        <p className="text-xs text-slate-400">{profile.email}</p>
+        <div className="min-w-[9rem] max-w-[11rem] [overflow-wrap:anywhere] sm:max-w-xs">
+          <p className="font-medium text-slate-900">{profile.full_name || "-"}</p>
+          <p className="text-xs text-slate-400" title={profile.email}>{profile.email}</p>
+        </div>
       </td>
       <td className="px-4 py-3">
         <select
@@ -108,7 +110,8 @@ function UserRow({
           value={department}
           onChange={(e) => setDepartment(e.target.value)}
           placeholder="Ej: Mantenimiento"
-          className={`w-36 ${inputCompactClass}`}
+          title={department}
+          className={`w-44 ${inputCompactClass}`}
         />
       </td>
       <td className="px-4 py-3">
