@@ -63,6 +63,16 @@ const config: Config = {
           from: { transform: "translateY(100%)" },
           to: { transform: "translateY(0)" },
         },
+        // Salidas de las superposiciones: más cortas que las entradas (140-180 ms contra 200-280 ms).
+        "fade-out": { from: { opacity: "1" }, to: { opacity: "0" } },
+        "scale-out": {
+          from: { opacity: "1", transform: "scale(1)" },
+          to: { opacity: "0", transform: "scale(0.97)" },
+        },
+        "sheet-out": {
+          from: { transform: "translateY(0)" },
+          to: { transform: "translateY(100%)" },
+        },
         "slide-down": {
           from: { opacity: "0", transform: "translateY(-6px)" },
           to: { opacity: "1", transform: "translateY(0)" },
@@ -97,6 +107,9 @@ const config: Config = {
         "row-in": `row-in 200ms ${OUT_EXPO} backwards`,
         "slide-down": `slide-down 200ms ${OUT_EXPO} both`,
         "slide-up": `slide-up 280ms ${OUT_EXPO} both`,
+        "fade-out": "fade-out 140ms ease-out both",
+        "scale-out": "scale-out 140ms ease-out both",
+        "sheet-out": `sheet-out 180ms ${OUT_EXPO} both`,
         shimmer: "shimmer 1.6s linear infinite",
         shake: "shake 360ms ease-in-out",
         "check-pop": `check-pop 320ms ${SPRING} both`,

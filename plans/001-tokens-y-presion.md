@@ -1,6 +1,6 @@
 # 001 — Tokens de movimiento y presión única
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 7b9c50e
 - **Severity**: HIGH
 - **Category**: Cohesión y tokens / Performance / Physicality

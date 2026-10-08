@@ -27,6 +27,10 @@ export function useConfirm(): ConfirmFn {
 export default function ConfirmProvider({ children }: { children: ReactNode }) {
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
   const resolver = useRef<((value: boolean) => void) | null>(null);
+  // Últimas opciones mostradas: el diálogo sigue visible mientras dura la animación de salida.
+  const lastOptions = useRef<ConfirmOptions | null>(null);
+  if (options) lastOptions.current = options;
+  const shown = options ?? lastOptions.current;
 
   const confirm = useCallback<ConfirmFn>((opts) => {
     setOptions(opts);
@@ -44,14 +48,14 @@ export default function ConfirmProvider({ children }: { children: ReactNode }) {
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
-      <Modal open={options !== null} onClose={() => close(false)} title={options?.title ?? ""}>
-        {options?.description && <p className="mt-2 text-sm text-slate-600">{options.description}</p>}
+      <Modal open={options !== null} onClose={() => close(false)} title={shown?.title ?? ""}>
+        {shown?.description && <p className="mt-2 text-sm text-slate-600">{shown.description}</p>}
         <div className="mt-6 flex justify-end gap-2">
           <Button variant="secondary" onClick={() => close(false)}>
-            {options?.cancelLabel ?? "Cancelar"}
+            {shown?.cancelLabel ?? "Cancelar"}
           </Button>
-          <Button variant={options?.destructive ? "danger" : "primary"} onClick={() => close(true)}>
-            {options?.confirmLabel ?? "Confirmar"}
+          <Button variant={shown?.destructive ? "danger" : "primary"} onClick={() => close(true)}>
+            {shown?.confirmLabel ?? "Confirmar"}
           </Button>
         </div>
       </Modal>

@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { IconArrowRight } from "@/components/icons";
 import Modal from "@/components/ui/Modal";
 import { eyebrowClass } from "@/lib/ui";
 
 export default function ModuleSections({ sections }: { sections: string[] }) {
   const [selected, setSelected] = useState<string | null>(null);
+  // Último módulo elegido: el diálogo conserva su texto mientras dura la animación de salida.
+  const lastSelected = useRef<string | null>(null);
+  if (selected) lastSelected.current = selected;
 
   return (
     <>
@@ -30,7 +33,7 @@ export default function ModuleSections({ sections }: { sections: string[] }) {
         title="Módulo en construcción"
         className="text-center sm:max-w-sm sm:p-8"
       >
-        <p className={`${eyebrowClass} mt-2`}>{selected}</p>
+        <p className={`${eyebrowClass} mt-2`}>{selected ?? lastSelected.current}</p>
         <p className="mt-4 text-5xl" aria-hidden="true">
           😊
         </p>

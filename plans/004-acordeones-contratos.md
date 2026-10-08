@@ -1,6 +1,6 @@
 # 004 — Acordeones de Contratos
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 7b9c50e
 - **Severity**: MEDIUM
 - **Category**: Easing y duración / Interruptibilidad / Physicality

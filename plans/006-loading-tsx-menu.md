@@ -1,6 +1,6 @@
 # 006 — `loading.tsx` y parpadeo del menú (CONDICIONAL)
 
-- **Status**: TODO (no ejecutar sin aviso previo a Lisandro)
+- **Status**: DESCARTADO en la Fase 4. Medición (dev, ruta fría Tablero → Contratos): a los 611 ms aparece el esqueleto con 0 links en el menú y a los 1200 ms vuelven los 4: el menú sí desaparece ~0,6 s. Se deja para la Fase 6 con un layout compartido `app/(app)/layout.tsx`.
 - **Commit**: 7b9c50e
 - **Severity**: MEDIUM
 - **Category**: Cambios que teletransportan / Cohesión

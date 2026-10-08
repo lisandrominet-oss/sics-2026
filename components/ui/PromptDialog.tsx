@@ -41,7 +41,7 @@ export default function PromptDialog({ open, onClose, title, description, ...res
   return (
     // Mientras se envía no se puede cerrar (Escape o click afuera): evita perder el resultado.
     <Modal open={open} onClose={() => !busy && onClose()} title={title}>
-      {/* El formulario solo existe con el diálogo abierto: al reabrir arranca vacío y sin errores. */}
+      {/* El formulario solo existe con el diálogo abierto (y durante su salida): al reabrir arranca vacío y sin errores. */}
       <PromptForm description={description} onClose={onClose} busy={busy} setBusy={setBusy} {...rest} />
     </Modal>
   );

@@ -1,6 +1,6 @@
 # 002 — Entrada de página, escalonado de filas y contadores
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 7b9c50e
 - **Severity**: HIGH
 - **Category**: Propósito y frecuencia / Easing y duración

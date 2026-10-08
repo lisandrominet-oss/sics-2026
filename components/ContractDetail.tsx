@@ -1,7 +1,7 @@
 "use client";
 
 import { inputClass, labelClass, eyebrowClass } from "@/lib/ui";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
@@ -170,14 +170,32 @@ export default function ContractDetail({
   );
 }
 
+// El contenido se desmonta recién cuando termina de cerrarse (así se ve plegarse) y no antes:
+// al desmontarlo se reinician los formularios que contiene.
 function CollapsiblePanel({ open, children }: { open: boolean; children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(open);
+  // Si se reabre antes de que termine de desmontarse, el contenido se vuelve a montar: los formularios arrancan vacíos.
+  const wasOpen = useRef(open);
+  const generation = useRef(0);
+  if (open && !wasOpen.current && mounted) generation.current += 1;
+  wasOpen.current = open;
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      return;
+    }
+    const t = setTimeout(() => setMounted(false), 200); // un poco más que `duration-close` (160 ms)
+    return () => clearTimeout(t);
+  }, [open]);
+
   return (
     <div
-      className="col-span-full grid transition-[grid-template-rows] duration-300 ease-in-out"
+      className={`col-span-full grid transition-[grid-template-rows] ease-drawer ${open ? "duration-open" : "duration-close"}`}
       style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
     >
-      <div className="overflow-hidden">
-        <div className="py-3">{open ? children : null}</div>
+      {/* `inert` mientras está cerrado: durante la salida el contenido no recibe foco ni toques (evita un segundo envío). */}
+      <div className="overflow-hidden" {...(open ? {} : ({ inert: "" } as Record<string, string>))}>
+        <div key={generation.current} className="py-3">{open || mounted ? children : null}</div>
       </div>
     </div>
   );
@@ -1106,7 +1124,7 @@ function CuotasTab({
                       className="rounded-md border border-slate-300 p-1.5 text-slate-600 hover:bg-slate-50"
                     >
                       <IconChevronDown
-                        className={`h-4 w-4 transition-transform duration-300 ${isDetailOpen ? "rotate-180" : ""}`}
+                        className={`h-4 w-4 transition-transform ease-drawer ${isDetailOpen ? "rotate-180 duration-open" : "duration-close"}`}
                       />
                     </button>
                   </div>

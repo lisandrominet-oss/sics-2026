@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { Fragment, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/cn";
 import { IconX } from "@/components/icons";
@@ -11,6 +11,8 @@ const FOCUSABLE =
 // En celular se muestra como panel desde abajo (bottom-sheet) con scroll interno; desde 640 px, centrado.
 // `variant="bare"`: sin panel ni título visible (visor de imágenes); `title` queda solo como nombre accesible.
 // Para cambiar el ancho, pasar `className` con `sm:max-w-*`.
+// Al cerrar, el panel sigue montado mientras dura la salida (140-180 ms, más corta que la entrada) y después se desmonta.
+// Quien lo usa debe conservar el contenido durante ese lapso (ver ConfirmProvider y ModuleSections).
 export default function Modal({
   open,
   onClose,
@@ -30,6 +32,13 @@ export default function Modal({
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const [mounted, setMounted] = useState(open);
+  const closing = mounted && !open;
+  // Si se reabre mientras todavía sale, el contenido se vuelve a montar: no conserva lo que había escrito antes.
+  const wasOpen = useRef(open);
+  const generation = useRef(0);
+  if (open && !wasOpen.current && mounted) generation.current += 1;
+  wasOpen.current = open;
   // `onClose` suele llegar como función nueva en cada render: se lee desde un ref para no reiniciar el foco.
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -77,15 +86,29 @@ export default function Modal({
     };
   }, [open]);
 
-  if (!open || typeof document === "undefined") return null;
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      return;
+    }
+    // Red de seguridad: si `animationend` no llega (pestaña oculta, estilos sin cargar), igual se desmonta.
+    const t = setTimeout(() => setMounted(false), 260);
+    return () => clearTimeout(t);
+  }, [open]);
+
+  if ((!open && !mounted) || typeof document === "undefined") return null;
 
   return createPortal(
     <div
       ref={overlayRef}
       className={cn(
-        "fixed inset-0 z-50 flex animate-fade-in justify-center backdrop-blur-sm",
+        "fixed inset-0 z-50 flex justify-center backdrop-blur-sm",
+        closing ? "pointer-events-none animate-fade-out" : "animate-fade-in",
         bare ? "items-center bg-black/70 p-4" : "items-end bg-slate-900/50 sm:items-center sm:p-4"
       )}
+      aria-hidden={closing || undefined}
+      // `inert` mientras sale: sin foco, Tab ni toques en un diálogo que ya se está yendo (evita un segundo envío).
+      {...(closing ? ({ inert: "" } as Record<string, string>) : {})}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -96,18 +119,26 @@ export default function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
+        onAnimationEnd={(e) => {
+          if (closing && e.target === e.currentTarget) setMounted(false);
+        }}
         className={cn(
           "outline-none",
           bare
-            ? "animate-scale-in"
-            : "max-h-[90dvh] w-full animate-slide-up overflow-y-auto overscroll-contain rounded-t-2xl border border-slate-200 bg-white p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-pop sm:max-w-md sm:animate-scale-in sm:rounded-2xl sm:pb-6",
+            ? closing
+              ? "animate-scale-out"
+              : "animate-scale-in"
+            : "max-h-[90dvh] w-full overflow-y-auto overscroll-contain rounded-t-2xl border border-slate-200 bg-white p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-pop sm:max-w-md sm:rounded-2xl sm:pb-6",
+          !bare && (closing ? "animate-sheet-out sm:animate-scale-out" : "animate-slide-up sm:animate-scale-in"),
           className
         )}
       >
-        <h2 id={titleId} className={bare ? "sr-only" : "text-base font-semibold text-slate-900"}>
-          {title}
-        </h2>
-        {children}
+        <Fragment key={generation.current}>
+          <h2 id={titleId} className={bare ? "sr-only" : "text-base font-semibold text-slate-900"}>
+            {title}
+          </h2>
+          {children}
+        </Fragment>
       </div>
       {bare && (
         <button

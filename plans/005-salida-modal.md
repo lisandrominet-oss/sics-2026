@@ -1,6 +1,6 @@
 # 005 — Salida animada del Modal
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 7b9c50e
 - **Severity**: MEDIUM
 - **Category**: Física y origen / Asimetría entrada-salida

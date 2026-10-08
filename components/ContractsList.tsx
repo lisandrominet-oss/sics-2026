@@ -172,6 +172,10 @@ export default function ContractsList({
     pagado: { title: "Pagado por proveedor (ARS)", rows: paidTotals.rows, total: paidTotals.total, format: formatArs },
   };
   const activePanel = openPanel ? panels[openPanel] : null;
+  // Último panel mostrado: el de escritorio conserva su contenido mientras se pliega (si no, se vaciaría de golpe al cerrar).
+  const lastPanel = useRef(activePanel);
+  if (activePanel) lastPanel.current = activePanel;
+  const desktopPanel = activePanel ?? lastPanel.current;
 
   const renewalAlerts = contracts.filter((c) => isRenewalAlertActive(c) && !attendedSet.has(`renovacion:${c.id}`));
   const documentAlerts = documents.filter((d) => {
@@ -264,7 +268,7 @@ export default function ContractsList({
 
         {/* Escritorio: un panel compartido debajo de la fila de tarjetas. En celular el detalle se abre debajo de cada tarjeta (PanelSlot). */}
         <CollapsibleRows id="money-panel-desktop" open={!!activePanel && activePanel.rows.length > 0} className="max-lg:hidden">
-          {activePanel && <ProviderPanel panel={activePanel} />}
+          {desktopPanel && <ProviderPanel panel={desktopPanel} />}
         </CollapsibleRows>
       </div>
 
@@ -404,7 +408,7 @@ function CollapsibleRows({ id, open, className = "", children }: { id?: string; 
   return (
     <div
       id={id}
-      className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"} ${className}`}
+      className={`grid transition-[grid-template-rows] ease-drawer ${open ? "grid-rows-[1fr] duration-open" : "grid-rows-[0fr] duration-close"} ${className}`}
     >
       <div className="overflow-hidden">{children}</div>
     </div>
@@ -486,7 +490,7 @@ function MoneyCard({
       <div className="flex items-start justify-between gap-2">
         <p className={eyebrowClass}>{label}</p>
         {expandable && (
-          <IconChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+          <IconChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ease-drawer ${open ? "rotate-180 duration-open" : "duration-close"}`} />
         )}
       </div>
       <p className={`mt-2 text-2xl font-semibold tracking-tight tabular-nums ${valueClass}`}>{value}</p>

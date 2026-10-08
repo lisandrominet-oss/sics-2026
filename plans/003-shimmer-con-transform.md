@@ -1,6 +1,6 @@
 # 003 — Brillo de los esqueletos solo con `transform`
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 7b9c50e
 - **Severity**: MEDIUM
 - **Category**: Performance
