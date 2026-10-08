@@ -21,6 +21,16 @@ export default function DashboardControls({
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(defaultQuery);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  // Último texto que este mismo componente mandó a la URL: distingue "volvió el servidor con lo que escribí"
+  // de "la URL cambió por otro lado" (pestaña de filtro, botón Atrás), caso en que el input se resincroniza.
+  const lastPushedRef = useRef(defaultQuery);
+
+  useEffect(() => {
+    if (defaultQuery !== lastPushedRef.current) {
+      lastPushedRef.current = defaultQuery;
+      setQuery(defaultQuery);
+    }
+  }, [defaultQuery]);
 
   function pushParams(updates: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -38,7 +48,10 @@ export default function DashboardControls({
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      if (query !== defaultQuery) pushParams({ q: query || null });
+      if (query !== defaultQuery) {
+        lastPushedRef.current = query;
+        pushParams({ q: query || null });
+      }
     }, 350);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -48,7 +61,7 @@ export default function DashboardControls({
 
   return (
     <div className="mt-4 flex flex-wrap items-center gap-3">
-      <div className="relative min-w-[16rem] flex-1">
+      <div className="relative min-w-[min(16rem,100%)] flex-1">
         <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <input
           value={query}

@@ -233,7 +233,7 @@ export default function AppShell({
           {realRole === "admin" && <RoleSwitcher userId={userId} actingAsRole={actingAsRole} />}
           <Link
             href="/preferencias"
-            title="Preferencias"
+            title={fullName ? `${fullName}: Preferencias` : "Preferencias"}
             className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/5"
           >
             <UserAvatar userId={userId} fullName={fullName} />

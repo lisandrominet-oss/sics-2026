@@ -15,6 +15,7 @@ import {
   COMPRAS_EXPORTABLE_STATUSES,
   formatAmount,
   formatDate,
+  formatSqlDate,
   type SicStatus,
   type UserRole,
 } from "@/lib/constants";
@@ -79,7 +80,7 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
             proyecto: sic.project?.name ?? "-",
             solicitante: sic.requester?.full_name ?? sic.requester?.email ?? "-",
             area: sic.department ?? "-",
-            fechaNecesaria: sic.needed_by_date ? formatDate(sic.needed_by_date) : "-",
+            fechaNecesaria: sic.needed_by_date ? formatSqlDate(sic.needed_by_date) : "-",
             articulo: it.description,
             cantidad: it.quantity,
             especificaciones: it.specs ?? "",
@@ -98,7 +99,9 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
     <div>
       {canExport && selected.size > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-100 bg-amber-50 px-6 py-3">
-          <p className="text-sm text-amber-800">{selected.size} SIC(s) seleccionada(s)</p>
+          <p className="text-sm text-amber-800">
+            {selected.size === 1 ? "1 SIC seleccionada" : `${selected.size} SIC seleccionadas`}
+          </p>
           <div className="flex items-center gap-3">
             <Button variant="warning" onClick={handleExport} loading={exporting}>
               {exporting ? "Generando…" : "Exportar a Excel"}
@@ -148,16 +151,23 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                       </Badge>
                     )}
                   </p>
-                  <p className="truncate text-xs text-slate-500">{sic.subject}</p>
+                  <p className="line-clamp-2 break-words text-xs text-slate-500" title={sic.subject}>
+                    {sic.subject}
+                  </p>
                   {sic.department && <p className="truncate text-xs text-slate-400">{sic.department}</p>}
                   {sic.on_behalf_of && (
                     <p className="truncate text-xs text-amber-600">A pedido de: {sic.on_behalf_of}</p>
                   )}
+                  {/* En pantallas angostas el monto y la fecha pasan debajo (a la derecha no entran). */}
+                  <p className="text-xs tabular-nums text-slate-500 sm:hidden">
+                    {formatAmount(sic.final_amount ?? sic.estimated_amount, sic.currency)}
+                    {sic.needed_by_date ? ` · Necesaria: ${formatSqlDate(sic.needed_by_date)}` : ""}
+                  </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 tabular-nums">
+              <div className="flex min-w-0 flex-wrap items-center justify-end gap-x-4 gap-y-2 tabular-nums">
                 <span className="hidden text-xs text-slate-400 lg:block">
-                  {sic.needed_by_date ? `Necesaria: ${formatDate(sic.needed_by_date)}` : ""}
+                  {sic.needed_by_date ? `Necesaria: ${formatSqlDate(sic.needed_by_date)}` : ""}
                 </span>
                 <span className="hidden text-sm text-slate-500 sm:block">
                   {formatAmount(sic.final_amount ?? sic.estimated_amount, sic.currency)}

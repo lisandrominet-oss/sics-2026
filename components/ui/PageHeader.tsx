@@ -19,8 +19,8 @@ export default function PageHeader({
   return (
     <div className={cn("flex flex-wrap items-center justify-between gap-4", className)}>
       <div className="min-w-0">
-        {eyebrow && <p className={eyebrowClass}>{eyebrow}</p>}
-        <h1 className={cn("text-balance text-2xl font-semibold tracking-tight text-slate-900", !!eyebrow && "mt-1")}>
+        {eyebrow && <p className={cn(eyebrowClass, "[overflow-wrap:anywhere]")}>{eyebrow}</p>}
+        <h1 className={cn("text-balance text-2xl [overflow-wrap:anywhere] font-semibold tracking-tight text-slate-900", !!eyebrow && "mt-1")}>
           {title}
         </h1>
         {description && <p className="mt-2 text-pretty text-sm text-slate-500">{description}</p>}

@@ -7,10 +7,21 @@ const CACHE_PREFIX = "sc_avatar:";
 const URL_TTL_SECONDS = 3600;
 export const AVATAR_EVENT = "sc-avatar-changed";
 
+// Primera letra de la primera y de la última palabra, por grafemas: un emoji o un carácter con acento no se corta a la mitad.
+const segmenter = typeof Intl !== "undefined" && "Segmenter" in Intl ? new Intl.Segmenter("es", { granularity: "grapheme" }) : null;
+function firstGrapheme(word: string) {
+  if (!word) return "";
+  if (segmenter) {
+    for (const part of segmenter.segment(word)) return part.segment;
+  }
+  return Array.from(word)[0] ?? "";
+}
+
 function initials(name: string | null) {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  const letters = parts.length === 1 ? firstGrapheme(parts[0]) : firstGrapheme(parts[0]) + firstGrapheme(parts[parts.length - 1]);
+  return letters.toUpperCase() || "?";
 }
 
 export function clearAvatarCache(userId: string) {
@@ -55,6 +66,7 @@ export default function UserAvatar({
   text?: string;
 }) {
   const [url, setUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,14 +100,17 @@ export default function UserAvatar({
 
   // La página de Preferencias avisa cuando se cambia o quita la foto.
   useEffect(() => {
-    const onChange = (e: Event) => setUrl((e as CustomEvent<{ url: string | null }>).detail.url);
+    const onChange = (e: Event) => {
+      setFailed(false);
+      setUrl((e as CustomEvent<{ url: string | null }>).detail.url);
+    };
     window.addEventListener(AVATAR_EVENT, onChange);
     return () => window.removeEventListener(AVATAR_EVENT, onChange);
   }, []);
 
-  if (url) {
+  if (url && !failed) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={url} alt="" className={`${size} shrink-0 rounded-full object-cover`} />;
+    return <img src={url} alt="" onError={() => setFailed(true)} className={`${size} shrink-0 rounded-full object-cover`} />;
   }
   return (
     <div

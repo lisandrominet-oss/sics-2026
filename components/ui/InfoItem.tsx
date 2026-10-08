@@ -16,9 +16,9 @@ export default function InfoItem({
   const Label = definition ? "dt" : "p";
   const Value = definition ? "dd" : "p";
   return (
-    <div>
+    <div className="min-w-0">
       <Label className={eyebrowClass}>{label}</Label>
-      <Value className={cn(numClass, definition ? "mt-0.5 text-slate-800" : "text-slate-700")}>{value}</Value>
+      <Value className={cn(numClass, "[overflow-wrap:anywhere]", definition ? "mt-0.5 text-slate-800" : "text-slate-700")}>{value}</Value>
     </div>
   );
 }

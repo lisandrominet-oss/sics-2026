@@ -15,6 +15,7 @@ import {
   effectiveRole,
   formatAmount,
   formatDate,
+  formatSqlDate,
   type SicFileType,
 } from "@/lib/constants";
 import type { SicExportRow } from "@/lib/exportSics";
@@ -86,7 +87,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
     proyecto: project?.name ?? "-",
     solicitante: requester?.full_name ?? requester?.email ?? "-",
     area: sic.department ?? "-",
-    fechaNecesaria: sic.needed_by_date ? formatDate(sic.needed_by_date) : "-",
+    fechaNecesaria: sic.needed_by_date ? formatSqlDate(sic.needed_by_date) : "-",
     articulo: it.description,
     cantidad: it.quantity,
     especificaciones: it.specs ?? "",
@@ -129,13 +130,13 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           }
         />
 
-        <Card className="mt-6 grid grid-cols-2 gap-4 text-sm">
+        <Card className="mt-6 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
           <InfoItem label="Planta" value={plant ? `${plant.name} (${plant.prefix})` : "-"} />
           <InfoItem label="Proyecto" value={project?.name ?? "-"} />
           <InfoItem label="Solicitante" value={requester?.full_name ?? requester?.email ?? "-"} />
           <InfoItem label="Área / Departamento" value={sic.department ?? "-"} />
           {sic.on_behalf_of && <InfoItem label="Solicitado en nombre de" value={sic.on_behalf_of} />}
-          <InfoItem label="Necesaria para" value={sic.needed_by_date ? formatDate(sic.needed_by_date) : "-"} />
+          <InfoItem label="Necesaria para" value={sic.needed_by_date ? formatSqlDate(sic.needed_by_date) : "-"} />
           <InfoItem label="Creada" value={formatDate(sic.created_at)} />
           {(isCurrentAccount || isDirect) && (
             <InfoItem label="Tipo de compra" value={isDirect ? "Compra directa" : "Cuenta corriente"} />
@@ -190,22 +191,22 @@ export default async function SicDetailPage({ params }: { params: { id: string }
                   className={`rounded-lg border p-3 ${rejected ? "border-red-200 bg-red-50/50" : "border-slate-200"}`}
                 >
                   {rejected && (
-                    <p className="mb-1 text-xs font-semibold text-red-700">
+                    <p className="mb-1 text-xs font-semibold text-red-700 [overflow-wrap:anywhere]">
                       Rechazado — no se compra{item.review_note ? `: ${item.review_note}` : ""}
                     </p>
                   )}
                   {!rejected && item.review_note && sic.status === "en_observacion" && (
-                    <p className="mb-1 text-xs font-semibold text-amber-700">Observación: {item.review_note}</p>
+                    <p className="mb-1 text-xs font-semibold text-amber-700 [overflow-wrap:anywhere]">Observación: {item.review_note}</p>
                   )}
                   <p className={`font-medium ${rejected ? "text-slate-400 line-through" : "text-slate-800"}`}>
-                    {i + 1}. {item.description} — <span className="tabular-nums">{item.quantity}</span>
+                    <span className="[overflow-wrap:anywhere]">{i + 1}. {item.description}</span> — <span className="tabular-nums">{item.quantity}</span>
                     {!rejected && item.received_quantity > 0 && (
                       <span className="ml-2 text-xs font-normal text-slate-400">
                         ({item.received_quantity}/{item.quantity} recibido)
                       </span>
                     )}
                   </p>
-                  {item.specs && <p className="mt-1 text-slate-500">{item.specs}</p>}
+                  {item.specs && <p className="mt-1 whitespace-pre-line text-slate-500 [overflow-wrap:anywhere]">{item.specs}</p>}
                   <div className="mt-1 flex flex-wrap gap-3 text-xs">
                     {item.reference_link && (
                       <a href={item.reference_link} target="_blank" className="text-slate-900 underline">
@@ -244,10 +245,12 @@ export default async function SicDetailPage({ params }: { params: { id: string }
                 .filter((f) => !f.item_id)
                 .map((f) => (
                   <li key={f.id} className="flex items-center justify-between gap-3">
-                    <span className="text-slate-600">
+                    <span className="min-w-0 text-slate-600 [overflow-wrap:anywhere]">
                       {FILE_TYPE_LABELS[f.file_type as SicFileType]}: {f.file_name}
                     </span>
-                    <FilePreview url={f.url} fileName={f.file_name} label="Ver" />
+                    <span className="shrink-0">
+                      <FilePreview url={f.url} fileName={f.file_name} label="Ver" />
+                    </span>
                   </li>
                 ))}
             </ul>
@@ -315,7 +318,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
                   {(ev.actor as { full_name: string | null } | null)?.full_name ?? "Sistema"} →{" "}
                   <span className="font-medium">{STATUS_LABELS[ev.to_status]}</span>
                 </p>
-                {ev.note && <p className="text-slate-500">{ev.note}</p>}
+                {ev.note && <p className="whitespace-pre-line text-slate-500 [overflow-wrap:anywhere]">{ev.note}</p>}
                 <p className="text-xs text-slate-400">{formatDate(ev.created_at)}</p>
               </li>
             ))}

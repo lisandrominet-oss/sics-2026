@@ -48,6 +48,15 @@ type EditData = {
   items: EditItem[];
 };
 
+// Resta de cantidades con decimales sin arrastrar error de coma flotante (0.3 - 0.1 = 0.19999999999999998).
+function remainingQty(it: { quantity: number; receivedQuantity: number }) {
+  return Math.max(Math.round((it.quantity - it.receivedQuantity) * 100) / 100, 0);
+}
+
+function plural(n: number, uno: string, varios: string) {
+  return `${n} ${n === 1 ? uno : varios}`;
+}
+
 export default function SicActions({
   sicId,
   status,
@@ -166,7 +175,7 @@ export default function SicActions({
           <select
             value={ccProviderId}
             onChange={(e) => setCcProviderId(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            className="max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
           >
             <option value="">Proveedor…</option>
             {currentAccountProviders.map((p) => (
@@ -205,12 +214,12 @@ export default function SicActions({
           value={directAmount}
           onChange={(e) => setDirectAmount(e.target.value)}
           placeholder="Monto en ARS (obligatorio)"
-          className="w-56 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="w-56 max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         />
         <select
           value={directProviderId}
           onChange={(e) => setDirectProviderId(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         >
           <option value="">Proveedor (opcional)</option>
           {allProviders.map((p) => (
@@ -390,7 +399,7 @@ export default function SicActions({
       <ActionCard title="Validación técnica">
         <p className="text-sm text-slate-500">Revisá la cotización y el monto antes de aprobar.</p>
         {NoteBox}
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           <Btn onClick={() => run(() => supabase.rpc("technical_review", { p_sic_id: sicId, p_aprobar: true, p_note: note || null }))} loading={loading}>
             Aprobar
           </Btn>
@@ -406,7 +415,7 @@ export default function SicActions({
     return (
       <ActionCard title="Aprobación de Gerencia">
         {NoteBox}
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           <Btn onClick={() => run(() => supabase.rpc("gerencia_decision", { p_sic_id: sicId, p_aprobar: true, p_note: note || null }))} loading={loading}>
             Aprobar
           </Btn>
@@ -607,7 +616,7 @@ function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void })
         rows={2}
         className="mt-3 w-full rounded-lg border border-red-300 px-3 py-2 text-sm"
       />
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         <Button variant="danger" onClick={handleCancel} loading={loading} disabled={!reason.trim()}>
           {loading ? "Anulando…" : "Confirmar anulación"}
         </Button>
@@ -639,7 +648,7 @@ function RecepcionEditor({
   onDone: () => void;
 }) {
   const [qty, setQty] = useState<Record<string, string>>(
-    Object.fromEntries(items.map((it) => [it.id, String(Math.max(it.quantity - it.receivedQuantity, 0))]))
+    Object.fromEntries(items.map((it) => [it.id, String(remainingQty(it))]))
   );
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
@@ -684,10 +693,10 @@ function RecepcionEditor({
       <div className="mt-4 space-y-2">
         <p className={eyebrowClass}>Cantidad recibida ahora, por artículo</p>
         {items.map((it) => {
-          const remaining = Math.max(it.quantity - it.receivedQuantity, 0);
+          const remaining = remainingQty(it);
           return (
             <div key={it.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2">
-              <div className="text-sm text-slate-700">
+              <div className="min-w-0 text-sm text-slate-700 [overflow-wrap:anywhere]">
                 {it.description}
                 <span className="ml-2 text-xs text-slate-400">
                   ({it.receivedQuantity}/{it.quantity} recibido)
@@ -701,7 +710,7 @@ function RecepcionEditor({
                 value={qty[it.id] ?? ""}
                 onChange={(e) => setQty({ ...qty, [it.id]: e.target.value })}
                 disabled={remaining <= 0}
-                className="w-28 rounded-lg border border-slate-300 px-2 py-1 text-sm disabled:bg-slate-50"
+                className="w-28 shrink-0 rounded-lg border border-slate-300 px-2 py-1 text-sm disabled:bg-slate-50"
               />
             </div>
           );
@@ -934,10 +943,10 @@ function ItemReviewPanel({
   if (nAcc === 0 && nObs === 0) consequence = "Todos rechazados: la SIC queda rechazada.";
   else if (nAcc === 0) consequence = "Sin aprobados: la SIC vuelve entera al solicitante para que la corrija.";
   else if (nObs > 0)
-    consequence = `La SIC sigue con ${nAcc} aprobado(s). ${nObs} observado(s) pasan a una SIC nueva para corregir${
-      nRej > 0 ? `; ${nRej} rechazado(s) quedan tachados` : ""
+    consequence = `La SIC sigue con ${plural(nAcc, "aprobado", "aprobados")}. ${plural(nObs, "observado pasa", "observados pasan")} a una SIC nueva para corregir${
+      nRej > 0 ? `; ${plural(nRej, "rechazado queda tachado", "rechazados quedan tachados")}` : ""
     }.`;
-  else if (nRej > 0) consequence = `La SIC sigue con ${nAcc} aprobado(s); ${nRej} rechazado(s) quedan tachados y no se compran.`;
+  else if (nRej > 0) consequence = `La SIC sigue con ${plural(nAcc, "aprobado", "aprobados")}; ${plural(nRej, "rechazado queda tachado y no se compra", "rechazados quedan tachados y no se compran")}.`;
   else consequence = stage === "jefe" ? "Todos aprobados: la SIC pasa a Compras." : "Todos aprobados: la SIC pasa a cotización.";
 
   async function submit() {
@@ -1026,7 +1035,7 @@ function ItemReviewPanel({
         className="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
       />
       <p className="mt-3 text-xs font-medium text-slate-600">
-        {nAcc} aprobado(s) · {nObs} observado(s) · {nRej} rechazado(s)
+        {plural(nAcc, "aprobado", "aprobados")} · {plural(nObs, "observado", "observados")} · {plural(nRej, "rechazado", "rechazados")}
       </p>
       <p className="mt-1 text-xs text-slate-500">{consequence}</p>
       <div className="mt-3">
@@ -1079,9 +1088,9 @@ function MultiFileRow({
   const inputRef = useRef<HTMLInputElement>(null);
   return (
     <div className="rounded-lg border border-slate-200 px-3 py-2">
-      <div className="flex items-center justify-between">
-        <span className="text-slate-700">{label}</span>
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <span className="min-w-0 text-slate-700 [overflow-wrap:anywhere]">{label}</span>
+        <div className="shrink-0">
           <input
             ref={inputRef}
             type="file"
@@ -1101,11 +1110,13 @@ function MultiFileRow({
       {files.length > 0 ? (
         <ul className="mt-2 space-y-1">
           {files.map((f) => (
-            <li key={f.id} className="flex items-center justify-between text-sm">
-              <span className="text-emerald-600">✓ {f.file_name}</span>
-              <Button variant="link-danger" size="sm" onClick={() => onDelete(f)}>
-                Eliminar
-              </Button>
+            <li key={f.id} className="flex items-center justify-between gap-3 text-sm">
+              <span className="min-w-0 text-emerald-600 [overflow-wrap:anywhere]">✓ {f.file_name}</span>
+              <span className="shrink-0">
+                <Button variant="link-danger" size="sm" onClick={() => onDelete(f)}>
+                  Eliminar
+                </Button>
+              </span>
             </li>
           ))}
         </ul>

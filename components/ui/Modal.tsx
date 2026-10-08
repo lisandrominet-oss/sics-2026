@@ -128,7 +128,7 @@ export default function Modal({
             ? closing
               ? "animate-scale-out"
               : "animate-scale-in"
-            : "max-h-[90dvh] w-full overflow-y-auto overscroll-contain rounded-t-2xl border border-slate-200 bg-white p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-pop sm:max-w-md sm:rounded-2xl sm:pb-6",
+            : "max-h-[90dvh] w-full overflow-y-auto overscroll-contain [overflow-wrap:anywhere] rounded-t-2xl border border-slate-200 bg-white p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-pop sm:max-w-md sm:rounded-2xl sm:pb-6",
           !bare && (closing ? "animate-sheet-out sm:animate-scale-out" : "animate-slide-up sm:animate-scale-in"),
           className
         )}
