@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
 import FilePreview from "@/components/FilePreview";
 import { IconChevronDown, IconFileText, IconReceipt } from "@/components/icons";
-import { sanitizeFileName } from "@/lib/constants";
+import { formatDate, sanitizeFileName } from "@/lib/constants";
 import {
   CONTRACT_DISPLAY_STATUS_TONES,
   CONTRACT_DISPLAY_STATUS_LABELS,
@@ -120,7 +120,7 @@ export default function ContractDetail({
         <InfoItem label="Responsable" value={contract.owner?.full_name ?? "-"} />
       </Card>
 
-      <div className="mt-6 flex gap-2 border-b border-slate-200 text-sm">
+      <div className="mt-6 flex gap-2 overflow-x-auto border-b border-slate-200 text-sm">
         {(
           [
             ["datos", "Datos"],
@@ -133,7 +133,7 @@ export default function ContractDetail({
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`border-b-2 px-3 py-2 font-medium ${
+            className={`shrink-0 whitespace-nowrap border-b-2 px-3 py-2 font-medium ${
               tab === key ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -316,7 +316,7 @@ function EditContractForm({
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputClass} />
         </div>
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-3">
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
           <label className={labelClass}>Renovación</label>
           <select
@@ -564,7 +564,7 @@ function ItemCard({
           <summary className="cursor-pointer">Horas cargadas ({usage.length})</summary>
           <ul className="mt-2 space-y-1">
             {usage.map((u) => (
-              <li key={u.id}>
+              <li key={u.id} className="[overflow-wrap:anywhere]">
                 {formatDateOnly(u.period_start)}: {u.hours} hs
                 {u.report_file_name ? ` — ${u.report_file_name}` : ""}
               </li>
@@ -639,7 +639,7 @@ function EditItemForm({
         <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} className={inputClass} />
       </div>
       {showVehicleFields && (
-        <div className="mt-2 grid grid-cols-3 gap-3">
+        <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <label className={labelClass}>N° de chasis</label>
             <input value={chassisNumber} onChange={(e) => setChassisNumber(e.target.value)} className={inputClass} />
@@ -929,7 +929,7 @@ function DocumentosTab({
   return (
     <div className="space-y-4">
       <Card title="Agregar documento">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <label className={labelClass}>Tipo</label>
             <select value={docType} onChange={(e) => setDocType(e.target.value as ContractDocumentType)} className={inputClass}>
@@ -962,9 +962,10 @@ function DocumentosTab({
           <ul className="space-y-2">
             {documents.map((d) => (
               <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                <span className="text-slate-600">
+                <span className="min-w-0 text-slate-600 [overflow-wrap:anywhere]">
                   {CONTRACT_DOCUMENT_TYPE_LABELS[d.doc_type]}
                   {d.expires_at ? ` — vence ${formatDateOnly(d.expires_at)}` : ""}
+                  <span className="block text-xs text-slate-400">{d.file_name}</span>
                 </span>
                 <FilePreview url={d.url} fileName={d.file_name} label="Ver" />
               </li>
@@ -1068,7 +1069,8 @@ function CuotasTab({
               return (
                 <Fragment key={inst.id}>
                   <div className="border-b border-slate-100 py-2 pr-3 text-slate-700">
-                    {formatDateOnly(inst.period_start)} — {formatDateOnly(inst.period_end)}
+                    <span className="block whitespace-nowrap">{formatDateOnly(inst.period_start)}</span>
+                    <span className="block whitespace-nowrap text-xs text-slate-400">→ {formatDateOnly(inst.period_end)}</span>
                   </div>
                   <div className="border-b border-slate-100 py-2 pr-3 text-slate-600">
                     {formatUsd(expectedByPeriod[inst.period_start] ?? 0)}
@@ -1359,7 +1361,7 @@ function EditComprobanteForm({
   return (
     <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
       <p className="text-xs font-semibold text-slate-700">Editar {isPago ? "pago" : "comprobante"}</p>
-      <div className="mt-2 grid grid-cols-3 gap-3">
+      <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
           <label className={labelClass}>Número</label>
           <input value={number} onChange={(e) => setNumber(e.target.value)} className={inputClass} />
@@ -1388,7 +1390,7 @@ function EditComprobanteForm({
         )}
       </div>
       {!isPago && (
-        <div className="mt-3 grid grid-cols-4 gap-3">
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div>
             <label className={labelClass}>
               Dólar venta BNA {!isUsd && "(opcional)"}
@@ -1490,7 +1492,7 @@ function InvoiceForm({
 
   return (
     <Card title={`Cargar factura / nota de crédito — período ${formatDateOnly(periodStart)}`}>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
           <label className={labelClass}>Tipo</label>
           <select
@@ -1526,7 +1528,7 @@ function InvoiceForm({
         </div>
       )}
 
-      <div className="mt-3 grid grid-cols-4 gap-3">
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div>
           <label className={labelClass}>Moneda de la factura</label>
           <select
@@ -1561,7 +1563,7 @@ function InvoiceForm({
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
+      <div className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
         <InfoItem label="Neto (ARS)" value={formatArs(netArs)} />
         <InfoItem label="IVA (ARS)" value={formatArs(vatArs)} />
         <InfoItem label="Total (ARS)" value={formatArs(totalArs)} />
@@ -1671,7 +1673,7 @@ function RegisterPaymentForm({
         </div>
       )}
 
-      <div className="mt-3 grid grid-cols-3 gap-3">
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
           <label className={labelClass}>Número de recibo (opcional)</label>
           <input value={number} onChange={(e) => setNumber(e.target.value)} className={inputClass} />
@@ -1705,6 +1707,10 @@ function HistorialTab({ events }: { events: ContractEvent[] }) {
     cambio_tarifa: "Cambio de tarifa",
     aceptar_diferencia: "Diferencia aceptada",
     anulacion: "Comprobante anulado",
+    edicion_fechas: "Fechas editadas",
+    edicion_equipo: "Equipo editado",
+    numero_interno: "N° interno modificado",
+    edicion_comprobante: "Comprobante editado",
   };
   return (
     <Card>
@@ -1717,8 +1723,8 @@ function HistorialTab({ events }: { events: ContractEvent[] }) {
               <p className="text-slate-700">
                 {ev.actor?.full_name ?? "Sistema"} — <span className="font-medium">{labels[ev.event_type] ?? ev.event_type}</span>
               </p>
-              {ev.note && <p className="text-slate-500">{ev.note}</p>}
-              <p className="text-xs text-slate-400">{new Date(ev.created_at).toLocaleString("es-AR")}</p>
+              {ev.note && <p className="text-slate-500 [overflow-wrap:anywhere]">{ev.note}</p>}
+              <p className="text-xs text-slate-400">{formatDate(ev.created_at)}</p>
             </li>
           ))}
         </ul>

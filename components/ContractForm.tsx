@@ -269,7 +269,7 @@ export default function ContractForm({
                     ))}
                   </select>
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <label className={labelClass}>Descripción</label>
                   <input
                     value={item.description}

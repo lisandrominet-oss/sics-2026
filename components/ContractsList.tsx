@@ -63,6 +63,10 @@ export type InvoiceLine = {
 
 const ALERT_WINDOW_DAYS = 60;
 
+function diasTxt(n: number) {
+  return `${n} ${n === 1 ? "día" : "días"}`;
+}
+
 export default function ContractsList({
   contracts,
   items,
@@ -215,7 +219,7 @@ export default function ContractsList({
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr_200px]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[repeat(3,minmax(0,1fr))_200px]">
           <PanelSlot id="money-panel-deuda" panel={panels.deuda} open={openPanel === "deuda"}>
             <MoneyCard
               controls="money-panel-deuda money-panel-desktop"
@@ -280,9 +284,9 @@ export default function ContractsList({
               const days = daysUntil(noticeDeadline(c));
               return (
                 <li key={`ren-${c.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2">
-                  <Link href={`/contratos/${c.id}`} className="text-slate-800 hover:underline">
+                  <Link href={`/contratos/${c.id}`} className="min-w-0 flex-1 text-slate-800 [overflow-wrap:anywhere] hover:underline">
                     {c.provider?.name ?? "Proveedor"} — fecha límite de renovación{" "}
-                    {days < 0 ? `vencida hace ${-days} días` : `en ${days} días`}
+                    {days < 0 ? `vencida hace ${diasTxt(-days)}` : `en ${diasTxt(days)}`}
                   </Link>
                   <Button variant="link" size="sm" onClick={() => attend("renovacion", c.id)} disabled={attending === `renovacion:${c.id}`}>
                     Marcar atendida
@@ -292,7 +296,7 @@ export default function ContractsList({
             })}
             {documentAlerts.map((d) => (
               <li key={`doc-${d.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2">
-                <Link href={d.contract_id ? `/contratos/${d.contract_id}` : "/contratos"} className="text-slate-800 hover:underline">
+                <Link href={d.contract_id ? `/contratos/${d.contract_id}` : "/contratos"} className="min-w-0 flex-1 text-slate-800 [overflow-wrap:anywhere] hover:underline">
                   {d.file_name} vence el {formatDateOnly(d.expires_at!)}
                 </Link>
                 <Button variant="link" size="sm" onClick={() => attend("documento", d.id)} disabled={attending === `documento:${d.id}`}>
@@ -304,7 +308,7 @@ export default function ContractsList({
               const contract = contracts.find((c) => c.id === inst.contract_id);
               return (
                 <li key={`dif-${inst.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2">
-                  <Link href={`/contratos/${inst.contract_id}`} className="text-slate-800 hover:underline">
+                  <Link href={`/contratos/${inst.contract_id}`} className="min-w-0 flex-1 text-slate-800 [overflow-wrap:anywhere] hover:underline">
                     {contract?.provider?.name ?? "Proveedor"} — cuota {formatDateOnly(inst.period_start)} con diferencia
                   </Link>
                   <Button variant="link" size="sm" onClick={() => attend("diferencia", inst.id)} disabled={attending === `diferencia:${inst.id}`}>
@@ -318,11 +322,11 @@ export default function ContractsList({
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as ContractDisplayStatus | "")}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:max-w-xs"
           >
             <option value="">Todos los estados</option>
             {(Object.keys(CONTRACT_DISPLAY_STATUS_LABELS) as ContractDisplayStatus[]).map((s) => (
@@ -334,7 +338,7 @@ export default function ContractsList({
           <select
             value={providerFilter}
             onChange={(e) => setProviderFilter(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:max-w-xs"
           >
             <option value="">Todos los proveedores</option>
             {providers.map((p) => (
@@ -346,7 +350,7 @@ export default function ContractsList({
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as ContractItemType | "")}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:max-w-xs"
           >
             <option value="">Todos los equipos</option>
             {(Object.keys(CONTRACT_ITEM_TYPE_LABELS) as ContractItemType[]).map((t) => (
@@ -372,24 +376,24 @@ export default function ContractsList({
                   href={`/contratos/${s.contract.id}`}
                   className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 hover:bg-slate-50"
                 >
-                  <div className="w-20 shrink-0 text-center">
+                  <div className="w-20 min-w-[5rem] max-w-[9rem] shrink-0 text-center [overflow-wrap:anywhere]">
                     <p className="text-base font-semibold tabular-nums text-slate-900">
                       {s.items.map((i) => i.internal_number).filter(Boolean).join(", ") || "-"}
                     </p>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-slate-900">{s.contract.provider?.name ?? "-"}</p>
-                    <p className="truncate text-xs text-slate-500">{s.items.map((i) => i.description).join(", ")}</p>
+                  <div className="min-w-0 flex-1 basis-[10rem]">
+                    <p className="truncate text-sm font-semibold text-slate-900" title={s.contract.provider?.name ?? undefined}>{s.contract.provider?.name ?? "-"}</p>
+                    <p className="truncate text-xs text-slate-500" title={s.items.map((i) => i.description).join(", ")}>{s.items.map((i) => i.description).join(", ")}</p>
                     <p className="truncate text-xs text-slate-400">
                       {s.contract.plant ? `${s.contract.plant.name} (${s.contract.plant.prefix})` : s.contract.project?.name ?? "-"}
                     </p>
                   </div>
                   <div className="flex items-center gap-4 text-xs tabular-nums">
                     <span className="hidden text-slate-500 sm:block">{formatUsd(s.monthlyUsd)}/mes</span>
-                    <span className="hidden text-slate-400 md:block">
+                    <span className="hidden text-slate-400 xl:block">
                       {formatDateOnly(s.contract.start_date)} — {formatDateOnly(s.contract.end_date)}
                     </span>
-                    <span className="hidden text-slate-500 lg:block">
+                    <span className="hidden text-slate-500 xl:block">
                       {s.paid}/{s.paid + s.remaining} cuotas
                     </span>
                     <Badge tone={CONTRACT_DISPLAY_STATUS_TONES[s.status]}>{CONTRACT_DISPLAY_STATUS_LABELS[s.status]}</Badge>
@@ -493,7 +497,7 @@ function MoneyCard({
           <IconChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ease-drawer ${open ? "rotate-180 duration-open" : "duration-close"}`} />
         )}
       </div>
-      <p className={`mt-2 text-2xl font-semibold tracking-tight tabular-nums ${valueClass}`}>{value}</p>
+      <p className={`mt-2 text-2xl font-semibold tracking-tight tabular-nums [overflow-wrap:anywhere] lg:text-xl 2xl:text-2xl ${valueClass}`}>{value}</p>
       <p className="mt-1 text-xs text-slate-500">{caption}</p>
     </>
   );
