@@ -9,6 +9,7 @@
 | B `ef944d2` | `ItemsEditor`, `NuevaSicForm`, `UsersTable`, `StaffUsersManager` |
 | (aparte) | `ItemsEditor`: claves estables por tarjeta (archivo que se mostraba ≠ archivo que se subía al quitar un artículo) |
 | C | `ContractsList`, `ContractDetail` (incluye columna Período), `ContractForm` |
+| D | Selector de proyecto con "Seleccionar…" y "Taller" elegible (Nueva SIC y edición) |
 
 ## Cómo se midió
 `window.__measure` en una pestaña del arnés: crea un iframe del ancho pedido (320, 390, 1024, 1100, 1280), espera el render y mide el desborde horizontal de la página (`scrollWidth − ancho`) más los elementos cuyo borde derecho se sale sin estar dentro de un contenedor con scroll; `__clip` busca elementos recortados por un `overflow-x:hidden`. Datos: Demo, Peor caso, Vacío, Uno, 1.000. Claro y oscuro (`localStorage.sc_theme`).
@@ -35,7 +36,7 @@ Límites declarados: el zoom real de 200 % (que agranda el texto) no se reproduc
 - `ItemsEditor` con `key={index}`: al quitar el ítem 1 de 3 con archivos `a/b/c`, la pantalla mostraba `a, b` y el estado tenía `b, c`. Reproducido y corregido.
 
 ## Frágiles: NO tocados (para decidir)
-- **Select "Taller" de Nueva SIC**: `required` + primera opción de valor vacío → el navegador la trata como placeholder y no deja enviar con "Taller" (confirmado: `checkValidity()` = false). Decisión de negocio.
+- ~~Select "Taller" de Nueva SIC~~ → **resuelto** por pedido de Lisandro: opciones "Seleccionar…" (obliga a elegir) y "Taller" (`PROJECT_TALLER`, viaja como `p_project_id` null) más los proyectos; el modo edición de `SicActions` ahora también ofrece "Taller" (antes una SIC sin proyecto se reasignaba en silencio al primer proyecto al editarla). Queda: si la SIC tiene un proyecto ya inactivo, el select muestra "Taller" pero conserva el uuid (el dato no se corrompe).
 - Sin `maxLength` en ningún campo ni `CHECK` de largo en las migraciones (los `CREATE TABLE` base no están en el repo).
 - Listas sin paginar: Tablero con tope silencioso de 100 SIC; Usuarios sin buscador (tope de 1.000 de PostgREST); Contratos con consultas de >1.000 filas que podrían truncar totales sin aviso; 120 RPC por cuota (N+1) en `app/contratos/[id]/page.tsx:72-82`; exportar a Excel con `.in("sic_id", ids)` sin paginar.
 - `SicActions`: todos los botones muestran spinner a la vez (`loading` compartido); "Eliminar" archivo sin confirmar; subida de un archivo por vez.

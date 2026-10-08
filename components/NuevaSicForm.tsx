@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
-import { STATUS_LABELS, sanitizeFileName, type SicStatus } from "@/lib/constants";
+import { PROJECT_TALLER, STATUS_LABELS, sanitizeFileName, type SicStatus } from "@/lib/constants";
 
 type Plant = { id: string; name: string; prefix: string };
 type Project = { id: string; name: string };
@@ -92,7 +92,7 @@ export default function NuevaSicForm({
 
     const { data: sic, error: createError } = await supabase.rpc("create_sic", {
       p_subject: subject,
-      p_project_id: projectId || null,
+      p_project_id: projectId && projectId !== PROJECT_TALLER ? projectId : null,
       p_needed_by_date: neededByDate,
       // La moneda se define cuando Compras carga la cotización, no al pedirla.
       p_currency: "ARS",
@@ -184,7 +184,8 @@ export default function NuevaSicForm({
             required
             className={inputClass}
           >
-            <option value="">Taller</option>
+            <option value="">Seleccionar…</option>
+            <option value={PROJECT_TALLER}>Taller</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}

@@ -13,6 +13,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import {
   REQUESTER_CANCELLABLE_STATUSES,
   TERMINAL_STATUSES,
+  PROJECT_TALLER,
   sanitizeFileName,
   type SicFileType,
   type SicStatus,
@@ -753,7 +754,7 @@ function ObservacionEditor({
   onDone: () => void;
 }) {
   const [subject, setSubject] = useState(editData.subject);
-  const [projectId, setProjectId] = useState(editData.projectId ?? projects[0]?.id ?? "");
+  const [projectId, setProjectId] = useState(editData.projectId ?? PROJECT_TALLER);
   const [neededByDate, setNeededByDate] = useState(editData.neededByDate ?? "");
   const [items, setItems] = useState<ItemDraft[]>(
     editData.items.length > 0
@@ -791,7 +792,7 @@ function ObservacionEditor({
     const { data: sic, error: updateError } = await supabase.rpc("update_sic_details", {
       p_sic_id: sicId,
       p_subject: subject,
-      p_project_id: projects.length > 0 ? projectId || null : null,
+      p_project_id: projects.length > 0 && projectId !== PROJECT_TALLER ? projectId || null : null,
       p_needed_by_date: neededByDate,
       p_items: payloadItems,
     });
@@ -884,6 +885,7 @@ function ObservacionEditor({
             required
             className={inputClass}
           >
+            <option value={PROJECT_TALLER}>Taller</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}

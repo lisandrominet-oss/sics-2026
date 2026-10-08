@@ -89,6 +89,10 @@ export function formatAmount(amount: number | null, currency: "ARS" | "USD") {
   }).format(amount);
 }
 
+// Valor del selector de proyecto para "Taller": una SIC sin proyecto (project_id null). Distinto de "" para que
+// "Seleccionar proyecto" (sin elegir todavía) siga bloqueando el envío con `required`.
+export const PROJECT_TALLER = "__taller";
+
 // Fecha sin hora (columnas `date`, ej. needed_by_date): "2026-10-07" no es un instante, así que no se pasa por la zona horaria.
 export function formatSqlDate(isoDate: string) {
   const [y, m, d] = isoDate.slice(0, 10).split("-").map(Number);
