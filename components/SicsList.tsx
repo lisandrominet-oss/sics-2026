@@ -176,7 +176,8 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                 </span>
                 <span className="hidden text-xs text-slate-400 md:block">{formatDate(sic.updated_at)}</span>
                 <StatusBadge status={sic.status} />
-                <span className="flex items-center gap-1 text-sm font-medium text-indigo-600 transition-transform duration-base ease-out-expo group-hover:translate-x-0.5">
+                {/* pointer-events-none: al moverse en hover (transform) el span queda sobre el link de la fila y se comería el clic. */}
+                <span className="pointer-events-none flex items-center gap-1 text-sm font-medium text-indigo-600 transition-transform duration-base ease-out-expo group-hover:translate-x-0.5">
                   Ver
                   <IconArrowRight />
                 </span>
