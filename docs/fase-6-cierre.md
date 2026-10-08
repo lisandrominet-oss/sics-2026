@@ -71,16 +71,16 @@ Dos builds de producción (antes = `b360f6c`, después = commit B), cada uno en 
 
 TTFB y carga: sin diferencia sistemática (292–713 ms, ruido de la red hacia Supabase; al invertir el orden de medición los valores se mezclan). La mejora de A y B se ve en bytes de JS y en que el menú no desaparece, no en el tiempo de respuesta del servidor. **No se pudo medir FCP/LCP**: la pestaña de Chrome estaba en segundo plano (`visibilityState: hidden`) y no emite esas métricas.
 
-## Lighthouse (pendiente de Lisandro)
-La línea base de la Fase 0 no tenía Lighthouse y el CLI no pasa el login con Google, así que se acordó que Lisandro lo corra en DevTools (móvil) sobre Tablero, Contratos y un SIC. Ahí van los puntajes cuando los tenga:
+## Lighthouse (corrido por Lisandro, 2026-10-08)
+Como `dff8008` ya estaba en Vercel, el "antes" no se podía medir ahí: se compararon dos builds de producción locales (`next start`) con la misma base de Supabase, `b360f6c` (antes, puerto 3301) y `dff8008` (después, puerto 3302), con Lighthouse móvil de DevTools, solo Performance, 3 pasadas por pantalla (mediana).
 
-| Pantalla | Antes (`b360f6c`) | Después (Fase 6) |
+| Pantalla | Antes (`b360f6c`) | Después (`dff8008`) |
 |---|---|---|
-| Tablero | _pendiente_ | _pendiente_ |
-| Contratos | _pendiente_ | _pendiente_ |
-| SIC (detalle) | _pendiente_ | _pendiente_ |
+| Tablero (`/dashboard`) | 100 | 100 |
+| Contratos (`/contratos`) | 100 | 100 |
+| Nueva SIC (`/sic/nueva`; no hay SIC en la vista "Compras") | 100 | 100 |
 
-Para el "antes" hace falta el sitio de Vercel con el commit `b360f6c` (o un `next start` de ese commit); para el "después", el deploy con la Fase 6.
+**Límite de la medición:** en `localhost` no hay latencia de red ni CDN y el puntaje de Performance se satura en 100, así que no discrimina entre las dos versiones. La diferencia real de las Fases 6 está en los bytes de JS (278 → 195 kB y 280 → 197 kB, ver arriba) y en que el menú no desaparece al navegar. Un Lighthouse sobre el sitio de Vercel (red real, con el throttling simulado de 4G lento) sí podría mostrar la diferencia, pero el "antes" ya no existe ahí; solo se podría correr el "después" como referencia futura.
 
 ## Verificación final
 - `npx tsc --noEmit | grep -c "error TS"`: 83 (sin contar los huérfanos de `.next/types` que deja un dev server con las rutas viejas; desaparecen con `rm -rf .next` cuando no haya otro server usándolo).

@@ -78,4 +78,4 @@ Las siete fases están hechas. Detalle de la Fase 6, mediciones y pendientes en 
 | 5 | Resistencia (`break-ui`: fechas, avatares, desbordes, claves de `ItemsEditor`) | `9f9e8ae`, `ef944d2`, `71df380`, `b80d6c8`, `b360f6c` | Hecha, en `origin/main` |
 | 6 | Cierre y rapidez: `xlsx` dinámico (−92 kB), layout compartido sin parpadeo del menú, blur solo en escritorio, aviso del tope de 100, zona fija en `ProviderRow` | `0f4dbef`, `bea9c90` y el commit de cierre | Hecha, **commits locales sin push** |
 
-Pendiente de Lisandro: Lighthouse móvil en DevTools (antes/después), prueba en iPhone real (presión, drawer sin parpadeo, bottom-sheet y blur quitado en móvil, zoom al enfocar, toasts sobre la barra segura) y con "Reducir movimiento". Backlog de Frágiles con recomendación en `docs/fase-6-cierre.md`.
+Lighthouse corrido (local, 100 antes y después: ver informe). Pendiente de Lisandro: prueba en iPhone real (presión, drawer sin parpadeo, bottom-sheet y blur quitado en móvil, zoom al enfocar, toasts sobre la barra segura) y con "Reducir movimiento". Backlog de Frágiles con recomendación en `docs/fase-6-cierre.md`.
