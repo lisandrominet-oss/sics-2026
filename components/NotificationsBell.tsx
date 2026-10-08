@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { STATUS_LABELS } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -27,23 +28,30 @@ export default function NotificationsBell({
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Notification[] | null>(null);
   const ref = useRef<HTMLDivElement>(null);
-  const loadedRef = useRef(false);
+  const pathname = usePathname();
 
   // AppShell monta una campana en la barra y otra en el menú; la que queda oculta (display: none) no consulta.
-  // Si cambia el ancho de pantalla y pasa a verse, carga entonces.
+  // Si cambia el ancho de pantalla y pasa a verse, carga entonces. El menú queda montado entre pantallas,
+  // así que también se vuelve a consultar al cambiar de ruta (antes se remontaba y consultaba en cada navegación).
+  // El menú ya no se remonta al navegar: el panel se cierra solo al cambiar de ruta.
+  useEffect(() => setOpen(false), [pathname]);
+
   useEffect(() => {
+    let cancelled = false;
     function load() {
-      if (loadedRef.current || !ref.current || ref.current.offsetParent === null) return;
-      loadedRef.current = true;
+      if (!ref.current || ref.current.offsetParent === null) return;
       createClient()
         .rpc("get_pending_notifications", { p_limit: 20 })
-        .then(({ data }) => setItems(data ?? []));
+        .then(({ data }) => !cancelled && setItems(data ?? []));
     }
     load();
     const mq = window.matchMedia("(min-width: 1024px)");
     mq.addEventListener("change", load);
-    return () => mq.removeEventListener("change", load);
-  }, []);
+    return () => {
+      cancelled = true;
+      mq.removeEventListener("change", load);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

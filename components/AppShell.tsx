@@ -76,6 +76,7 @@ export default function AppShell({
   const drawerRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const skipFocusRestoreRef = useRef(false);
 
   // Menú lateral en móvil (drawer): se cierra al navegar, con Escape y al pasar a escritorio.
   useEffect(() => setMenuOpen(false), [pathname]);
@@ -109,7 +110,9 @@ export default function AppShell({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
       behind.forEach((el) => el && (el.inert = false));
-      button?.focus();
+      // Si se cerró por tocar un enlace, el foco no vuelve a la hamburguesa: la pantalla nueva empieza desde arriba.
+      if (!skipFocusRestoreRef.current) button?.focus();
+      skipFocusRestoreRef.current = false;
     };
   }, [menuOpen]);
 
@@ -152,7 +155,11 @@ export default function AppShell({
         id="menu-lateral"
         ref={drawerRef}
         // Un toque en cualquier enlace del menú lo cierra, aunque sea la página actual.
-        onClick={(e) => (e.target as HTMLElement).closest("a") && setMenuOpen(false)}
+        onClick={(e) => {
+          if (!(e.target as HTMLElement).closest("a")) return;
+          skipFocusRestoreRef.current = true;
+          setMenuOpen(false);
+        }}
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto overscroll-contain bg-slate-900 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pt-[calc(1.5rem+env(safe-area-inset-top))] shadow-pop transition-[transform,visibility] ease-out-expo",
           menuOpen ? "visible translate-x-0 duration-base" : "invisible -translate-x-full duration-fast",
@@ -250,7 +257,11 @@ export default function AppShell({
 
       <div ref={contentRef} className="min-w-0 flex-1">
         <main className="pb-[max(2rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-8 sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] lg:px-10">
-          <div className="animate-page-in">{children}</div>
+          {/* Con `key` por ruta el fade de entrada se repite al cambiar de pantalla (el shell ya no se remonta);
+              al llegar la página real desde su `loading.tsx` la ruta es la misma y no vuelve a animar. */}
+          <div key={pathname} className="animate-page-in">
+            {children}
+          </div>
         </main>
       </div>
     </div>

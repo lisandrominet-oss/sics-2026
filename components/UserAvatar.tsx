@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const CACHE_PREFIX = "sc_avatar:";
@@ -67,7 +68,9 @@ export default function UserAvatar({
 }) {
   const [url, setUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  const pathname = usePathname();
 
+  // Se revisa al cambiar de ruta: el menú ya no se remonta y la URL firmada vence (se renueva cuando el caché expira).
   useEffect(() => {
     let cancelled = false;
     const cached = readCache(userId);
@@ -91,12 +94,13 @@ export default function UserAvatar({
       const { data } = await supabase.storage.from("avatars").createSignedUrl(row.avatar_path, URL_TTL_SECONDS);
       if (cancelled) return;
       setUrl(data?.signedUrl ?? null);
+      setFailed(false);
       if (data?.signedUrl) setAvatarCache(userId, data.signedUrl);
     })();
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, pathname]);
 
   // La página de Preferencias avisa cuando se cambia o quita la foto.
   useEffect(() => {
