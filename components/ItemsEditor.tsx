@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { inputClass, eyebrowClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
 import { MAX_SIC_ITEMS } from "@/lib/constants";
@@ -34,6 +35,13 @@ export default function ItemsEditor({
   items: ItemDraft[];
   onChange: (items: ItemDraft[]) => void;
 }) {
+  // Clave estable por tarjeta: con `key={index}`, al quitar un artículo el <input type="file"> (no controlado)
+  // conservaba el archivo de la posición y la pantalla mostraba uno distinto del que se subía.
+  const keysRef = useRef<string[]>([]);
+  const nextKeyRef = useRef(0);
+  while (keysRef.current.length < items.length) keysRef.current.push(`item-${nextKeyRef.current++}`);
+  if (keysRef.current.length > items.length) keysRef.current.length = items.length;
+
   function updateItem(index: number, patch: Partial<ItemDraft>) {
     onChange(items.map((it, i) => (i === index ? { ...it, ...patch } : it)));
   }
@@ -45,13 +53,14 @@ export default function ItemsEditor({
 
   function removeItem(index: number) {
     if (items.length <= 1) return;
+    keysRef.current.splice(index, 1);
     onChange(items.filter((_, i) => i !== index));
   }
 
   return (
     <div className="space-y-4">
       {items.map((item, index) => (
-        <div key={index} className="rounded-lg border border-slate-200 p-4">
+        <div key={keysRef.current[index]} className="rounded-lg border border-slate-200 p-4">
           <div className="flex items-center justify-between">
             <span className={eyebrowClass}>
               Artículo {index + 1}
