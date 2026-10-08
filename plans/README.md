@@ -9,7 +9,7 @@ Generados con `/improve-animations` (asesora, no decide) sobre el commit `7b9c50
 | 003 | Brillo de los esqueletos solo con `transform` | MEDIA | A | DONE |
 | 004 | Acordeones de Contratos: curva, tiempos y contenido que no desaparece | MEDIA | C | DONE |
 | 005 | Salida animada del Modal (y `ConfirmProvider`) | MEDIA | C | DONE |
-| 006 | `loading.tsx` y parpadeo del menú (condicional a la medición D3) | MEDIA | B | DESCARTADO en Fase 4 (medido: el menú pierde sus links ~0,6 s; el arreglo de fondo es un layout compartido, Fase 6) |
+| 006 | `loading.tsx` y parpadeo del menú (condicional a la medición D3) | MEDIA | B | RESUELTO en Fase 6 (layout compartido `app/(app)/layout.tsx`: el menú ya no se pierde; `LoadingFrame` quedó sin menú falso) |
 
 Orden: 001 → 003 → 002 → (006 si corresponde) → 004 → 005. 001 define los tokens/keyframes que usan los demás; 005 agrega keyframes de salida a la misma config.
 Cada commit se cierra con `npx tsc --noEmit | grep -c "error TS"` = 83, `/review-animations` sobre el diff, `revisor-sics`, prueba en Chrome y el "ok" de Lisandro. Nunca `git push`.

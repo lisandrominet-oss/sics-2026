@@ -64,3 +64,18 @@ Es viable y la intuición es buena, con **cuatro ajustes**:
 3. En móvil: sin zoom al enfocar inputs, sin scroll horizontal de página, menú y modales usables a una mano, toasts visibles sobre la barra segura.
 4. `git diff package.json` vacío (sin dependencias nuevas).
 5. Devolución con `/confirmar`; commit con su ok; recordar push.
+
+## Estado final (cierre de la Fase 6, 2026-10-08)
+Las siete fases están hechas. Detalle de la Fase 6, mediciones y pendientes en `docs/fase-6-cierre.md`.
+
+| Fase | Contenido | Commits | Estado |
+|---|---|---|---|
+| 0 | Línea base (tsc 83, tamaños de build, capturas parciales) | `05a30a8`, `18d6018` | Hecha, en `origin/main` |
+| 1 | Cimientos móviles (drawer, bottom-sheet, tablas, campos a 16 px, toasts) | `05fdabf` | Hecha, en `origin/main` |
+| 2 | Sistema de diseño unificado (`Button`/`Card`/`Badge`, `PromptDialog`) | `5e1d237`, `e2eeca1`, `b8095b4` | Hecha, en `origin/main` |
+| 3 | Estética Linear filtrada, `loading.tsx`, 404 | `b19e3db`, `cd7abd7`, `7b9c50e` | Hecha, en `origin/main` |
+| 4 | Movimiento (tokens, presión única, fade de página, salida del Modal) | `6f85e3a`, `ed26391`, `2139597` | Hecha, en `origin/main` |
+| 5 | Resistencia (`break-ui`: fechas, avatares, desbordes, claves de `ItemsEditor`) | `9f9e8ae`, `ef944d2`, `71df380`, `b80d6c8`, `b360f6c` | Hecha, en `origin/main` |
+| 6 | Cierre y rapidez: `xlsx` dinámico (−92 kB), layout compartido sin parpadeo del menú, blur solo en escritorio, aviso del tope de 100, zona fija en `ProviderRow` | `0f4dbef`, `bea9c90` y el commit de cierre | Hecha, **commits locales sin push** |
+
+Pendiente de Lisandro: Lighthouse móvil en DevTools (antes/después), prueba en iPhone real (presión, drawer sin parpadeo, bottom-sheet y blur quitado en móvil, zoom al enfocar, toasts sobre la barra segura) y con "Reducir movimiento". Backlog de Frágiles con recomendación en `docs/fase-6-cierre.md`.

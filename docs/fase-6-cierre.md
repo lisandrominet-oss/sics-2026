@@ -60,3 +60,66 @@ Parpadeo del menú al navegar en un iPhone real, y fade de entrada con "Reducir 
 
 ### Riesgo conocido
 El layout no se vuelve a ejecutar en navegaciones suaves, así que los datos del menú (nombre, rol) se actualizan al refrescar. `RoleSwitcher` ya hace `router.refresh()` y el avatar usa un evento propio. Si otra persona te cambia el rol con la sesión abierta, el menú lo refleja recién al refrescar; las páginas y las RPC siguen validando el rol real en cada pedido.
+
+## Medición de producción antes/después (`next start`, Chrome, sesión real, solo lectura)
+Dos builds de producción (antes = `b360f6c`, después = commit B), cada uno en su puerto, 3 pasadas por ruta alternando el orden.
+
+| Ruta | JS transferido antes | JS transferido después |
+|---|---|---|
+| `/dashboard` | 278 kB (14 archivos) | 195 kB |
+| `/contratos` | 280 kB | 197 kB |
+
+TTFB y carga: sin diferencia sistemática (292–713 ms, ruido de la red hacia Supabase; al invertir el orden de medición los valores se mezclan). La mejora de A y B se ve en bytes de JS y en que el menú no desaparece, no en el tiempo de respuesta del servidor. **No se pudo medir FCP/LCP**: la pestaña de Chrome estaba en segundo plano (`visibilityState: hidden`) y no emite esas métricas.
+
+## Lighthouse (pendiente de Lisandro)
+La línea base de la Fase 0 no tenía Lighthouse y el CLI no pasa el login con Google, así que se acordó que Lisandro lo corra en DevTools (móvil) sobre Tablero, Contratos y un SIC. Ahí van los puntajes cuando los tenga:
+
+| Pantalla | Antes (`b360f6c`) | Después (Fase 6) |
+|---|---|---|
+| Tablero | _pendiente_ | _pendiente_ |
+| Contratos | _pendiente_ | _pendiente_ |
+| SIC (detalle) | _pendiente_ | _pendiente_ |
+
+Para el "antes" hace falta el sitio de Vercel con el commit `b360f6c` (o un `next start` de ese commit); para el "después", el deploy con la Fase 6.
+
+## Verificación final
+- `npx tsc --noEmit | grep -c "error TS"`: 83 (sin contar los huérfanos de `.next/types` que deja un dev server con las rutas viejas; desaparecen con `rm -rf .next` cuando no haya otro server usándolo).
+- `git diff package.json`: vacío (sin dependencias nuevas). Sin migraciones ni RPC: el flujograma no cambia.
+- `npm run build` compila (dos veces, en copias aisladas).
+- `revisor-sics` sobre A y B: sin hallazgos críticos; el importante de B (campana abierta tras navegar) quedó corregido.
+
+## Qué no se pudo ver
+- **Aviso del tope de 100 del Tablero**: producción tiene 0 SIC en "Ver como: Compras"; el texto no se vio en pantalla (solo se revisó el código y el tipado).
+- **Blur quitado en móvil**: no se pudo apreciar en un celular real; requiere tu prueba (ver abajo).
+- **iPhone real, "Reducir movimiento", zoom 200 %**: no se probaron.
+- **FCP/LCP**: ver arriba.
+- **Movimiento a 60 fps**: la pestaña en segundo plano no avanza animaciones; se verificó por estado del DOM y `getAnimations()`.
+
+## Para probar a mano (iPhone real, tras el deploy)
+1. Presión de botones (`.97`) y de tarjetas clicables.
+2. Menú lateral: abrir/cerrar, y que **los links no desaparezcan al navegar** (Tablero → Contratos → Proveedores).
+3. **Blur**: fondo del Modal (bottom-sheet) y del menú sin blur. ¿Se ve bien? ¿Abre/cierra más fluido? Si preferís el blur, se vuelve a `backdrop-blur-sm`.
+4. Zoom al enfocar un campo (debe quedar en 16 px), toasts sobre la barra segura, rotación.
+5. Con "Reducir movimiento" (macOS/iOS): sin fade de página, sin presión, sin escalonados; el menú abre sin deslizar.
+6. Zoom 200 % de Chrome en Tablero, Nueva SIC y Contratos.
+
+## Frágiles: lo que quedó fuera (con recomendación)
+Hechos en esta fase: aviso del tope de 100 en el Tablero y zona fija en `ProviderRow`.
+
+| Frágil | Recomendación |
+|---|---|
+| Sin `maxLength` ni `CHECK` de largo en la base | Acordar largos por campo; migración (CHECK) + `maxLength` en el front, en una tarea aparte |
+| Tablero con tope de 100 (paginación real), Usuarios sin buscador (tope 1.000 de PostgREST), Contratos con >1.000 filas, exportar con `.in("sic_id", ids)` sin paginar | La paginación del Tablero es la más valiosa cuando haya >100 SIC reales. Hoy solo se avisa |
+| N+1 de cuotas (`app/(app)/contratos/[id]/page.tsx`, hasta 120 RPC por detalle) | Requiere una RPC nueva que devuelva todas las cuotas juntas (toca la base): consultar antes |
+| Centavos ocultos (`formatUsd`/`formatArs`, `maximumFractionDigits: 0`) | Decisión de negocio; puede ensanchar las tarjetas de dinero |
+| `formatDateOnly` de `lib/contracts.ts` se corre un día al este de UTC | Sin efecto en Argentina; unificar con `formatSqlDate` en una tarea aparte |
+| `SicActions`: spinner global en todos los botones, "Eliminar" archivo sin confirmar, un archivo por vez | "Eliminar" sin confirmar es lo más barato y útil |
+| `reference_link` sin validar esquema `https?:`; URL firmada de 300 s en `FilePreview` sin `onError` | Próxima ronda de resistencia |
+| Campana: `aria-label` dice "20 pendientes" con tope de 20; `ProviderPanel` agrupa por nombre; cantidades con 2 decimales | Backlog |
+| Error de página dentro del shell: `app/error.tsx` ocupa toda la pantalla y oculta el menú | Opcional: `app/(app)/error.tsx` para conservar el menú |
+
+## Trampas nuevas para futuras sesiones
+- Mover carpetas de rutas con un dev server corriendo deja `ChunkLoadError` (`_next/undefined`): reiniciar el server y borrar `.next`.
+- Para medir sin pisar el dev server de otro chat: worktree fuera del repo (`git worktree add --detach <dir> <commit>`), `node_modules` enlazado y `.env.local` copiado; `npm run build` y `next start -p 33xx`. La cookie de sesión de `localhost` sirve en cualquier puerto. Borrar el enlace a `node_modules` ANTES de `git worktree remove`.
+- Con la pestaña de Chrome en segundo plano los temporizadores se frenan a 1 s: medir con `MutationObserver` y `performance.now()`, no con `setInterval`.
+- El shell ya no se remonta: cualquier componente del menú que cargue datos al montarse debe volver a hacerlo al cambiar `pathname` (como `NotificationsBell` y `UserAvatar`).

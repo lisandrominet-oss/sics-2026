@@ -34,3 +34,13 @@ Se guardan fuera del repo. Tomadas desde el sitio de Vercel (código de `main`, 
 - Sin scroll horizontal de página en Tablero y Nueva SIC (`scrollWidth` 390).
 - Menú lateral apilado arriba: ocupa casi toda la primera pantalla antes del contenido.
 - Campos de Nueva SIC con `font-size` de 14 px (uno de 12 px): iOS hace zoom al enfocarlos.
+
+## Después de la Fase 6 (2026-10-08, `npm run build`)
+| Ruta | Antes | Después |
+|---|---|---|
+| `/dashboard` | 277 kB | 181 kB |
+| `/sic/[id]` | 283 kB | 188 kB |
+| `/contratos` | 278 kB | 182 kB |
+| `/sic/nueva` | 184 kB | 179 kB |
+| `/usuarios` | 185 kB | 175 kB |
+`xlsx` ahora se baja solo al exportar. JS transferido medido en Chrome: `/dashboard` 278 → 195 kB, `/contratos` 280 → 197 kB. Detalle, Lighthouse pendiente y límites en `docs/fase-6-cierre.md`.
