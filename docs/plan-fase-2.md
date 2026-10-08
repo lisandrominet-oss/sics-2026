@@ -3,14 +3,17 @@
 > Detalle de la Fase 2 de `docs/plan-ux-nivel-2.md`. Aprobado por Lisandro el 2026-10-07. Se ejecuta en un chat nuevo (un chat por fase).
 
 ## Estado al corte (2026-10-07)
-Fases 0 y 1 y el acordeón de Contratos están en `origin/main`. **Commit A hecho** (`5e1d237`, local, sin push). **Commit B hecho y verificado, pendiente del ok de Lisandro** (`tsc` = 83, build compila, Chrome claro/oscuro 1280 y 390 px). Falta el **Commit C** (Contratos + 3 `prompt()` a Modal).
-Qué quedó en B (para recordar en C):
-- `Card` exporta `cardClass()` para `<form>`/`<section>`; `Button` suma `danger-outline`; `Badge` suma tonos `violet`/`sky` y `size="sm"`.
-- Errores de acciones → `notify.error` en `SicActions`, `SicsList` (exportar), `UsersTable`, `StaffUsersManager` (filas), `ProviderRow` (guardar/comentario/archivo), `ProvisioningManager` (fila), `PlantsManager`/`ProjectsManager` (altas). Validación de formulario sigue en línea.
-- Botones que se dejaron crudos a propósito: chips de filtro/selección (`ProvidersManager`, `ProviderCategoryPicker`), segmentado Aprobar/Observar/Rechazar de `SicActions`, estrella y fila expandible de `ProviderRow`. Fuera de alcance: `SignOutButton`, `FilePreview`, `ThemeSelector`, `NotificationsBell`, `ModuleSections`, `AppShell`, `Modal`.
-- Se arregló el `<button>` anidado de `ProviderRow` (error de hidratación en Proveedores).
-- No se pudo ver con datos reales: detalle de SIC, login (redirige con sesión), toasts de error de RPC reales.
-Pendiente para C: `Card` local y píldoras de estado de `ContractDetail`/`ContractsList` (`CONTRACT_*_STATUS_COLORS` → tonos de `Badge`), `aria-controls` de las tarjetas de dinero, los 3 `prompt()` → `PromptDialog`, `shadow-[inset_3px_0_0_0_#818cf8]` de `AppShell` (hex), ~40 `<button>` crudos de Contratos.
+Fases 0 y 1 y el acordeón de Contratos están en `origin/main`. **Commits A (`5e1d237`) y B (`e2eeca1`) hechos, locales, sin push.** **Commit C hecho y verificado, pendiente del ok de Lisandro** (`tsc` = 83, build compila, Chrome con datos reales de Contratos). Con C se cierra la Fase 2.
+Qué quedó en C:
+- `ContractDetail`/`ContractsList`/`ContractForm` sobre `Button`/`Card`/`Badge`/`labelClass`; `lib/contracts.ts`: `CONTRACT_DISPLAY_STATUS_TONES` y `CONTRACT_INSTALLMENT_STATUS_TONES` reemplazan a los `*_COLORS`.
+- Errores de acciones de `ContractDetail` → toast (se mantiene la prop `onError` de los subcomponentes; el estado en línea se eliminó). Validación de `ContractForm` sigue en línea.
+- Los 3 `prompt()` → `components/ui/PromptDialog.tsx` (reutilizable; anular comprobante y aceptar diferencia). Cambio declarado: el monto se valida con `parseAmount` (coma decimal, punto de miles; vacío = `null`), antes un monto no numérico viajaba como `NaN`.
+- `aria-controls` en las tarjetas de dinero (`money-panel-<clave>` + `money-panel-desktop`).
+- Tabla de cuotas: columna Estado 150→175 px y `min-w` 900→980 (el badge a 12 px se montaba sobre los íconos).
+- `AppShell`: sombra del ítem activo con token `sidebar.accent` (cambia `tailwind.config.ts`: reiniciar dev server).
+- Botones que quedan crudos a propósito en Contratos: pestañas, íconos de cuota (factura/recibo/detalle) y la tarjeta de dinero clicable.
+- No se pudo ver con datos reales: el diálogo "Aceptar diferencia" (no hay cuotas con diferencia) ni enviar una RPC real.
+Siguiente: Fase 3 (estética Linear filtrada) en un chat nuevo.
 
 ## Cosas aprendidas (evitan perder tiempo)
 - **Reiniciar el dev server** cuando cambia `tailwind.config.ts` (`preview_stop` + `preview_start`); si no, las utilidades nuevas no se generan.

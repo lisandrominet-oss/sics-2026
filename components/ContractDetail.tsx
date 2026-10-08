@@ -1,6 +1,6 @@
 "use client";
 
-import { inputClass } from "@/lib/ui";
+import { inputClass, labelClass } from "@/lib/ui";
 import { Fragment, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -9,10 +9,10 @@ import FilePreview from "@/components/FilePreview";
 import { IconChevronDown, IconFileText, IconReceipt } from "@/components/icons";
 import { sanitizeFileName } from "@/lib/constants";
 import {
-  CONTRACT_DISPLAY_STATUS_COLORS,
+  CONTRACT_DISPLAY_STATUS_TONES,
   CONTRACT_DISPLAY_STATUS_LABELS,
   CONTRACT_DOCUMENT_TYPE_LABELS,
-  CONTRACT_INSTALLMENT_STATUS_COLORS,
+  CONTRACT_INSTALLMENT_STATUS_TONES,
   CONTRACT_INSTALLMENT_STATUS_LABELS,
   CONTRACT_ITEM_TYPE_LABELS,
   CONTRACT_RENEWAL_TYPE_LABELS,
@@ -27,6 +27,10 @@ import {
 } from "@/lib/contracts";
 import type { Database } from "@/lib/database.types";
 import InfoItem from "@/components/ui/InfoItem";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
+import PromptDialog from "@/components/ui/PromptDialog";
 
 type Contract = Database["public"]["Tables"]["contracts"]["Row"] & {
   provider: { id: string; name: string; email: string | null; phone: string | null } | null;
@@ -44,6 +48,14 @@ type ContractEvent = Database["public"]["Tables"]["contract_events"]["Row"] & {
 };
 type ProviderInvoice = Database["public"]["Tables"]["provider_invoices"]["Row"];
 type InvoiceLine = Database["public"]["Tables"]["provider_invoice_lines"]["Row"] & { invoice: ProviderInvoice };
+
+// Importe en formato argentino: "1.234,50" (punto de miles, coma decimal), "1234,5" o "1234.5". Devuelve null si no es válido.
+function parseAmount(text: string): number | null {
+  const t = text.trim();
+  if (!/^-?(\d{1,3}(\.\d{3})+(,\d+)?|\d+([.,]\d+)?)$/.test(t)) return null;
+  const n = Number(t.includes(",") || /\.\d{3}\./.test(t) || /^-?\d{1,3}\.\d{3}$/.test(t) ? t.replace(/\./g, "").replace(",", ".") : t);
+  return Number.isFinite(n) ? n : null;
+}
 
 type Tab = "datos" | "items" | "documentos" | "cuotas" | "historial";
 
@@ -76,8 +88,12 @@ export default function ContractDetail({
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("datos");
-  const [error, setError] = useState<string | null>(null);
   const status = contractDisplayStatus(contract);
+
+  // Los errores de las acciones se muestran como aviso (toast); `null` es "limpiar" y ya no hace falta.
+  function setError(message: string | null) {
+    if (message) notify.error("No se pudo completar la acción", message);
+  }
 
   function refresh() {
     notify.success("Cambios guardados");
@@ -97,19 +113,15 @@ export default function ContractDetail({
             {items.map((i) => i.description).join(", ") || "Contrato"}
           </h1>
         </div>
-        <span
-          className={`inline-block whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${CONTRACT_DISPLAY_STATUS_COLORS[status]}`}
-        >
-          {CONTRACT_DISPLAY_STATUS_LABELS[status]}
-        </span>
+        <Badge tone={CONTRACT_DISPLAY_STATUS_TONES[status]}>{CONTRACT_DISPLAY_STATUS_LABELS[status]}</Badge>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white p-5 text-sm sm:grid-cols-4">
+      <Card className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
         <InfoItem label="Inicio" value={formatDateOnly(contract.start_date)} />
         <InfoItem label="Vencimiento" value={formatDateOnly(contract.end_date)} />
         <InfoItem label="Cuotas" value={`${paid}/${installments.length} pagadas`} />
         <InfoItem label="Responsable" value={contract.owner?.full_name ?? "-"} />
-      </div>
+      </Card>
 
       <div className="mt-6 flex gap-2 border-b border-slate-200 text-sm">
         {(
@@ -132,8 +144,6 @@ export default function ContractDetail({
           </button>
         ))}
       </div>
-
-      {error && <p role="alert" className="animate-shake mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-4">
         {tab === "datos" && <DatosTab contract={contract} onDone={refresh} onError={setError} />}
@@ -159,15 +169,6 @@ export default function ContractDetail({
         )}
         {tab === "historial" && <HistorialTab events={events} />}
       </div>
-    </div>
-  );
-}
-
-function Card({ title, children }: { title?: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
-      {title && <h2 className="text-sm font-semibold text-slate-900">{title}</h2>}
-      <div className={title ? "mt-3" : ""}>{children}</div>
     </div>
   );
 }
@@ -224,24 +225,15 @@ function DatosTab({
 
       {!contract.returned && (
         <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => setEditOpen((v) => !v)}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
+          <Button variant="secondary" onClick={() => setEditOpen((v) => !v)}>
             {editOpen ? "Cancelar" : "Editar contrato"}
-          </button>
-          <button
-            onClick={() => setRenewOpen((v) => !v)}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
+          </Button>
+          <Button variant="secondary" onClick={() => setRenewOpen((v) => !v)}>
             {renewOpen ? "Cancelar" : "Renovar"}
-          </button>
-          <button
-            onClick={() => setReturnOpen((v) => !v)}
-            className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-          >
+          </Button>
+          <Button variant="danger-outline" onClick={() => setReturnOpen((v) => !v)}>
             {returnOpen ? "Cancelar" : "Devolver equipo y finalizar contrato"}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -301,17 +293,17 @@ function EditContractForm({
       </p>
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Inicio</label>
+          <label className={labelClass}>Inicio</label>
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Vencimiento</label>
+          <label className={labelClass}>Vencimiento</label>
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputClass} />
         </div>
       </div>
       <div className="mt-3 grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Renovación</label>
+          <label className={labelClass}>Renovación</label>
           <select
             value={renewalType}
             onChange={(e) => setRenewalType(e.target.value as ContractRenewalType)}
@@ -323,21 +315,21 @@ function EditContractForm({
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Plazo renovación (meses)</label>
+          <label className={labelClass}>Plazo renovación (meses)</label>
           <input type="number" min="0" value={renewalMonths} onChange={(e) => setRenewalMonths(e.target.value)} disabled={renewalType === "sin_renovacion"} className={`${inputClass} disabled:bg-slate-50`} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Días de preaviso</label>
+          <label className={labelClass}>Días de preaviso</label>
           <input type="number" min="0" value={noticeDays} onChange={(e) => setNoticeDays(e.target.value)} disabled={renewalType === "sin_renovacion"} className={`${inputClass} disabled:bg-slate-50`} />
         </div>
       </div>
       <div className="mt-3">
-        <label className="block text-xs font-medium text-slate-700">Notas (opcional)</label>
+        <label className={labelClass}>Notas (opcional)</label>
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={inputClass} />
       </div>
-      <button onClick={submit} disabled={loading} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+      <Button onClick={submit} loading={loading} className="mt-3">
         {loading ? "Guardando…" : "Guardar cambios"}
-      </button>
+      </Button>
     </Card>
   );
 }
@@ -361,17 +353,17 @@ function RenewForm({ contractId, onDone, onError }: { contractId: string; onDone
     <Card title="Renovar contrato">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Nuevo vencimiento</label>
+          <label className={labelClass}>Nuevo vencimiento</label>
           <input type="date" value={newEndDate} onChange={(e) => setNewEndDate(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Nota (opcional)</label>
+          <label className={labelClass}>Nota (opcional)</label>
           <input value={note} onChange={(e) => setNote(e.target.value)} className={inputClass} />
         </div>
       </div>
-      <button onClick={submit} disabled={loading || !newEndDate} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+      <Button onClick={submit} loading={loading} disabled={!newEndDate} className="mt-3">
         {loading ? "Guardando…" : "Confirmar renovación"}
-      </button>
+      </Button>
     </Card>
   );
 }
@@ -406,22 +398,22 @@ function ReturnForm({ contractId, onDone, onError }: { contractId: string; onDon
     <Card title="Devolver equipo y finalizar contrato">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Fecha de devolución</label>
+          <label className={labelClass}>Fecha de devolución</label>
           <input type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Acta de devolución (obligatoria)</label>
+          <label className={labelClass}>Acta de devolución (obligatoria)</label>
           <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
         </div>
       </div>
       <div className="mt-3">
-        <label className="block text-xs font-medium text-slate-700">Nota (opcional)</label>
+        <label className={labelClass}>Nota (opcional)</label>
         <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={inputClass} />
       </div>
       <p className="mt-2 text-xs text-slate-500">Esto cancela las cuotas futuras que todavía no fueron facturadas.</p>
-      <button onClick={submit} disabled={loading || !returnDate || !file} className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50">
+      <Button variant="danger" onClick={submit} loading={loading} disabled={!returnDate || !file} className="mt-3">
         {loading ? "Guardando…" : "Confirmar devolución"}
-      </button>
+      </Button>
     </Card>
   );
 }
@@ -503,15 +495,15 @@ function ItemCard({
           )}
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setEditItemOpen((v) => !v)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">
+          <Button variant="secondary" size="sm" onClick={() => setEditItemOpen((v) => !v)}>
             {editItemOpen ? "Cancelar" : "Editar equipo"}
-          </button>
-          <button onClick={() => setUsageFormOpen((v) => !v)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setUsageFormOpen((v) => !v)}>
             Cargar horas del mes
-          </button>
-          <button onClick={() => setRateFormOpen((v) => !v)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setRateFormOpen((v) => !v)}>
             Ajustar tarifa
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -621,32 +613,32 @@ function EditItemForm({
     <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
       <p className="text-xs font-semibold text-slate-700">Editar datos del equipo</p>
       <div className="mt-2">
-        <label className="block text-xs font-medium text-slate-700">Descripción</label>
+        <label className={labelClass}>Descripción</label>
         <input value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} />
       </div>
       <div className="mt-2">
-        <label className="block text-xs font-medium text-slate-700">Número de serie / identificador</label>
+        <label className={labelClass}>Número de serie / identificador</label>
         <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} className={inputClass} />
       </div>
       {showVehicleFields && (
         <div className="mt-2 grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-700">N° de chasis</label>
+            <label className={labelClass}>N° de chasis</label>
             <input value={chassisNumber} onChange={(e) => setChassisNumber(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700">Dominio</label>
+            <label className={labelClass}>Dominio</label>
             <input value={domain} onChange={(e) => setDomain(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700">N° de motor</label>
+            <label className={labelClass}>N° de motor</label>
             <input value={engineNumber} onChange={(e) => setEngineNumber(e.target.value)} className={inputClass} />
           </div>
         </div>
       )}
-      <button onClick={submit} disabled={loading || !description} className="mt-3 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+      <Button size="sm" onClick={submit} loading={loading} disabled={!description} className="mt-3">
         {loading ? "Guardando…" : "Guardar"}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -682,13 +674,9 @@ function InternalNumberField({
     return (
       <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
         <span>Número interno: {item.internal_number ?? "sin asignar"}</span>
-        <button
-          type="button"
-          onClick={() => { setValue(item.internal_number ?? ""); setEditing(true); }}
-          className="font-medium text-indigo-600 hover:underline"
-        >
+        <Button variant="link" onClick={() => { setValue(item.internal_number ?? ""); setEditing(true); }}>
           Editar
-        </button>
+        </Button>
       </div>
     );
   }
@@ -701,21 +689,12 @@ function InternalNumberField({
         placeholder="Ej: SIN-001"
         className="w-40 rounded-lg border border-slate-300 px-2 py-1 text-xs"
       />
-      <button
-        type="button"
-        onClick={save}
-        disabled={saving}
-        className="rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button size="sm" onClick={save} loading={saving}>
         {saving ? "Guardando…" : "Guardar"}
-      </button>
-      <button
-        type="button"
-        onClick={() => setEditing(false)}
-        className="text-xs font-medium text-slate-500 hover:underline"
-      >
+      </Button>
+      <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
         Cancelar
-      </button>
+      </Button>
     </div>
   );
 }
@@ -752,40 +731,40 @@ function RateForm({ itemId, onDone, onError }: { itemId: string; onDone: () => v
       <p className="text-xs font-semibold text-slate-700">Nuevo ajuste de tarifa</p>
       <div className="mt-2 grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Vigente desde</label>
+          <label className={labelClass}>Vigente desde</label>
           <input type="date" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Regla</label>
+          <label className={labelClass}>Regla</label>
           <select value={excessRule} onChange={(e) => setExcessRule(e.target.value as typeof excessRule)} className={inputClass}>
             <option value="franquicia_hora">Franquicia + hora excedida</option>
             <option value="manual">Manual</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Tarifa mensual (USD)</label>
+          <label className={labelClass}>Tarifa mensual (USD)</label>
           <input type="number" step="0.01" value={monthlyRate} onChange={(e) => setMonthlyRate(e.target.value)} className={inputClass} />
         </div>
         {excessRule === "franquicia_hora" && (
           <>
             <div>
-              <label className="block text-xs font-medium text-slate-700">Horas incluidas</label>
+              <label className={labelClass}>Horas incluidas</label>
               <input type="number" step="0.01" value={includedHours} onChange={(e) => setIncludedHours(e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700">Tarifa hora excedida (USD)</label>
+              <label className={labelClass}>Tarifa hora excedida (USD)</label>
               <input type="number" step="0.01" value={overageRate} onChange={(e) => setOverageRate(e.target.value)} className={inputClass} />
             </div>
           </>
         )}
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-slate-700">Nota</label>
+          <label className={labelClass}>Nota</label>
           <input value={note} onChange={(e) => setNote(e.target.value)} className={inputClass} />
         </div>
       </div>
-      <button onClick={submit} disabled={loading || !validFrom || !monthlyRate} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+      <Button onClick={submit} loading={loading} disabled={!validFrom || !monthlyRate} className="mt-3">
         {loading ? "Guardando…" : "Guardar tarifa"}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -847,7 +826,7 @@ function UsageForm({
       <p className="text-xs font-semibold text-slate-700">Cargar horas del mes</p>
       <div className="mt-2 grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Período</label>
+          <label className={labelClass}>Período</label>
           <select value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className={inputClass}>
             {installments.map((i) => (
               <option key={i.id} value={i.period_start}>
@@ -857,25 +836,25 @@ function UsageForm({
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Horas usadas</label>
+          <label className={labelClass}>Horas usadas</label>
           <input type="number" step="0.01" value={hours} onChange={(e) => setHours(e.target.value)} className={inputClass} />
         </div>
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-slate-700">Informe del sector (opcional)</label>
+          <label className={labelClass}>Informe del sector (opcional)</label>
           <input ref={fileInput} type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Monto esperado manual (USD, si aplica)</label>
+          <label className={labelClass}>Monto esperado manual (USD, si aplica)</label>
           <input type="number" step="0.01" value={manualExpected} onChange={(e) => setManualExpected(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Nota (obligatoria en modo manual)</label>
+          <label className={labelClass}>Nota (obligatoria en modo manual)</label>
           <input value={manualNote} onChange={(e) => setManualNote(e.target.value)} className={inputClass} />
         </div>
       </div>
-      <button onClick={submit} disabled={loading || !periodStart || !hours} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+      <Button onClick={submit} loading={loading} disabled={!periodStart || !hours} className="mt-3">
         {loading ? "Guardando…" : "Guardar horas"}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -929,7 +908,7 @@ function DocumentosTab({
       <Card title="Agregar documento">
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-700">Tipo</label>
+            <label className={labelClass}>Tipo</label>
             <select value={docType} onChange={(e) => setDocType(e.target.value as ContractDocumentType)} className={inputClass}>
               {uploadableTypes.map((t) => (
                 <option key={t} value={t}>
@@ -939,17 +918,17 @@ function DocumentosTab({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700">Vencimiento (opcional)</label>
+            <label className={labelClass}>Vencimiento (opcional)</label>
             <input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700">Archivo</label>
+            <label className={labelClass}>Archivo</label>
             <input ref={fileInput} type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
           </div>
         </div>
-        <button onClick={submit} disabled={loading || !file} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+        <Button onClick={submit} loading={loading} disabled={!file} className="mt-3">
           {loading ? "Subiendo…" : "Agregar"}
-        </button>
+        </Button>
       </Card>
 
       <Card title={`Documentos (${documents.length})`}>
@@ -1002,6 +981,8 @@ function CuotasTab({
   const [paymentFormFor, setPaymentFormFor] = useState<string | null>(null);
   const [detailFor, setDetailFor] = useState<string | null>(null);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
+  const [voidFor, setVoidFor] = useState<string | null>(null);
+  const [acceptFor, setAcceptFor] = useState<string | null>(null);
 
   function linesFor(periodStart: string) {
     return invoiceLines.filter(
@@ -1017,30 +998,23 @@ function CuotasTab({
 
   const paidFacturaIds = new Set(payments.filter((p) => p.status === "vigente").map((p) => p.paid_invoice_id));
 
-  async function voidInvoice(invoiceId: string) {
-    const reason = prompt("Motivo de la anulación:");
-    if (!reason) return;
-    onError(null);
+  async function voidInvoice(invoiceId: string, reason: string) {
     const supabase = createClient();
     const { error } = await supabase.rpc("void_provider_invoice", { p_invoice_id: invoiceId, p_reason: reason });
-    if (error) { onError(error.message); return; }
+    if (error) { onError(error.message); return false; }
     onDone();
   }
 
-  async function acceptDifference(installmentId: string) {
-    const note = prompt("Motivo para aceptar la diferencia:");
-    if (!note) return;
-    const amountStr = prompt("Monto de la diferencia (ARS):");
-    onError(null);
+  async function acceptDifference(installmentId: string, note: string, amount: number | null) {
     setAcceptingId(installmentId);
     const supabase = createClient();
     const { error } = await supabase.rpc("accept_installment_difference", {
       p_installment_id: installmentId,
-      p_amount: amountStr ? Number(amountStr) : null,
+      p_amount: amount,
       p_note: note,
     });
     setAcceptingId(null);
-    if (error) { onError(error.message); return; }
+    if (error) { onError(error.message); return false; }
     onDone();
   }
 
@@ -1048,7 +1022,7 @@ function CuotasTab({
     <div className="space-y-4">
       <Card title="Cuotas">
         <div className="overflow-x-auto">
-          <div className="grid min-w-[900px] grid-cols-[1.3fr_110px_130px_130px_130px_150px_1fr_40px] items-center gap-x-3 text-sm">
+          <div className="grid min-w-[980px] grid-cols-[1.2fr_110px_130px_130px_130px_175px_minmax(76px,1fr)_40px] items-center gap-x-3 text-sm">
             <div className="pb-2 text-xs font-medium uppercase text-slate-400">Período</div>
             <div className="pb-2 text-xs font-medium uppercase text-slate-400">Canon (USD)</div>
             <div className="pb-2 text-xs font-medium uppercase text-slate-400">Facturado (ARS)</div>
@@ -1089,11 +1063,9 @@ function CuotasTab({
                     )}
                   </div>
                   <div className="border-b border-slate-100 py-2 pr-3">
-                    <span
-                      className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${CONTRACT_INSTALLMENT_STATUS_COLORS[inst.status]}`}
-                    >
+                    <Badge tone={CONTRACT_INSTALLMENT_STATUS_TONES[inst.status]}>
                       {CONTRACT_INSTALLMENT_STATUS_LABELS[inst.status]}
-                    </span>
+                    </Badge>
                   </div>
                   <div className="border-b border-slate-100 py-2 pr-3">
                     <div className="flex flex-wrap items-center gap-2">
@@ -1114,13 +1086,9 @@ function CuotasTab({
                         <IconReceipt className="h-4 w-4" />
                       </button>
                       {inst.status === "con_diferencia" && (
-                        <button
-                          onClick={() => acceptDifference(inst.id)}
-                          disabled={acceptingId === inst.id}
-                          className="text-xs font-medium text-amber-700 underline disabled:opacity-50"
-                        >
+                        <Button variant="link" size="sm" onClick={() => setAcceptFor(inst.id)} disabled={acceptingId === inst.id}>
                           Aceptar diferencia
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -1145,7 +1113,7 @@ function CuotasTab({
                       payLines={payLines.map((l) => l.invoice)}
                       invoiceFileUrls={invoiceFileUrls}
                       paidFacturaIds={paidFacturaIds}
-                      onVoid={voidInvoice}
+                      onVoid={setVoidFor}
                       onDone={onDone}
                       onError={onError}
                     />
@@ -1176,6 +1144,34 @@ function CuotasTab({
           </div>
         </div>
       </Card>
+
+      <PromptDialog
+        open={voidFor !== null}
+        onClose={() => setVoidFor(null)}
+        title="Anular comprobante"
+        description="Queda registrado en el historial del contrato."
+        fields={[{ name: "reason", label: "Motivo de la anulación", required: true }]}
+        confirmLabel="Anular"
+        destructive
+        onSubmit={({ reason }) => voidInvoice(voidFor as string, reason)}
+      />
+      <PromptDialog
+        open={acceptFor !== null}
+        onClose={() => setAcceptFor(null)}
+        title="Aceptar diferencia"
+        fields={[
+          { name: "note", label: "Motivo para aceptar la diferencia", required: true },
+          {
+            name: "amount",
+            label: "Monto de la diferencia (ARS)",
+            hint: "Opcional. Ej.: 1.234,50 o 1234,5.",
+            inputMode: "decimal",
+            validate: (v) => (parseAmount(v) === null ? "Ingresá un número válido." : null),
+          },
+        ]}
+        confirmLabel="Aceptar diferencia"
+        onSubmit={({ note, amount }) => acceptDifference(acceptFor as string, note, amount ? parseAmount(amount) : null)}
+      />
     </div>
   );
 }
@@ -1214,9 +1210,9 @@ function InstallmentDetail({
               {PROVIDER_INVOICE_KIND_LABELS[inv.kind]} {inv.number ?? ""} — {formatDateOnly(inv.issue_date)} — {formatArs(inv.total_amount)}
             </span>
             {inv.kind === "factura" && inv.status === "vigente" && !paidFacturaIds.has(inv.id) && (
-              <span className="inline-block whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-700">
+              <Badge tone="warning" size="sm">
                 Pendiente de pago
-              </span>
+              </Badge>
             )}
             {inv.storage_path && (
               <FilePreview url={invoiceFileUrls[inv.storage_path] ?? null} fileName={inv.file_name ?? "archivo"} label="Ver archivo" />
@@ -1224,15 +1220,12 @@ function InstallmentDetail({
           </div>
           {inv.status === "vigente" && (
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setEditingId((v) => (v === inv.id ? null : inv.id))}
-                className="text-xs font-medium text-indigo-600 underline"
-              >
+              <Button variant="link" size="sm" onClick={() => setEditingId((v) => (v === inv.id ? null : inv.id))}>
                 {editingId === inv.id ? "Cancelar" : "Editar"}
-              </button>
-              <button onClick={() => onVoid(inv.id)} className="text-xs font-medium text-red-600 underline">
+              </Button>
+              <Button variant="link-danger" size="sm" onClick={() => onVoid(inv.id)}>
                 Anular
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -1344,21 +1337,21 @@ function EditComprobanteForm({
       <p className="text-xs font-semibold text-slate-700">Editar {isPago ? "pago" : "comprobante"}</p>
       <div className="mt-2 grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Número</label>
+          <label className={labelClass}>Número</label>
           <input value={number} onChange={(e) => setNumber(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Fecha</label>
+          <label className={labelClass}>Fecha</label>
           <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className={inputClass} />
         </div>
         {isPago ? (
           <div>
-            <label className="block text-xs font-medium text-slate-700">Monto pagado sin IVA (ARS)</label>
+            <label className={labelClass}>Monto pagado sin IVA (ARS)</label>
             <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className={inputClass} />
           </div>
         ) : (
           <div>
-            <label className="block text-xs font-medium text-slate-700">Moneda de la factura</label>
+            <label className={labelClass}>Moneda de la factura</label>
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value as "ars" | "usd")}
@@ -1373,40 +1366,36 @@ function EditComprobanteForm({
       {!isPago && (
         <div className="mt-3 grid grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-700">
+            <label className={labelClass}>
               Dólar venta BNA {!isUsd && "(opcional)"}
             </label>
             <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className={inputClass} />
           </div>
           {isUsd ? (
             <div>
-              <label className="block text-xs font-medium text-slate-700">Subtotal USD</label>
+              <label className={labelClass}>Subtotal USD</label>
               <input type="number" step="0.01" value={subtotalUsd} onChange={(e) => setSubtotalUsd(e.target.value)} className={inputClass} />
             </div>
           ) : (
             <div>
-              <label className="block text-xs font-medium text-slate-700">Neto (ARS)</label>
+              <label className={labelClass}>Neto (ARS)</label>
               <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className={inputClass} />
             </div>
           )}
           <div>
-            <label className="block text-xs font-medium text-slate-700">% IVA</label>
+            <label className={labelClass}>% IVA</label>
             <input type="number" step="0.01" value={vatPct} onChange={(e) => setVatPct(e.target.value)} className={inputClass} />
           </div>
           <InfoItem label="Total (ARS)" value={formatArs(computedTotal)} />
         </div>
       )}
       <div className="mt-3">
-        <label className="block text-xs font-medium text-slate-700">Reemplazar archivo (opcional)</label>
+        <label className={labelClass}>Reemplazar archivo (opcional)</label>
         <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
       </div>
-      <button
-        onClick={submit}
-        disabled={loading || !issueDate || (!isPago && isUsd && (!subtotalUsd || !fxRate))}
-        className="mt-3 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button size="sm" onClick={submit} loading={loading} disabled={!issueDate || (!isPago && isUsd && (!subtotalUsd || !fxRate))} className="mt-3">
         {loading ? "Guardando…" : "Guardar cambios"}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -1479,7 +1468,7 @@ function InvoiceForm({
     <Card title={`Cargar factura / nota de crédito — período ${formatDateOnly(periodStart)}`}>
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Tipo</label>
+          <label className={labelClass}>Tipo</label>
           <select
             value={kind}
             onChange={(e) => setKind(e.target.value as "factura" | "nota_credito")}
@@ -1490,18 +1479,18 @@ function InvoiceForm({
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Número</label>
+          <label className={labelClass}>Número</label>
           <input value={number} onChange={(e) => setNumber(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Fecha</label>
+          <label className={labelClass}>Fecha</label>
           <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className={inputClass} />
         </div>
       </div>
 
       {items.length > 1 && (
         <div className="mt-3">
-          <label className="block text-xs font-medium text-slate-700">Equipo</label>
+          <label className={labelClass}>Equipo</label>
           <select value={itemId} onChange={(e) => setItemId(e.target.value)} className={inputClass}>
             <option value="">Total del contrato</option>
             {items.map((i) => (
@@ -1515,7 +1504,7 @@ function InvoiceForm({
 
       <div className="mt-3 grid grid-cols-4 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Moneda de la factura</label>
+          <label className={labelClass}>Moneda de la factura</label>
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value as "ars" | "usd")}
@@ -1526,24 +1515,24 @@ function InvoiceForm({
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">
+          <label className={labelClass}>
             Dólar venta BNA {!isUsd && "(opcional)"}
           </label>
           <input type="number" step="0.01" value={fxRate} onChange={(e) => setFxRate(e.target.value)} className={inputClass} />
         </div>
         {isUsd ? (
           <div>
-            <label className="block text-xs font-medium text-slate-700">Subtotal USD</label>
+            <label className={labelClass}>Subtotal USD</label>
             <input type="number" step="0.01" value={subtotalUsd} onChange={(e) => setSubtotalUsd(e.target.value)} className={inputClass} />
           </div>
         ) : (
           <div>
-            <label className="block text-xs font-medium text-slate-700">Neto (ARS)</label>
+            <label className={labelClass}>Neto (ARS)</label>
             <input type="number" step="0.01" value={netAmount} onChange={(e) => setNetAmount(e.target.value)} className={inputClass} />
           </div>
         )}
         <div>
-          <label className="block text-xs font-medium text-slate-700">% IVA</label>
+          <label className={labelClass}>% IVA</label>
           <input type="number" step="0.01" value={vatPct} onChange={(e) => setVatPct(e.target.value)} className={inputClass} />
         </div>
       </div>
@@ -1560,17 +1549,13 @@ function InvoiceForm({
       )}
 
       <div className="mt-3">
-        <label className="block text-xs font-medium text-slate-700">Archivo</label>
+        <label className={labelClass}>Archivo</label>
         <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
       </div>
 
-      <button
-        onClick={submit}
-        disabled={loading || !issueDate || (isUsd ? !subtotalUsd || !fxRate : !netAmount)}
-        className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button onClick={submit} loading={loading} disabled={!issueDate || (isUsd ? !subtotalUsd || !fxRate : !netAmount)} className="mt-4">
         {loading ? "Guardando…" : "Guardar comprobante"}
-      </button>
+      </Button>
     </Card>
   );
 }
@@ -1637,7 +1622,7 @@ function RegisterPaymentForm({
   return (
     <Card title={`Registrar pago — período ${formatDateOnly(periodStart)}`}>
       <div>
-        <label className="block text-xs font-medium text-slate-700">Factura que cancela</label>
+        <label className={labelClass}>Factura que cancela</label>
         <select value={paidInvoiceId} onChange={(e) => setPaidInvoiceId(e.target.value)} className={inputClass}>
           {providerInvoices.length === 0 && <option value="">Sin facturas vigentes de este proveedor</option>}
           {providerInvoices.map((inv) => (
@@ -1650,7 +1635,7 @@ function RegisterPaymentForm({
 
       {items.length > 1 && (
         <div className="mt-3">
-          <label className="block text-xs font-medium text-slate-700">Equipo</label>
+          <label className={labelClass}>Equipo</label>
           <select value={itemId} onChange={(e) => setItemId(e.target.value)} className={inputClass}>
             <option value="">Total del contrato</option>
             {items.map((i) => (
@@ -1664,30 +1649,26 @@ function RegisterPaymentForm({
 
       <div className="mt-3 grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs font-medium text-slate-700">Número de recibo (opcional)</label>
+          <label className={labelClass}>Número de recibo (opcional)</label>
           <input value={number} onChange={(e) => setNumber(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Fecha de pago</label>
+          <label className={labelClass}>Fecha de pago</label>
           <input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-700">Monto pagado sin IVA (ARS)</label>
+          <label className={labelClass}>Monto pagado sin IVA (ARS)</label>
           <input type="number" step="0.01" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} className={inputClass} />
         </div>
       </div>
       <div className="mt-3">
-        <label className="block text-xs font-medium text-slate-700">Comprobante de pago (opcional)</label>
+        <label className={labelClass}>Comprobante de pago (opcional)</label>
         <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
       </div>
 
-      <button
-        onClick={submit}
-        disabled={loading || !issueDate || !totalAmount || !paidInvoiceId}
-        className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button onClick={submit} loading={loading} disabled={!issueDate || !totalAmount || !paidInvoiceId} className="mt-4">
         {loading ? "Guardando…" : "Registrar pago"}
-      </button>
+      </Button>
     </Card>
   );
 }

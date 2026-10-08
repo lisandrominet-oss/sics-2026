@@ -45,7 +45,7 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-base ${
         active
-          ? "bg-white/10 text-white shadow-[inset_3px_0_0_0_#818cf8]"
+          ? "bg-white/10 text-white shadow-[inset_3px_0_0_0_theme(colors.sidebar.accent)]"
           : "text-sidebar-muted hover:bg-white/5 hover:text-sidebar-strong"
       }`}
     >

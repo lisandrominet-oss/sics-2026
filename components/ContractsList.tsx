@@ -5,10 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import EmptyState from "@/components/ui/EmptyState";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import Card, { cardClass } from "@/components/ui/Card";
 import { notify } from "@/lib/notify";
 import { downloadContractsXlsx, type ContractExportRow } from "@/lib/exportContracts";
 import {
-  CONTRACT_DISPLAY_STATUS_COLORS,
+  CONTRACT_DISPLAY_STATUS_TONES,
   CONTRACT_DISPLAY_STATUS_LABELS,
   CONTRACT_ITEM_TYPE_LABELS,
   contractDisplayStatus,
@@ -208,8 +211,9 @@ export default function ContractsList({
     <div className="space-y-6">
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr_200px]">
-          <PanelSlot panel={panels.deuda} open={openPanel === "deuda"}>
+          <PanelSlot id="money-panel-deuda" panel={panels.deuda} open={openPanel === "deuda"}>
             <MoneyCard
+              controls="money-panel-deuda money-panel-desktop"
               label="Total de deuda de contratos"
               value={formatUsd(debt.total)}
               caption="Histórico y futuro, sin IVA · en USD"
@@ -219,8 +223,9 @@ export default function ContractsList({
               expandable={debt.rows.length > 0}
             />
           </PanelSlot>
-          <PanelSlot panel={panels.facturado} open={openPanel === "facturado"}>
+          <PanelSlot id="money-panel-facturado" panel={panels.facturado} open={openPanel === "facturado"}>
             <MoneyCard
+              controls="money-panel-facturado money-panel-desktop"
               label="Total facturado por proveedores"
               value={formatArs(billed.total)}
               caption={`Sin IVA · de los cuales sin pagar: ${formatArs(unpaidArs)}`}
@@ -229,8 +234,9 @@ export default function ContractsList({
               expandable={billed.rows.length > 0}
             />
           </PanelSlot>
-          <PanelSlot panel={panels.pagado} open={openPanel === "pagado"}>
+          <PanelSlot id="money-panel-pagado" panel={panels.pagado} open={openPanel === "pagado"}>
             <MoneyCard
+              controls="money-panel-pagado money-panel-desktop"
               label="Total pagado"
               value={formatArs(paidTotals.total)}
               caption="Pagos cargados, sin IVA"
@@ -240,7 +246,7 @@ export default function ContractsList({
               expandable={paidTotals.rows.length > 0}
             />
           </PanelSlot>
-          <div className="flex flex-col justify-center divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white px-5 py-2">
+          <Card padding="none" className="flex flex-col justify-center divide-y divide-slate-100 px-5 py-2">
             <div className="py-3">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Contratos activos</p>
               <p className="mt-0.5 text-lg font-bold text-slate-900">
@@ -252,11 +258,11 @@ export default function ContractsList({
               <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Avisos sin atender</p>
               <p className={`mt-0.5 text-lg font-bold ${totalAlerts > 0 ? "text-amber-600" : "text-slate-900"}`}>{totalAlerts}</p>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Escritorio: un panel compartido debajo de la fila de tarjetas. En celular el detalle se abre debajo de cada tarjeta (PanelSlot). */}
-        <CollapsibleRows open={!!activePanel && activePanel.rows.length > 0} className="max-lg:hidden">
+        <CollapsibleRows id="money-panel-desktop" open={!!activePanel && activePanel.rows.length > 0} className="max-lg:hidden">
           {activePanel && <ProviderPanel panel={activePanel} />}
         </CollapsibleRows>
       </div>
@@ -273,13 +279,9 @@ export default function ContractsList({
                     {c.provider?.name ?? "Proveedor"} — fecha límite de renovación{" "}
                     {days < 0 ? `vencida hace ${-days} días` : `en ${days} días`}
                   </Link>
-                  <button
-                    onClick={() => attend("renovacion", c.id)}
-                    disabled={attending === `renovacion:${c.id}`}
-                    className="text-xs font-medium text-amber-700 underline disabled:opacity-50"
-                  >
+                  <Button variant="link" size="sm" onClick={() => attend("renovacion", c.id)} disabled={attending === `renovacion:${c.id}`}>
                     Marcar atendida
-                  </button>
+                  </Button>
                 </li>
               );
             })}
@@ -288,13 +290,9 @@ export default function ContractsList({
                 <Link href={d.contract_id ? `/contratos/${d.contract_id}` : "/contratos"} className="text-slate-800 hover:underline">
                   {d.file_name} vence el {formatDateOnly(d.expires_at!)}
                 </Link>
-                <button
-                  onClick={() => attend("documento", d.id)}
-                  disabled={attending === `documento:${d.id}`}
-                  className="text-xs font-medium text-amber-700 underline disabled:opacity-50"
-                >
+                <Button variant="link" size="sm" onClick={() => attend("documento", d.id)} disabled={attending === `documento:${d.id}`}>
                   Marcar atendida
-                </button>
+                </Button>
               </li>
             ))}
             {differenceAlerts.map((inst) => {
@@ -304,13 +302,9 @@ export default function ContractsList({
                   <Link href={`/contratos/${inst.contract_id}`} className="text-slate-800 hover:underline">
                     {contract?.provider?.name ?? "Proveedor"} — cuota {formatDateOnly(inst.period_start)} con diferencia
                   </Link>
-                  <button
-                    onClick={() => attend("diferencia", inst.id)}
-                    disabled={attending === `diferencia:${inst.id}`}
-                    className="text-xs font-medium text-amber-700 underline disabled:opacity-50"
-                  >
+                  <Button variant="link" size="sm" onClick={() => attend("diferencia", inst.id)} disabled={attending === `diferencia:${inst.id}`}>
                     Marcar atendida
-                  </button>
+                  </Button>
                 </li>
               );
             })}
@@ -357,16 +351,12 @@ export default function ContractsList({
             ))}
           </select>
         </div>
-        <button
-          type="button"
-          onClick={exportToExcel}
-          className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-        >
+        <Button variant="secondary" onClick={exportToExcel}>
           Exportar a Excel
-        </button>
+        </Button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <Card padding="none" className="overflow-hidden">
         {filtered.length === 0 ? (
           <EmptyState title="No hay contratos para mostrar" description="Probá con otro filtro o cargá un contrato nuevo." className="!border-0" />
         ) : (
@@ -397,25 +387,22 @@ export default function ContractsList({
                     <span className="hidden text-slate-500 lg:block">
                       {s.paid}/{s.paid + s.remaining} cuotas
                     </span>
-                    <span
-                      className={`inline-block whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${CONTRACT_DISPLAY_STATUS_COLORS[s.status]}`}
-                    >
-                      {CONTRACT_DISPLAY_STATUS_LABELS[s.status]}
-                    </span>
+                    <Badge tone={CONTRACT_DISPLAY_STATUS_TONES[s.status]}>{CONTRACT_DISPLAY_STATUS_LABELS[s.status]}</Badge>
                   </div>
                 </Link>
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
 
-function CollapsibleRows({ open, className = "", children }: { open: boolean; className?: string; children: ReactNode }) {
+function CollapsibleRows({ id, open, className = "", children }: { id?: string; open: boolean; className?: string; children: ReactNode }) {
   return (
     <div
+      id={id}
       className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"} ${className}`}
     >
       <div className="overflow-hidden">{children}</div>
@@ -425,7 +412,7 @@ function CollapsibleRows({ open, className = "", children }: { open: boolean; cl
 
 function ProviderPanel({ panel }: { panel: PanelData }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6">
+    <Card padding="lg">
       <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{panel.title}</p>
       <ul className="mt-3 divide-y divide-slate-100 text-sm">
         {panel.rows.map((r) => (
@@ -439,13 +426,13 @@ function ProviderPanel({ panel }: { panel: PanelData }) {
           <span>{panel.format(panel.total)}</span>
         </li>
       </ul>
-    </div>
+    </Card>
   );
 }
 
 // Tarjeta + su detalle. En celular (< lg) el detalle se abre justo debajo de la tarjeta tocada (acordeón);
 // desde lg el envoltorio desaparece (`contents`) y el detalle lo muestra el panel compartido de la fila.
-function PanelSlot({ panel, open, children }: { panel: PanelData; open: boolean; children: ReactNode }) {
+function PanelSlot({ id, panel, open, children }: { id: string; panel: PanelData; open: boolean; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
 
   // Al abrir en celular, deja a la vista tarjeta y detalle (al cerrar el panel que estaba abierto, el contenido se corre).
@@ -462,7 +449,7 @@ function PanelSlot({ panel, open, children }: { panel: PanelData; open: boolean;
   return (
     <div ref={ref} className="scroll-mt-20 lg:contents">
       {children}
-      <div className="lg:hidden" aria-hidden={!open}>
+      <div id={id} className="lg:hidden" aria-hidden={!open}>
         <CollapsibleRows open={open && panel.rows.length > 0}>
           <div className="pt-4">
             <ProviderPanel panel={panel} />
@@ -481,11 +468,14 @@ function MoneyCard({
   open,
   onToggle,
   expandable,
+  controls,
 }: {
   label: string;
   value: string;
   caption: string;
   valueClass?: string;
+  /** Ids de los paneles de detalle que abre la tarjeta (celular y escritorio). */
+  controls: string;
   open: boolean;
   onToggle: () => void;
   expandable: boolean;
@@ -502,13 +492,14 @@ function MoneyCard({
       <p className="mt-1 text-xs text-slate-400">{caption}</p>
     </>
   );
-  if (!expandable) return <div className="rounded-xl border border-slate-200 bg-white p-6">{content}</div>;
+  if (!expandable) return <Card padding="lg">{content}</Card>;
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-expanded={open}
-      className="block w-full rounded-xl border border-slate-200 bg-white p-6 text-left hover:bg-slate-50"
+      aria-controls={controls}
+      className={`${cardClass({ padding: "lg" })} block w-full text-left hover:bg-slate-50`}
     >
       {content}
     </button>

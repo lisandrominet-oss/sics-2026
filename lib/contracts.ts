@@ -1,4 +1,5 @@
 import type { Database } from "@/lib/database.types";
+import type { BadgeTone } from "@/components/ui/Badge";
 
 export type ContractItemType = Database["public"]["Enums"]["contract_item_type"];
 export type ContractRenewalType = Database["public"]["Enums"]["contract_renewal_type"];
@@ -27,12 +28,12 @@ export const CONTRACT_INSTALLMENT_STATUS_LABELS: Record<ContractInstallmentStatu
   diferencia_aceptada: "Diferencia aceptada",
 };
 
-export const CONTRACT_INSTALLMENT_STATUS_COLORS: Record<ContractInstallmentStatus, string> = {
-  pendiente_de_factura: "bg-slate-100 text-slate-700",
-  facturada: "bg-blue-100 text-blue-700",
-  pagada: "bg-emerald-100 text-emerald-700",
-  con_diferencia: "bg-red-100 text-red-700",
-  diferencia_aceptada: "bg-amber-100 text-amber-700",
+export const CONTRACT_INSTALLMENT_STATUS_TONES: Record<ContractInstallmentStatus, BadgeTone> = {
+  pendiente_de_factura: "neutral",
+  facturada: "info",
+  pagada: "success",
+  con_diferencia: "danger",
+  diferencia_aceptada: "warning",
 };
 
 export const PROVIDER_INVOICE_KIND_LABELS: Record<ProviderInvoiceKind, string> = {
@@ -75,11 +76,11 @@ export const CONTRACT_DISPLAY_STATUS_LABELS: Record<ContractDisplayStatus, strin
   devuelto: "Devuelto",
 };
 
-export const CONTRACT_DISPLAY_STATUS_COLORS: Record<ContractDisplayStatus, string> = {
-  vigente: "bg-emerald-100 text-emerald-700",
-  por_vencer: "bg-amber-100 text-amber-700",
-  vencido: "bg-red-100 text-red-700",
-  devuelto: "bg-slate-200 text-slate-600",
+export const CONTRACT_DISPLAY_STATUS_TONES: Record<ContractDisplayStatus, BadgeTone> = {
+  vigente: "success",
+  por_vencer: "warning",
+  vencido: "danger",
+  devuelto: "muted",
 };
 
 export function formatDateOnly(iso: string) {

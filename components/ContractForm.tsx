@@ -1,6 +1,8 @@
 "use client";
 
-import { inputClass } from "@/lib/ui";
+import { inputClass, labelClass } from "@/lib/ui";
+import Button from "@/components/ui/Button";
+import { cardClass } from "@/components/ui/Card";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -116,7 +118,7 @@ export default function ContractForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+    <form onSubmit={handleSubmit} className={cardClass({ padding: "lg", className: "space-y-4" })}>
       <div>
         <label className="block text-sm font-medium text-slate-700">Proveedor</label>
         <select
@@ -247,18 +249,14 @@ export default function ContractForm({
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase text-slate-400">Equipo {index + 1}</span>
                 {items.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeItem(index)}
-                    className="text-xs font-medium text-red-600 hover:underline"
-                  >
+                  <Button variant="link-danger" size="sm" onClick={() => removeItem(index)}>
                     Quitar
-                  </button>
+                  </Button>
                 )}
               </div>
               <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700">Tipo</label>
+                  <label className={labelClass}>Tipo</label>
                   <select
                     value={item.type}
                     onChange={(e) => updateItem(index, { type: e.target.value as ContractItemType })}
@@ -272,7 +270,7 @@ export default function ContractForm({
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-xs font-medium text-slate-700">Descripción</label>
+                  <label className={labelClass}>Descripción</label>
                   <input
                     value={item.description}
                     onChange={(e) => updateItem(index, { description: e.target.value })}
@@ -283,7 +281,7 @@ export default function ContractForm({
                 </div>
               </div>
               <div className="mt-3">
-                <label className="block text-xs font-medium text-slate-700">Número de serie / identificador (opcional)</label>
+                <label className={labelClass}>Número de serie / identificador (opcional)</label>
                 <input
                   value={item.identifier}
                   onChange={(e) => updateItem(index, { identifier: e.target.value })}
@@ -293,7 +291,7 @@ export default function ContractForm({
               {(item.type === "maquina" || item.type === "camioneta") && (
                 <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-700">N° de chasis (opcional)</label>
+                    <label className={labelClass}>N° de chasis (opcional)</label>
                     <input
                       value={item.chassisNumber}
                       onChange={(e) => updateItem(index, { chassisNumber: e.target.value })}
@@ -301,7 +299,7 @@ export default function ContractForm({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-700">Dominio (opcional)</label>
+                    <label className={labelClass}>Dominio (opcional)</label>
                     <input
                       value={item.domain}
                       onChange={(e) => updateItem(index, { domain: e.target.value })}
@@ -309,7 +307,7 @@ export default function ContractForm({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-700">N° de motor (opcional)</label>
+                    <label className={labelClass}>N° de motor (opcional)</label>
                     <input
                       value={item.engineNumber}
                       onChange={(e) => updateItem(index, { engineNumber: e.target.value })}
@@ -320,7 +318,7 @@ export default function ContractForm({
               )}
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700">Regla de exceso</label>
+                  <label className={labelClass}>Regla de exceso</label>
                   <select
                     value={item.excessRule}
                     onChange={(e) => updateItem(index, { excessRule: e.target.value as ItemDraft["excessRule"] })}
@@ -331,7 +329,7 @@ export default function ContractForm({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700">Tarifa fija mensual (USD, neta de IVA)</label>
+                  <label className={labelClass}>Tarifa fija mensual (USD, neta de IVA)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -346,7 +344,7 @@ export default function ContractForm({
               {item.excessRule === "franquicia_hora" && (
                 <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-medium text-slate-700">Horas incluidas por mes</label>
+                    <label className={labelClass}>Horas incluidas por mes</label>
                     <input
                       type="number"
                       step="0.01"
@@ -357,7 +355,7 @@ export default function ContractForm({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-700">Tarifa por hora excedida (USD)</label>
+                    <label className={labelClass}>Tarifa por hora excedida (USD)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -372,24 +370,16 @@ export default function ContractForm({
             </div>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={addItem}
-          className="mt-3 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-        >
+        <Button variant="secondary" size="sm" onClick={addItem} className="mt-3">
           + Agregar equipo
-        </button>
+        </Button>
       </div>
 
       {error && <p role="alert" className="animate-shake text-sm text-red-600">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={loading || providers.length === 0}
-        className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-      >
+      <Button type="submit" loading={loading} disabled={providers.length === 0} className="w-full">
         {loading ? "Creando…" : "Crear contrato"}
-      </button>
+      </Button>
     </form>
   );
 }
