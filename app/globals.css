@@ -40,6 +40,24 @@ body {
   }
 }
 
+/* Safari iOS dibuja type="date" con tamaño nativo: sin esto se ensancha, se agranda y se pisa con el campo de abajo. */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  height: 2.375rem;
+  background-color: #fff;
+  text-align: left;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+}
+.dark input[type="date"] {
+  background-color: #0e1626;
+}
+
 /* Tablas con scroll horizontal en celular: la primera columna queda fija. Va con su propio tema oscuro porque
    el generador del modo oscuro solo conoce clases de color de Tailwind. */
 .tabla-fija-1 th:first-child,
