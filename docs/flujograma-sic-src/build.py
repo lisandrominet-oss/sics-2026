@@ -44,7 +44,7 @@ node("D2", "jefe", 700, 500, 260, 104, "Decisión del jefe", "Jefe del área", "
 node("FJ", "jefe", 700, 618, 300, 44, "Rechazada por el jefe", None, None, "final_neg")
 node("D3", "compras", 980, 900, 270, 104, "Revisión de Compras", "Compras", "Enviada", "decision")
 node("FC", "compras", 980, 1060, 300, 46, "Rechazada por Compras", None, None, "final_neg")
-node("COT", "compras", 1330, 740, 290, 110, "Cotización", "Compra normal · Compras", "Cotizando")
+node("COT", "compras", 1330, 740, 290, 110, "Cotización", "Compra normal · Compras", "En cotización")
 node("DIR", "compras", 1330, 930, 290, 110, "Compra directa", "Sin cotización ni validación", "Aprobada o a Gerencia")
 node("CC", "compras", 1330, 1120, 290, 110, "Cuenta corriente", "Proveedor habilitado", "Aprobada")
 node("V6", "emisor", 1690, 255, 290, 104, "Validación técnica", "Quien emitió o su jefe", "Pendiente validación")

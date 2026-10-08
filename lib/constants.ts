@@ -11,7 +11,7 @@ export const STATUS_LABELS: Record<SicStatus, string> = {
   pendiente_aprobacion_jefe: "Pendiente aprobación del jefe",
   rechazada_jefe: "Rechazada por el jefe",
   rechazada_compras: "Rechazada por Compras",
-  cotizando: "Aprobada por Compras",
+  cotizando: "En cotización",
   pendiente_validacion_tecnica: "Pendiente validación técnica",
   pendiente_aprobacion_gerencia: "Pendiente aprobación Gerencia",
   rechazada_gerencia: "Rechazada por Gerencia",
