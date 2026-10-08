@@ -47,12 +47,12 @@ export default function PlantsManager({ plants }: { plants: Plant[] }) {
     <div className="space-y-6">
       <Card padding="none" className="overflow-x-auto">
         <table className="tabla-fija-1 w-full min-w-[480px] text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+          <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
-              <th className="px-4 py-3">Nombre</th>
-              <th className="px-4 py-3">Prefijo</th>
-              <th className="px-4 py-3">Activa</th>
-              <th className="px-4 py-3"></th>
+              <th className="px-4 py-3 font-medium">Nombre</th>
+              <th className="px-4 py-3 font-medium">Prefijo</th>
+              <th className="px-4 py-3 font-medium">Activa</th>
+              <th className="px-4 py-3 font-medium"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">

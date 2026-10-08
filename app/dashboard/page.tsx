@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/ui/PageHeader";
 import DashboardControls from "@/components/DashboardControls";
 import SicsList, { type SicRow } from "@/components/SicsList";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
@@ -11,6 +12,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import Card from "@/components/ui/Card";
 import { buttonClass } from "@/components/ui/Button";
 import { IconPlusCircle } from "@/components/icons";
+import { eyebrowClass, numClass } from "@/lib/ui";
 import { CAN_CREATE_SIC, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
 import { PENDING_STATUSES_BY_ROLE, applyPendingFilter, getPendingSicsCount } from "@/lib/pendingSics";
 
@@ -91,23 +93,17 @@ export default async function DashboardPage({
       fullName={profile.full_name}
     >
       <div className="mx-auto max-w-6xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Servicios Industriales
-            </p>
-            <h1 className="mt-1 text-2xl font-bold text-slate-900">Tablero</h1>
-          </div>
-          {CAN_CREATE_SIC.includes(role) && (
-            <Link
-              href="/sic/nueva"
-              className={buttonClass()}
-            >
-              <IconPlusCircle className="h-4 w-4" />
-              Nueva SIC
-            </Link>
-          )}
-        </div>
+        <PageHeader
+          title="Tablero"
+          actions={
+            CAN_CREATE_SIC.includes(role) && (
+              <Link href="/sic/nueva" className={buttonClass()}>
+                <IconPlusCircle className="h-4 w-4" />
+                Nueva SIC
+              </Link>
+            )
+          }
+        />
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatCard label="SICs totales" value={totalCount ?? 0} caption="Vista general" delay={0} />
@@ -156,7 +152,7 @@ export default async function DashboardPage({
 
         <Card padding="none" className="mt-4 overflow-hidden">
           <div className="border-b border-slate-100 px-6 py-5">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Actividad</p>
+            <p className={eyebrowClass}>Actividad</p>
             <h2 className="text-base font-semibold text-slate-900">Solicitudes recientes</h2>
           </div>
           <SicsList sics={(sics ?? []) as unknown as SicRow[]} role={role} />
@@ -180,17 +176,12 @@ function StatCard({
   delay?: number;
 }) {
   return (
-    <Card
-      padding="lg"
-      elevated
-      style={{ animationDelay: `${delay}ms` }}
-      className="animate-enter transition-all duration-base ease-out-expo hover:-translate-y-0.5 hover:shadow-lift"
-    >
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
-      <p className={`mt-2 text-3xl font-bold ${accent ? "text-indigo-600" : "text-slate-900"}`}>
+    <Card padding="lg" style={{ animationDelay: `${delay}ms` }} className="animate-enter">
+      <p className={eyebrowClass}>{label}</p>
+      <p className={`mt-2 text-3xl font-semibold tracking-tight ${numClass} ${accent ? "text-indigo-600" : "text-slate-900"}`}>
         <AnimatedNumber value={value} />
       </p>
-      <p className="mt-1 text-xs text-slate-400">{caption}</p>
+      <p className="mt-1 text-xs text-slate-500">{caption}</p>
     </Card>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { inputClass, labelClass } from "@/lib/ui";
+import { inputClass, labelClass, eyebrowClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
 import { cardClass } from "@/components/ui/Card";
 import { useState } from "react";
@@ -247,7 +247,7 @@ export default function ContractForm({
           {items.map((item, index) => (
             <div key={index} className="rounded-lg border border-slate-200 p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase text-slate-400">Equipo {index + 1}</span>
+                <span className={eyebrowClass}>Equipo {index + 1}</span>
                 {items.length > 1 && (
                   <Button variant="link-danger" size="sm" onClick={() => removeItem(index)}>
                     Quitar

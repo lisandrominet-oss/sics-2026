@@ -46,7 +46,7 @@ export default function Card({
       )}
       {...rest}
     >
-      {title && <h2 className="text-sm font-semibold text-slate-900">{title}</h2>}
+      {title && <h2 className="text-balance text-sm font-semibold text-slate-900">{title}</h2>}
       {title ? <div className="mt-3">{children}</div> : children}
     </div>
   );

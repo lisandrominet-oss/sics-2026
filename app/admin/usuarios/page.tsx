@@ -2,9 +2,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/ui/PageHeader";
 import { ROLE_LABELS, effectiveRole, formatDate, type UserRole } from "@/lib/constants";
 import UsersTable from "@/components/UsersTable";
 import ProvisioningManager from "@/components/ProvisioningManager";
+import { eyebrowClass } from "@/lib/ui";
 
 const ACTION_LABELS: Record<string, string> = {
   alta_acceso: "Alta de acceso",
@@ -58,11 +60,11 @@ export default async function UsuariosPage() {
       fullName={profile.full_name}
     >
       <div className="mx-auto max-w-5xl">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Sistema</p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">Usuarios</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Asigná rol, área/departamento y planta a cada usuario que inició sesión.
-        </p>
+        <PageHeader
+          eyebrow="Sistema"
+          title="Usuarios"
+          description="Asigná rol, área/departamento y planta a cada usuario que inició sesión."
+        />
         <div className="mt-6">
           <UsersTable profiles={profiles ?? []} plants={plants ?? []} currentUserId={profile.id} />
         </div>
@@ -73,7 +75,7 @@ export default async function UsuariosPage() {
 
         <div className="mt-8 rounded-xl border border-slate-200 bg-white">
           <div className="border-b border-slate-100 px-6 py-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Auditoría</p>
+            <p className={eyebrowClass}>Auditoría</p>
             <h2 className="text-base font-semibold text-slate-900">Registro de cambios de usuarios</h2>
             <p className="mt-1 text-xs text-slate-500">
               Altas, ediciones, pausas y bajas hechas por Gerencia. Solo lo ve el administrador.

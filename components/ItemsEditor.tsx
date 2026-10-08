@@ -1,6 +1,6 @@
 "use client";
 
-import { inputClass } from "@/lib/ui";
+import { inputClass, eyebrowClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
 import { MAX_SIC_ITEMS } from "@/lib/constants";
 
@@ -53,7 +53,7 @@ export default function ItemsEditor({
       {items.map((item, index) => (
         <div key={index} className="rounded-lg border border-slate-200 p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase text-slate-400">
+            <span className={eyebrowClass}>
               Artículo {index + 1}
             </span>
             {items.length > 1 && (

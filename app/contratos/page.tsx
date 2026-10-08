@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/ui/PageHeader";
 import ContractsList, { type InvoiceLine } from "@/components/ContractsList";
+import { buttonClass } from "@/components/ui/Button";
 import { IconPlusCircle } from "@/components/icons";
 import { effectiveRole } from "@/lib/constants";
 
@@ -54,23 +56,17 @@ export default async function ContratosPage() {
       fullName={profile.full_name}
     >
       <div className="mx-auto max-w-6xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Compras</p>
-            <h1 className="mt-1 text-2xl font-bold text-slate-900">Contratos</h1>
-            <p className="mt-2 text-sm text-slate-500">
-              Alquileres de máquinas, camionetas y herramientas: cuotas, vencimientos y control contra
-              factura.
-            </p>
-          </div>
-          <Link
-            href="/contratos/nuevo"
-            className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
-          >
-            <IconPlusCircle className="h-4 w-4" />
-            Nuevo contrato
-          </Link>
-        </div>
+        <PageHeader
+          eyebrow="Compras"
+          title="Contratos"
+          description="Alquileres de máquinas, camionetas y herramientas: cuotas, vencimientos y control contra factura."
+          actions={
+            <Link href="/contratos/nuevo" className={buttonClass()}>
+              <IconPlusCircle className="h-4 w-4" />
+              Nuevo contrato
+            </Link>
+          }
+        />
 
         <div className="mt-6">
           <ContractsList

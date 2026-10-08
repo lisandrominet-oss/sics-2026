@@ -1,6 +1,6 @@
 "use client";
 
-import { inputClass } from "@/lib/ui";
+import { inputClass, eyebrowClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { useRef, useState } from "react";
@@ -155,7 +155,7 @@ export default function SicActions({
 
   const CurrentAccountBlock = (
     <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Cuenta corriente</p>
+      <p className={eyebrowClass}>Cuenta corriente</p>
       {currentAccountProviders.length === 0 ? (
         <p className="mt-2 text-xs text-amber-600">
           Ningún proveedor tiene cuenta corriente habilitada. Marcalo desde Proveedores → Editar datos.
@@ -195,7 +195,7 @@ export default function SicActions({
 
   const DirectBlock = (
     <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Compra directa</p>
+      <p className={eyebrowClass}>Compra directa</p>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <input
           type="number"
@@ -681,7 +681,7 @@ function RecepcionEditor({
       </div>
 
       <div className="mt-4 space-y-2">
-        <p className="text-xs font-semibold uppercase text-slate-400">Cantidad recibida ahora, por artículo</p>
+        <p className={eyebrowClass}>Cantidad recibida ahora, por artículo</p>
         {items.map((it) => {
           const remaining = Math.max(it.quantity - it.receivedQuantity, 0);
           return (
@@ -975,7 +975,7 @@ function ItemReviewPanel({
   return (
     <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Revisión por artículo</p>
+        <p className={eyebrowClass}>Revisión por artículo</p>
         <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
           Cerrar
         </Button>

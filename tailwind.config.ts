@@ -12,7 +12,7 @@ const config: Config = {
       },
       // Menú lateral (siempre oscuro, no pasa por el parche de modo oscuro).
       colors: {
-        sidebar: { fg: "#cbd5e1", muted: "#94a3b8", subtle: "#64748b", strong: "#f1f5f9", accent: "#818cf8" },
+        sidebar: { fg: "#cbd5e1", muted: "#94a3b8", subtle: "#7c8ba1", strong: "#f1f5f9", accent: "#818cf8" },
       },
       // Movimiento: curvas y duraciones compartidas para que toda la app se sienta igual.
       transitionTimingFunction: {

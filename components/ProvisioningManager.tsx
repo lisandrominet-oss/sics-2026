@@ -1,6 +1,6 @@
 "use client";
 
-import { inputClass, inputCompactClass, labelClass } from "@/lib/ui";
+import { inputClass, inputCompactClass, labelClass, eyebrowClass } from "@/lib/ui";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -30,7 +30,7 @@ export default function ProvisioningManager({
     <Card padding="none">
       <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Accesos</p>
+          <p className={eyebrowClass}>Accesos</p>
           <h2 className="text-base font-semibold text-slate-900">
             Usuarios habilitados (todavía sin iniciar sesión)
           </h2>

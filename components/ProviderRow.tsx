@@ -1,6 +1,6 @@
 "use client";
 
-import { inputClass } from "@/lib/ui";
+import { inputClass, eyebrowClass } from "@/lib/ui";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -309,7 +309,7 @@ export default function ProviderRow({
           )}
 
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <h3 className={eyebrowClass}>
               Comentarios ({comments.length})
             </h3>
             <div className="mt-2 space-y-2">
@@ -345,7 +345,7 @@ export default function ProviderRow({
           </div>
 
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <h3 className={eyebrowClass}>
               Archivos ({files.length})
             </h3>
             <div className="mt-2 space-y-1">

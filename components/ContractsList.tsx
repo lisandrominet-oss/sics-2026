@@ -26,6 +26,7 @@ import {
 } from "@/lib/contracts";
 import { IconChevronDown } from "@/components/icons";
 import type { Database } from "@/lib/database.types";
+import { eyebrowClass } from "@/lib/ui";
 
 type Contract = Database["public"]["Tables"]["contracts"]["Row"] & {
   provider: { name: string } | null;
@@ -248,15 +249,15 @@ export default function ContractsList({
           </PanelSlot>
           <Card padding="none" className="flex flex-col justify-center divide-y divide-slate-100 px-5 py-2">
             <div className="py-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Contratos activos</p>
-              <p className="mt-0.5 text-lg font-bold text-slate-900">
+              <p className={eyebrowClass}>Contratos activos</p>
+              <p className="mt-0.5 text-lg font-semibold tabular-nums text-slate-900">
                 {summaries.filter((s) => s.status === "vigente" || s.status === "por_vencer").length}
                 <span className="ml-1.5 text-xs font-normal text-slate-400">de {summaries.length}</span>
               </p>
             </div>
             <div className="py-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Avisos sin atender</p>
-              <p className={`mt-0.5 text-lg font-bold ${totalAlerts > 0 ? "text-amber-600" : "text-slate-900"}`}>{totalAlerts}</p>
+              <p className={eyebrowClass}>Avisos sin atender</p>
+              <p className={`mt-0.5 text-lg font-semibold tabular-nums ${totalAlerts > 0 ? "text-amber-600" : "text-slate-900"}`}>{totalAlerts}</p>
             </div>
           </Card>
         </div>
@@ -368,7 +369,7 @@ export default function ContractsList({
                   className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 hover:bg-slate-50"
                 >
                   <div className="w-20 shrink-0 text-center">
-                    <p className="text-base font-bold text-slate-900">
+                    <p className="text-base font-semibold tabular-nums text-slate-900">
                       {s.items.map((i) => i.internal_number).filter(Boolean).join(", ") || "-"}
                     </p>
                   </div>
@@ -379,7 +380,7 @@ export default function ContractsList({
                       {s.contract.plant ? `${s.contract.plant.name} (${s.contract.plant.prefix})` : s.contract.project?.name ?? "-"}
                     </p>
                   </div>
-                  <div className="flex items-center gap-4 text-xs">
+                  <div className="flex items-center gap-4 text-xs tabular-nums">
                     <span className="hidden text-slate-500 sm:block">{formatUsd(s.monthlyUsd)}/mes</span>
                     <span className="hidden text-slate-400 md:block">
                       {formatDateOnly(s.contract.start_date)} — {formatDateOnly(s.contract.end_date)}
@@ -413,15 +414,15 @@ function CollapsibleRows({ id, open, className = "", children }: { id?: string; 
 function ProviderPanel({ panel }: { panel: PanelData }) {
   return (
     <Card padding="lg">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{panel.title}</p>
+      <p className={eyebrowClass}>{panel.title}</p>
       <ul className="mt-3 divide-y divide-slate-100 text-sm">
         {panel.rows.map((r) => (
           <li key={r.name} className="flex items-center justify-between gap-4 py-2">
             <span className="truncate text-slate-700">{r.name}</span>
-            <span className="shrink-0 font-semibold text-slate-900">{panel.format(r.amount)}</span>
+            <span className="shrink-0 font-semibold tabular-nums text-slate-900">{panel.format(r.amount)}</span>
           </li>
         ))}
-        <li className="flex items-center justify-between gap-4 pt-3 text-sm font-bold text-slate-900">
+        <li className="flex items-center justify-between gap-4 pt-3 text-sm font-semibold tabular-nums text-slate-900">
           <span>Total</span>
           <span>{panel.format(panel.total)}</span>
         </li>
@@ -483,13 +484,13 @@ function MoneyCard({
   const content = (
     <>
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
+        <p className={eyebrowClass}>{label}</p>
         {expandable && (
           <IconChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
         )}
       </div>
-      <p className={`mt-2 text-2xl font-bold ${valueClass}`}>{value}</p>
-      <p className="mt-1 text-xs text-slate-400">{caption}</p>
+      <p className={`mt-2 text-2xl font-semibold tracking-tight tabular-nums ${valueClass}`}>{value}</p>
+      <p className="mt-1 text-xs text-slate-500">{caption}</p>
     </>
   );
   if (!expandable) return <Card padding="lg">{content}</Card>;

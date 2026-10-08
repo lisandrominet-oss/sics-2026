@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/ui/PageHeader";
 import ContractForm from "@/components/ContractForm";
 import { effectiveRole } from "@/lib/constants";
 
@@ -31,11 +32,11 @@ export default async function NuevoContratoPage() {
       fullName={profile.full_name}
     >
       <div className="mx-auto max-w-3xl">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Compras</p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">Nuevo contrato</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Cargá el proveedor, las fechas y los equipos alquilados con su tarifa.
-        </p>
+        <PageHeader
+          eyebrow="Compras"
+          title="Nuevo contrato"
+          description="Cargá el proveedor, las fechas y los equipos alquilados con su tarifa."
+        />
         <div className="mt-6">
           <ContractForm providers={providers ?? []} plants={plants ?? []} projects={projects ?? []} />
         </div>

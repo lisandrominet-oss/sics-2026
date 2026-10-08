@@ -178,7 +178,7 @@ export default function AppShell({
         </div>
 
         <nav className="mt-6 flex-1 space-y-1">
-          <p className="px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-subtle">
+          <p className="px-3 text-xs font-medium text-sidebar-subtle">
             Principal
           </p>
           <NavLink href="/dashboard" label="Tablero" icon={<IconGrid />} />
@@ -188,7 +188,7 @@ export default function AppShell({
 
           {(role === "compras" || role === "admin") && (
             <>
-              <p className="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-subtle">
+              <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
                 Compras
               </p>
               <NavLink href="/proveedores" label="Proveedores" icon={<IconTruck />} />
@@ -198,7 +198,7 @@ export default function AppShell({
 
           {(DEMO_MODULE_ROLES as readonly string[]).includes(role) && (
             <>
-              <p className="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-subtle">
+              <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
                 Módulos
               </p>
               <NavLink href="/modulos/recursos-humanos" label="Recursos Humanos" icon={<IconBadge />} />
@@ -209,7 +209,7 @@ export default function AppShell({
 
           {role === "gerencia" && (
             <>
-              <p className="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-subtle">
+              <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
                 Sistema
               </p>
               <NavLink href="/usuarios" label="Usuarios" icon={<IconUsers />} />
@@ -218,7 +218,7 @@ export default function AppShell({
 
           {role === "admin" && (
             <>
-              <p className="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-subtle">
+              <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
                 Sistema
               </p>
               <NavLink href="/admin/usuarios" label="Usuarios" icon={<IconUsers />} />

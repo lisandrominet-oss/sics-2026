@@ -21,6 +21,8 @@ import type { SicExportRow } from "@/lib/exportSics";
 import InfoItem from "@/components/ui/InfoItem";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
+import PageHeader from "@/components/ui/PageHeader";
+import { numClass } from "@/lib/ui";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -106,24 +108,25 @@ export default async function SicDetailPage({ params }: { params: { id: string }
           Volver al tablero
         </Link>
 
-        <div className="mt-4 flex items-start justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{sic.code}</p>
-            <h1 className="mt-1 text-2xl font-bold text-slate-900">{sic.subject}</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            {canExport && (
-              <ExportSicButton rows={exportRows} filename={`${sic.code}.xlsx`} label="Exportar a Excel" />
-            )}
-            {isCurrentAccount && (
-              <Badge tone="violet">Cuenta corriente</Badge>
-            )}
-            {isDirect && (
-              <Badge tone="sky">Compra directa</Badge>
-            )}
-            <StatusBadge status={sic.status} />
-          </div>
-        </div>
+        <PageHeader
+          className="mt-4 !items-start"
+          eyebrow={<span className={numClass}>{sic.code}</span>}
+          title={sic.subject}
+          actions={
+            <div className="flex flex-wrap items-center gap-3">
+              {canExport && (
+                <ExportSicButton rows={exportRows} filename={`${sic.code}.xlsx`} label="Exportar a Excel" />
+              )}
+              {isCurrentAccount && (
+                <Badge tone="violet">Cuenta corriente</Badge>
+              )}
+              {isDirect && (
+                <Badge tone="sky">Compra directa</Badge>
+              )}
+              <StatusBadge status={sic.status} />
+            </div>
+          }
+        />
 
         <Card className="mt-6 grid grid-cols-2 gap-4 text-sm">
           <InfoItem label="Planta" value={plant ? `${plant.name} (${plant.prefix})` : "-"} />
@@ -194,7 +197,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
                     <p className="mb-1 text-xs font-semibold text-amber-700">Observación: {item.review_note}</p>
                   )}
                   <p className={`font-medium ${rejected ? "text-slate-400 line-through" : "text-slate-800"}`}>
-                    {i + 1}. {item.description} — {item.quantity}
+                    {i + 1}. {item.description} — <span className="tabular-nums">{item.quantity}</span>
                     {!rejected && item.received_quantity > 0 && (
                       <span className="ml-2 text-xs font-normal text-slate-400">
                         ({item.received_quantity}/{item.quantity} recibido)

@@ -6,3 +6,9 @@ export const inputCompactClass = "rounded-md border border-slate-300 px-2 py-1 t
 
 // Etiqueta de campo de formulario.
 export const labelClass = "block text-xs font-medium text-slate-700";
+
+// Etiqueta pequeña sobre un título o un dato (sentence case, sin mayúsculas sostenidas).
+export const eyebrowClass = "text-xs font-medium text-slate-500";
+
+// Cifras alineadas en columnas (montos, cantidades, códigos, fechas).
+export const numClass = "tabular-nums";

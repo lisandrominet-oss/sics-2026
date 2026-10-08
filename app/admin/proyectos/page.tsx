@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/ui/PageHeader";
 import { effectiveRole } from "@/lib/constants";
 import ProjectsManager from "@/components/ProjectsManager";
 
@@ -23,12 +24,11 @@ export default async function ProyectosPage() {
       fullName={profile.full_name}
     >
       <div className="mx-auto max-w-2xl">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Sistema</p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">Proyectos</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Lista global de proyectos para los que se puede pedir una compra. Si hay uno solo se
-          selecciona automático; si hay más de uno, el jefe de área elige al crear la SIC.
-        </p>
+        <PageHeader
+          eyebrow="Sistema"
+          title="Proyectos"
+          description="Lista global de proyectos para los que se puede pedir una compra. Si hay uno solo se selecciona automático; si hay más de uno, el jefe de área elige al crear la SIC."
+        />
         <div className="mt-6">
           <ProjectsManager projects={projects ?? []} />
         </div>

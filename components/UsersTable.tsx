@@ -26,14 +26,14 @@ export default function UsersTable({
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
       <table className="tabla-fija-1 w-full min-w-[720px] text-left text-sm">
-        <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+        <thead className="bg-slate-50 text-xs text-slate-500">
           <tr>
-            <th className="px-4 py-3">Usuario</th>
-            <th className="px-4 py-3">Rol</th>
-            <th className="px-4 py-3">Departamento</th>
-            <th className="px-4 py-3">Planta</th>
-            <th className="px-4 py-3">Activo</th>
-            <th className="px-4 py-3"></th>
+            <th className="px-4 py-3 font-medium">Usuario</th>
+            <th className="px-4 py-3 font-medium">Rol</th>
+            <th className="px-4 py-3 font-medium">Departamento</th>
+            <th className="px-4 py-3 font-medium">Planta</th>
+            <th className="px-4 py-3 font-medium">Activo</th>
+            <th className="px-4 py-3 font-medium"></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">

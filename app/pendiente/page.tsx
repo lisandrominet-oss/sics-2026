@@ -9,7 +9,7 @@ export default function PendientePage() {
         <div className="flex justify-center">
           <BrandLogoFull className="h-14 w-auto" />
         </div>
-        <h1 className="mt-4 text-lg font-bold text-slate-900">Cuenta pendiente de habilitación</h1>
+        <h1 className="mt-4 text-balance text-lg font-semibold tracking-tight text-slate-900">Cuenta pendiente de habilitación</h1>
         <p className="mt-3 text-sm text-slate-500">
           Tu cuenta ya fue creada pero todavía no tiene un rol asignado.
           Pedile al administrador del sistema que te habilite.

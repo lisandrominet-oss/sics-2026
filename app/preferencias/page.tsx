@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/ui/PageHeader";
 import ProfilePreferences from "@/components/ProfilePreferences";
 import { ROLE_LABELS, effectiveRole } from "@/lib/constants";
 
@@ -28,9 +29,7 @@ export default async function PreferenciasPage() {
       fullName={profile.full_name}
     >
       <div className="mx-auto max-w-2xl">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Servicios Industriales</p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">Preferencias</h1>
-        <p className="mt-2 text-sm text-slate-500">Tu perfil y cómo querés ver el sistema.</p>
+        <PageHeader title="Preferencias" description="Tu perfil y cómo querés ver el sistema." />
         <div className="mt-6">
           <ProfilePreferences
             userId={profile.id}

@@ -35,7 +35,7 @@ function LoginForm() {
 
   return (
     <Card padding="none" elevated className="animate-enter p-8 text-center">
-      <h1 className="text-xl font-bold text-slate-900">Bienvenido</h1>
+      <h1 className="text-balance text-xl font-semibold tracking-tight text-slate-900">Bienvenido</h1>
       <p className="mt-2 text-sm text-slate-500">
         Ingresá con tu cuenta de Google corporativa para continuar.
       </p>
@@ -54,7 +54,7 @@ export default function LoginPage() {
       <div className="hidden w-1/2 flex-col justify-between bg-slate-900 p-12 lg:flex">
         <img src="/brand/logo-completo-negativo.svg" alt="Servicios Industriales" className="h-16 w-auto self-start" />
         <div className="max-w-md animate-enter [animation-delay:120ms]">
-          <p className="text-3xl font-bold leading-snug text-white">
+          <p className="text-balance text-3xl font-semibold leading-snug tracking-tight text-white">
             Toda la gestión de compras de Servicios Industriales, de punta a punta.
           </p>
           <p className="mt-4 text-sm text-slate-400">

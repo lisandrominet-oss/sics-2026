@@ -41,7 +41,7 @@ export default function FilePreview({
         <span className="underline">{label ?? fileName}</span>
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title={fileName} variant="bare">
-        <img src={url} alt={fileName} className="max-h-[85dvh] max-w-[calc(100vw-2rem)] rounded-lg shadow-2xl" />
+        <img src={url} alt={fileName} className="max-h-[85dvh] max-w-[calc(100vw-2rem)] rounded-lg shadow-pop" />
       </Modal>
     </>
   );

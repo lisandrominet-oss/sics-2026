@@ -38,8 +38,8 @@ export default function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full text-xs font-semibold uppercase transition-colors duration-base",
-        size === "sm" ? "px-2 py-0.5" : "px-3 py-1 tracking-wide",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full text-xs font-medium transition-colors duration-base",
+        size === "sm" ? "px-2 py-0.5" : "px-3 py-1",
         TONES[tone],
         className
       )}

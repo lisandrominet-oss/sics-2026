@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/ui/PageHeader";
 import NuevaSicForm from "@/components/NuevaSicForm";
 import { CAN_CREATE_SIC, effectiveRole } from "@/lib/constants";
 
@@ -28,13 +29,14 @@ export default async function NuevaSicPage() {
       fullName={profile.full_name}
     >
       <div className="mx-auto max-w-2xl">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Servicios Industriales</p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">Nueva solicitud interna de compra</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          {role === "operativo" || role === "panol"
-            ? "Completá los datos de tu solicitud. Primero la revisa el jefe de tu área y después pasa a Compras."
-            : "Completá los datos de tu solicitud. Compras la va a revisar y buscar cotizaciones."}
-        </p>
+        <PageHeader
+          title="Nueva solicitud interna de compra"
+          description={
+            role === "operativo" || role === "panol"
+              ? "Completá los datos de tu solicitud. Primero la revisa el jefe de tu área y después pasa a Compras."
+              : "Completá los datos de tu solicitud. Compras la va a revisar y buscar cotizaciones."
+          }
+        />
         <div className="mt-6">
           <NuevaSicForm
             plants={plants ?? []}

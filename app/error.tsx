@@ -24,7 +24,7 @@ export default function Error({
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500">
           <IconAlertTriangle />
         </div>
-        <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-red-500">Ocurrió un error</p>
+        <p className="mt-4 text-xs font-medium text-red-600">Ocurrió un error</p>
         <p className="mt-2 text-sm text-slate-700">
           Algo salió mal al cargar esta pantalla. Probá de nuevo; si el problema sigue, avisale a Compras o al administrador.
         </p>

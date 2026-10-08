@@ -5,7 +5,7 @@ import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
 import Badge from "@/components/ui/Badge";
-import Button from "@/components/ui/Button";
+import Button, { buttonClass } from "@/components/ui/Button";
 import { notify } from "@/lib/notify";
 import { IconArrowRight } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
@@ -131,11 +131,11 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                     aria-label={`Seleccionar ${sic.code} para exportar`}
                   />
                 )}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-xs font-bold text-indigo-600">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-xs font-semibold text-indigo-600">
                   {sic.plants?.prefix ?? "SIC"}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-slate-900">
+                  <p className="truncate text-sm font-semibold tabular-nums text-slate-900">
                     {sic.code}
                     {sic.purchase_type === "directa" && (
                       <Badge tone="sky" size="sm" className="ml-2">
@@ -155,7 +155,7 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 tabular-nums">
                 <span className="hidden text-xs text-slate-400 lg:block">
                   {sic.needed_by_date ? `Necesaria: ${formatDate(sic.needed_by_date)}` : ""}
                 </span>
@@ -180,10 +180,7 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
               className="!border-0"
               action={
                 CAN_CREATE_SIC.includes(role) ? (
-                  <Link
-                    href="/sic/nueva"
-                    className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-base hover:bg-indigo-500 hover:shadow-md active:scale-[0.97]"
-                  >
+                  <Link href="/sic/nueva" className={buttonClass()}>
                     Crear una SIC
                   </Link>
                 ) : undefined

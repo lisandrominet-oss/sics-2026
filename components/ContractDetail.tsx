@@ -1,6 +1,6 @@
 "use client";
 
-import { inputClass, labelClass } from "@/lib/ui";
+import { inputClass, labelClass, eyebrowClass } from "@/lib/ui";
 import { Fragment, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -30,6 +30,7 @@ import InfoItem from "@/components/ui/InfoItem";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import PageHeader from "@/components/ui/PageHeader";
 import PromptDialog from "@/components/ui/PromptDialog";
 
 type Contract = Database["public"]["Tables"]["contracts"]["Row"] & {
@@ -104,17 +105,12 @@ export default function ContractDetail({
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            {contract.provider?.name ?? "Proveedor"}
-          </p>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900">
-            {items.map((i) => i.description).join(", ") || "Contrato"}
-          </h1>
-        </div>
-        <Badge tone={CONTRACT_DISPLAY_STATUS_TONES[status]}>{CONTRACT_DISPLAY_STATUS_LABELS[status]}</Badge>
-      </div>
+      <PageHeader
+        className="!items-start"
+        eyebrow={contract.provider?.name ?? "Proveedor"}
+        title={items.map((i) => i.description).join(", ") || "Contrato"}
+        actions={<Badge tone={CONTRACT_DISPLAY_STATUS_TONES[status]}>{CONTRACT_DISPLAY_STATUS_LABELS[status]}</Badge>}
+      />
 
       <Card className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
         <InfoItem label="Inicio" value={formatDateOnly(contract.start_date)} />
@@ -1022,13 +1018,13 @@ function CuotasTab({
     <div className="space-y-4">
       <Card title="Cuotas">
         <div className="overflow-x-auto">
-          <div className="grid min-w-[980px] grid-cols-[1.2fr_110px_130px_130px_130px_175px_minmax(76px,1fr)_40px] items-center gap-x-3 text-sm">
-            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Período</div>
-            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Canon (USD)</div>
-            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Facturado (ARS)</div>
-            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Pagado (ARS)</div>
-            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Diferencia pago</div>
-            <div className="pb-2 text-xs font-medium uppercase text-slate-400">Estado</div>
+          <div className="grid min-w-[980px] grid-cols-[1.2fr_110px_130px_130px_130px_175px_minmax(76px,1fr)_40px] items-center gap-x-3 text-sm tabular-nums">
+            <div className={`${eyebrowClass} pb-2`}>Período</div>
+            <div className={`${eyebrowClass} pb-2`}>Canon (USD)</div>
+            <div className={`${eyebrowClass} pb-2`}>Facturado (ARS)</div>
+            <div className={`${eyebrowClass} pb-2`}>Pagado (ARS)</div>
+            <div className={`${eyebrowClass} pb-2`}>Diferencia pago</div>
+            <div className={`${eyebrowClass} pb-2`}>Estado</div>
             <div className="pb-2"></div>
             <div className="pb-2"></div>
 
@@ -1244,7 +1240,7 @@ function InstallmentDetail({
   return (
     <Card title={`Detalle de la cuota — período ${formatDateOnly(periodStart)}`}>
       <div>
-        <p className="text-xs font-semibold uppercase text-slate-400">Facturas / notas de crédito</p>
+        <p className={eyebrowClass}>Facturas / notas de crédito</p>
         {uniqueInvoices.length === 0 ? (
           <p className="mt-1 text-sm text-slate-400">Sin facturas cargadas.</p>
         ) : (
@@ -1256,7 +1252,7 @@ function InstallmentDetail({
         )}
       </div>
       <div className="mt-4 border-t border-slate-100 pt-4">
-        <p className="text-xs font-semibold uppercase text-slate-400">Pagos</p>
+        <p className={eyebrowClass}>Pagos</p>
         {uniquePayments.length === 0 ? (
           <p className="mt-1 text-sm text-slate-400">Sin pagos cargados.</p>
         ) : (

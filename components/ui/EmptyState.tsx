@@ -28,8 +28,8 @@ export default function EmptyState({
           <IconInbox />
         )}
       </div>
-      <p className="text-sm font-semibold text-slate-800">{title}</p>
-      {description && <p className="mt-1 max-w-sm text-sm text-slate-500">{description}</p>}
+      <p className="text-balance text-sm font-semibold text-slate-800">{title}</p>
+      {description && <p className="mt-1 max-w-sm text-pretty text-sm text-slate-500">{description}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   );
