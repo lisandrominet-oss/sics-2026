@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
+import EmptyState from "@/components/ui/EmptyState";
 import {
   REQUESTER_CANCELLABLE_STATUSES,
   TERMINAL_STATUSES,
@@ -1109,7 +1110,7 @@ function MultiFileRow({
           ))}
         </ul>
       ) : (
-        <p className="mt-1 text-xs text-slate-400">Todavía no hay archivos.</p>
+        <EmptyState size="sm" className="mt-1" title="Todavía no hay archivos." />
       )}
     </div>
   );

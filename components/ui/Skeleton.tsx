@@ -13,9 +13,9 @@ export function Skeleton({ className }: { className?: string }) {
 }
 
 // Lista de filas de carga (por ejemplo, mientras llegan las solicitudes).
-export function SkeletonRows({ rows = 5 }: { rows?: number }) {
+export function SkeletonRows({ rows = 5, silent = false }: { rows?: number; silent?: boolean }) {
   return (
-    <div role="status" aria-label="Cargando" className="space-y-3">
+    <div {...(silent ? { "aria-hidden": true } : { role: "status", "aria-label": "Cargando" })} className="space-y-3">
       {Array.from({ length: rows }).map((_, i) => (
         <div
           key={i}
@@ -30,7 +30,7 @@ export function SkeletonRows({ rows = 5 }: { rows?: number }) {
           <Skeleton className="h-6 w-20 rounded-full" />
         </div>
       ))}
-      <span className="sr-only">Cargando…</span>
+      {!silent && <span className="sr-only">Cargando…</span>}
     </div>
   );
 }

@@ -31,6 +31,7 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import PageHeader from "@/components/ui/PageHeader";
+import EmptyState from "@/components/ui/EmptyState";
 import PromptDialog from "@/components/ui/PromptDialog";
 
 type Contract = Database["public"]["Tables"]["contracts"]["Row"] & {
@@ -929,7 +930,7 @@ function DocumentosTab({
 
       <Card title={`Documentos (${documents.length})`}>
         {documents.length === 0 ? (
-          <p className="text-sm text-slate-400">Sin documentos todavía.</p>
+          <EmptyState size="sm" title="Sin documentos todavía." />
         ) : (
           <ul className="space-y-2">
             {documents.map((d) => (
@@ -1242,7 +1243,7 @@ function InstallmentDetail({
       <div>
         <p className={eyebrowClass}>Facturas / notas de crédito</p>
         {uniqueInvoices.length === 0 ? (
-          <p className="mt-1 text-sm text-slate-400">Sin facturas cargadas.</p>
+          <EmptyState size="sm" className="mt-1" title="Sin facturas cargadas." />
         ) : (
           <ul className="mt-2 space-y-3">
             {uniqueInvoices.map((inv) => (
@@ -1254,7 +1255,7 @@ function InstallmentDetail({
       <div className="mt-4 border-t border-slate-100 pt-4">
         <p className={eyebrowClass}>Pagos</p>
         {uniquePayments.length === 0 ? (
-          <p className="mt-1 text-sm text-slate-400">Sin pagos cargados.</p>
+          <EmptyState size="sm" className="mt-1" title="Sin pagos cargados." />
         ) : (
           <ul className="mt-2 space-y-3">
             {uniquePayments.map((inv) => (

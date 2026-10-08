@@ -12,6 +12,7 @@ import { sanitizeFileName } from "@/lib/constants";
 import type { Database } from "@/lib/database.types";
 import InfoItem from "@/components/ui/InfoItem";
 import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
 
 type Provider = Database["public"]["Tables"]["providers"]["Row"];
 type Category = { id: string; name: string; active: boolean };
@@ -321,7 +322,7 @@ export default function ProviderRow({
                   </p>
                 </div>
               ))}
-              {comments.length === 0 && <p className="text-xs text-slate-400">Sin comentarios todavía.</p>}
+              {comments.length === 0 && <EmptyState size="sm" title="Sin comentarios todavía." />}
             </div>
             <div className="mt-2 flex gap-2">
               <input
@@ -354,7 +355,7 @@ export default function ProviderRow({
                   <FilePreview url={f.url} fileName={f.file_name} />
                 </div>
               ))}
-              {files.length === 0 && <p className="text-xs text-slate-400">Sin archivos todavía.</p>}
+              {files.length === 0 && <EmptyState size="sm" title="Sin archivos todavía." />}
             </div>
             <div className="mt-2">
               <input

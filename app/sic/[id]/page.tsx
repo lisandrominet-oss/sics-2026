@@ -22,6 +22,7 @@ import InfoItem from "@/components/ui/InfoItem";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
+import EmptyState from "@/components/ui/EmptyState";
 import { numClass } from "@/lib/ui";
 
 export const dynamic = "force-dynamic";
@@ -236,7 +237,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
         <Card className="mt-4 text-sm">
           <h2 className="font-semibold text-slate-900">Archivos de la SIC</h2>
           {filesWithUrls.filter((f) => !f.item_id).length === 0 ? (
-            <p className="mt-2 text-slate-400">Todavía no hay archivos adjuntos.</p>
+            <EmptyState size="sm" className="mt-2" title="Todavía no hay archivos adjuntos." />
           ) : (
             <ul className="mt-2 space-y-1">
               {filesWithUrls

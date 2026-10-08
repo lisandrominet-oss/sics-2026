@@ -7,6 +7,7 @@ export default function EmptyState({
   description,
   action,
   icon,
+  size = "md",
   className,
 }: {
   title: string;
@@ -14,8 +15,19 @@ export default function EmptyState({
   /** Acción sugerida (por ejemplo, un botón para crear el primer registro). */
   action?: ReactNode;
   icon?: ReactNode;
+  /** `sm`: línea simple para subsecciones (archivos, comentarios, facturas) donde una caja grande sobra. */
+  size?: "sm" | "md";
   className?: string;
 }) {
+  if (size === "sm") {
+    return (
+      <div className={className}>
+        <p className="text-sm text-slate-500">{title}</p>
+        {description && <p className="mt-0.5 text-pretty text-xs text-slate-500">{description}</p>}
+        {action && <div className="mt-2">{action}</div>}
+      </div>
+    );
+  }
   return (
     <div
       className={cn(

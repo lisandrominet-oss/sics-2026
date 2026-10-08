@@ -7,6 +7,7 @@ import { ROLE_LABELS, effectiveRole, formatDate, type UserRole } from "@/lib/con
 import UsersTable from "@/components/UsersTable";
 import ProvisioningManager from "@/components/ProvisioningManager";
 import { eyebrowClass } from "@/lib/ui";
+import EmptyState from "@/components/ui/EmptyState";
 
 const ACTION_LABELS: Record<string, string> = {
   alta_acceso: "Alta de acceso",
@@ -82,7 +83,7 @@ export default async function UsuariosPage() {
             </p>
           </div>
           {(changeLog ?? []).length === 0 ? (
-            <p className="px-6 py-6 text-center text-sm text-slate-400">Todavía no hay cambios registrados.</p>
+            <EmptyState size="sm" className="px-6 py-6 text-center" title="Todavía no hay cambios registrados." />
           ) : (
             <ul className="divide-y divide-slate-100 text-sm">
               {(changeLog ?? []).map((entry) => {
