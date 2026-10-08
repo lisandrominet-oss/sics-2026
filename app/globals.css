@@ -72,16 +72,20 @@ body {
   background-color: #0b1220;
 }
 
-/* Botones: transición suave de color/sombra y leve hundimiento al presionar (escala de presión de los botones). Las clases de Tailwind (transition-*) tienen prioridad. */
+/* Presión: una sola regla para todo lo que se toca (botones, y enlaces con la clase `press` como los de buttonClass).
+   Usa la propiedad `scale` (no `transform`): compone con los transform de Tailwind y no se pisa con ellos.
+   `transition-colors` de Tailwind incluye `scale` (ver tailwind.config.ts), así que ni siquiera una utilidad la cancela. */
 @layer base {
-  button:not(:disabled):active {
-    transform: scale(0.98);
+  button:not(:disabled):active,
+  .press:not(:disabled):active {
+    scale: 0.97;
   }
   button,
-  [role="button"] {
-    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
-    transition-duration: 150ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  [role="button"],
+  .press {
+    transition-property: color, background-color, border-color, box-shadow, opacity, scale;
+    transition-duration: 120ms;
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
   }
 }
 
@@ -161,7 +165,6 @@ input[type="file"]:disabled::file-selector-button {
       rgba(255, 255, 255, 0.55) 50%,
       transparent 100%
     );
-    background-size: 200% 100%;
   }
 }
 

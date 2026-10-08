@@ -200,7 +200,7 @@ function FilterTab({
   return (
     <Link
       href={href}
-      className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-all duration-base active:scale-95 ${
+      className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-colors duration-base ease-out-expo press ${
         active ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"
       }`}
     >

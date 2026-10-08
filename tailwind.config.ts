@@ -1,5 +1,10 @@
 import type { Config } from "tailwindcss";
 
+// Curvas compartidas: se usan en los tokens de transición y en las animaciones.
+const OUT_EXPO = "cubic-bezier(0.16, 1, 0.3, 1)";
+const DRAWER = "cubic-bezier(0.32, 0.72, 0, 1)"; // acordeones y paneles que se despliegan
+const SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
+
 const config: Config = {
   darkMode: "class",
   // `hover:` solo aplica en dispositivos con puntero: en táctil no queda el estado "pegado" tras tocar.
@@ -16,13 +21,21 @@ const config: Config = {
       },
       // Movimiento: curvas y duraciones compartidas para que toda la app se sienta igual.
       transitionTimingFunction: {
-        "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
-        spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "out-expo": OUT_EXPO,
+        drawer: DRAWER,
+        spring: SPRING,
       },
+      // `enter` > `exit`: lo que aparece tarda un poco más que lo que se va.
       transitionDuration: {
         fast: "120ms",
         base: "200ms",
+        enter: "240ms",
+        exit: "160ms",
         slow: "320ms",
+      },
+      // `transition-colors` también transiciona `scale` para no cancelar la presión de los botones (globals.css).
+      transitionProperty: {
+        colors: "color, background-color, border-color, text-decoration-color, fill, stroke, scale",
       },
       boxShadow: {
         soft: "0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.06)",
@@ -47,9 +60,10 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(-6px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        // Solo `transform`: el brillo corre por la compositora, sin repintar el bloque.
         shimmer: {
-          "0%": { backgroundPosition: "-200% 0" },
-          "100%": { backgroundPosition: "200% 0" },
+          from: { transform: "translateX(-100%)" },
+          to: { transform: "translateX(100%)" },
         },
         shake: {
           "0%, 100%": { transform: "translateX(0)" },
@@ -68,15 +82,15 @@ const config: Config = {
       },
       animation: {
         "fade-in": "fade-in 200ms ease-out both",
-        "fade-up": "fade-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both",
+        "fade-up": `fade-up 320ms ${OUT_EXPO} both`,
         // Igual que fade-up pero sin dejar `transform` aplicado al terminar (importa si adentro hay elementos `fixed`).
-        enter: "fade-up 360ms cubic-bezier(0.16, 1, 0.3, 1) backwards",
-        "scale-in": "scale-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both",
-        "slide-down": "slide-down 200ms cubic-bezier(0.16, 1, 0.3, 1) both",
-        "slide-up": "slide-up 280ms cubic-bezier(0.16, 1, 0.3, 1) both",
+        enter: `fade-up 360ms ${OUT_EXPO} backwards`,
+        "scale-in": `scale-in 220ms ${OUT_EXPO} both`,
+        "slide-down": `slide-down 200ms ${OUT_EXPO} both`,
+        "slide-up": `slide-up 280ms ${OUT_EXPO} both`,
         shimmer: "shimmer 1.6s linear infinite",
         shake: "shake 360ms ease-in-out",
-        "check-pop": "check-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both",
+        "check-pop": `check-pop 320ms ${SPRING} both`,
         "soft-pulse": "soft-pulse 1.8s ease-in-out infinite",
       },
     },

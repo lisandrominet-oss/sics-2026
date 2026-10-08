@@ -6,7 +6,7 @@ type Props = Omit<HTMLAttributes<HTMLDivElement>, "title"> & {
   padding?: "none" | "md" | "lg";
   /** Sombra suave (tarjetas destacadas, como los totales del Tablero). */
   elevated?: boolean;
-  /** Eleva la tarjeta al pasar el mouse (para tarjetas clicables). */
+  /** Resalta borde y fondo al pasar el mouse (para tarjetas clicables). */
   interactive?: boolean;
   /** Título opcional de la sección. */
   title?: ReactNode;
@@ -41,7 +41,7 @@ export default function Card({
       className={cn(
         cardClass({ padding, elevated }),
         interactive &&
-          "cursor-pointer transition-all duration-base ease-out-expo hover:-translate-y-0.5 hover:shadow-lift",
+          "cursor-pointer transition-colors duration-base hover:border-slate-300 hover:bg-slate-50",
         className
       )}
       {...rest}

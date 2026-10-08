@@ -41,6 +41,7 @@
 @media (hover: hover) { .dark .hover\:bg-slate-100:hover { background-color: #1f2b42; } }
 @media (hover: hover) { .dark .hover\:bg-slate-50:hover { background-color: #18233a; } }
 @media (hover: hover) { .dark .hover\:border-indigo-200:hover { border-color: rgba(99, 102, 241, 0.3); } }
+@media (hover: hover) { .dark .hover\:border-slate-300:hover { border-color: #3a475e; } }
 @media (hover: hover) { .dark .hover\:border-slate-400:hover { border-color: #4b5a73; } }
 @media (hover: hover) { .dark .hover\:text-slate-700:hover { color: #e2e8f0; } }
 @media (hover: hover) { .dark .hover\:text-slate-800:hover { color: #f1f5f9; } }

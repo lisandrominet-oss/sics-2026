@@ -5,7 +5,7 @@ import Spinner from "./Spinner";
 export type ButtonVariant = "primary" | "secondary" | "danger" | "danger-outline" | "warning" | "ghost" | "link" | "link-danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
-// Sin sombra: la estética (sombras, bordes) se decide en un solo lugar más adelante. La presión al tocar está en globals.css.
+// Sin sombra: la estética (sombras, bordes) se decide en un solo lugar más adelante. La presión al tocar (clase `press`) está en globals.css.
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-indigo-600 text-white hover:bg-indigo-500",
   secondary: "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400",
@@ -42,7 +42,7 @@ export function buttonClass({
 } = {}) {
   const isLink = variant === "link" || variant === "link-danger";
   return cn(
-    "inline-flex items-center justify-center gap-2 font-medium transition-colors duration-base",
+    "press inline-flex items-center justify-center gap-2 font-medium transition-colors duration-fast ease-out-expo",
     "disabled:cursor-not-allowed disabled:opacity-50",
     VARIANTS[variant],
     isLink ? LINK_SIZES[size] : SIZES[size],
