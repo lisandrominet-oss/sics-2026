@@ -38,7 +38,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
   const { data: sic, error: sicError } = await supabase
     .from("sics")
     .select(
-      "*, plants(name, prefix), project:projects(id, name), provider:providers(name), requester:profiles!sics_requester_id_fkey(full_name, email, department), parent:sics!sics_parent_sic_id_fkey(id, code)"
+      "*, plants(name, prefix), project:projects(id, name), provider:providers(name), requester:profiles!sics_requester_id_fkey(full_name, email, department)"
     )
     .eq("id", params.id)
     .maybeSingle();
@@ -46,7 +46,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
   if (sicError) throw new Error(sicError.message);
   if (!sic) notFound();
 
-  const [{ data: events }, { data: files }, { data: items }, { data: projects }, { data: ccProviders }, { data: children }] = await Promise.all([
+  const [{ data: events }, { data: files }, { data: items }, { data: projects }, { data: ccProviders }, { data: children }, { data: parentSic }] = await Promise.all([
     supabase
       .from("sic_events")
       .select("*, actor:profiles(full_name)")
@@ -58,6 +58,10 @@ export default async function SicDetailPage({ params }: { params: { id: string }
     // Solo Compras/admin pueden leer proveedores; para el resto las listas llegan vacías.
     supabase.from("providers").select("id, name, has_current_account").eq("active", true).order("name"),
     supabase.from("sics").select("id, code, status").eq("parent_sic_id", params.id).order("created_at", { ascending: true }),
+    // La SIC de origen va en consulta aparte: PostgREST no resuelve el embed de una FK autorreferenciada por nombre de constraint (PGRST200).
+    sic.parent_sic_id
+      ? supabase.from("sics").select("id, code").eq("id", sic.parent_sic_id).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const filesWithUrls = await Promise.all(
@@ -71,8 +75,6 @@ export default async function SicDetailPage({ params }: { params: { id: string }
   const plant = sic.plants as { name: string; prefix: string } | null;
   const project = sic.project as { id: string; name: string } | null;
   const provider = sic.provider as { name: string } | null;
-  const parentRaw = sic.parent as unknown;
-  const parentSic = (Array.isArray(parentRaw) ? parentRaw[0] : parentRaw) as { id: string; code: string } | null | undefined;
   const activeItems = (items ?? []).filter((it) => it.review_status === "activo");
   const isCurrentAccount = sic.purchase_type === "cuenta_corriente";
   const isDirect = sic.purchase_type === "directa";
