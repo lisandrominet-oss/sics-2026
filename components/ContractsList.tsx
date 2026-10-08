@@ -201,7 +201,7 @@ export default function ContractsList({
     router.refresh();
   }
 
-  function exportToExcel() {
+  async function exportToExcel() {
     const rows: ContractExportRow[] = filtered.map((s) => ({
       proveedor: s.contract.provider?.name ?? "-",
       equipos: s.items.map((i) => i.description).join(", "),
@@ -213,7 +213,11 @@ export default function ContractsList({
       cuotasRestantes: s.remaining,
       estado: CONTRACT_DISPLAY_STATUS_LABELS[s.status],
     }));
-    downloadContractsXlsx(rows, `Contratos_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    try {
+      await downloadContractsXlsx(rows, `Contratos_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    } catch {
+      notify.error("No se pudo exportar", "No se pudo cargar el generador de Excel. Revisá la conexión y probá de nuevo.");
+    }
   }
 
   return (

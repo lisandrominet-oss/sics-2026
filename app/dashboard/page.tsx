@@ -16,6 +16,8 @@ import { eyebrowClass, numClass } from "@/lib/ui";
 import { CAN_CREATE_SIC, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
 import { PENDING_STATUSES_BY_ROLE, applyPendingFilter, getPendingSicsCount } from "@/lib/pendingSics";
 
+// Tope de filas del Tablero; si se alcanza, se avisa debajo de la lista.
+const LIST_LIMIT = 100;
 const SORT_COLUMNS = new Set(SORT_OPTIONS.map((o) => o.value));
 
 export default async function DashboardPage({
@@ -78,7 +80,7 @@ export default async function DashboardPage({
 
   const [{ data: sics, error }, { count: totalCount }, pendingCount, { count: closedCount }] =
     await Promise.all([
-      query.limit(100),
+      query.limit(LIST_LIMIT),
       supabase.from("sics").select("*", { count: "exact", head: true }),
       getPendingSicsCount(supabase, role, profile.id),
       supabase.from("sics").select("*", { count: "exact", head: true }).eq("status", "cerrada"),
@@ -156,6 +158,11 @@ export default async function DashboardPage({
             <h2 className="text-base font-semibold text-slate-900">Solicitudes recientes</h2>
           </div>
           <SicsList sics={(sics ?? []) as unknown as SicRow[]} role={role} />
+          {(sics?.length ?? 0) >= LIST_LIMIT && (
+            <p className="border-t border-slate-100 px-6 py-3 text-sm text-slate-500">
+              Mostrando las primeras {LIST_LIMIT} solicitudes de esta vista. Para encontrar otras, afiná con el buscador o los filtros.
+            </p>
+          )}
         </Card>
       </div>
     </AppShell>

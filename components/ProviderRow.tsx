@@ -8,7 +8,7 @@ import { notify, reportResult } from "@/lib/notify";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 import FilePreview from "@/components/FilePreview";
 import ProviderCategoryPicker from "@/components/ProviderCategoryPicker";
-import { sanitizeFileName } from "@/lib/constants";
+import { formatDate, sanitizeFileName } from "@/lib/constants";
 import type { Database } from "@/lib/database.types";
 import InfoItem from "@/components/ui/InfoItem";
 import Button from "@/components/ui/Button";
@@ -30,10 +30,6 @@ type ProviderFile = {
   created_at: string;
   url: string | null;
 };
-
-function formatDate(iso: string) {
-  return new Intl.DateTimeFormat("es-AR", { dateStyle: "short", timeStyle: "short" }).format(new Date(iso));
-}
 
 export default function ProviderRow({
   provider,

@@ -88,8 +88,10 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
         }
       }
 
-      downloadSicsXlsx(rows, `SICs_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      await downloadSicsXlsx(rows, `SICs_${new Date().toISOString().slice(0, 10)}.xlsx`);
       setSelected(new Set());
+    } catch {
+      notify.error("No se pudo exportar", "No se pudo generar el Excel. Revisá la conexión y probá de nuevo.");
     } finally {
       setExporting(false);
     }

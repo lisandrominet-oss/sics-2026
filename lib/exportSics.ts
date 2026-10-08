@@ -1,7 +1,6 @@
 // Solo usamos las funciones de escritura de xlsx (nunca XLSX.read/readFile),
 // que no están afectadas por las vulnerabilidades conocidas de la librería
 // (todas relacionadas con el parseo de archivos xlsx no confiables).
-import * as XLSX from "xlsx";
 
 export type SicExportRow = {
   codigo: string;
@@ -18,7 +17,9 @@ export type SicExportRow = {
 
 const COLUMN_WIDTHS = [16, 30, 14, 18, 22, 18, 14, 34, 10, 32];
 
-export function downloadSicsXlsx(rows: SicExportRow[], filename: string) {
+export async function downloadSicsXlsx(rows: SicExportRow[], filename: string) {
+  // Import dinámico: la librería (~90 kB) solo se baja al exportar, no al abrir la pantalla.
+  const XLSX = await import("xlsx");
   const sheetRows = rows.map((r) => ({
     SIC: r.codigo,
     Asunto: r.asunto,

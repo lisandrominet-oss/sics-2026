@@ -102,7 +102,7 @@ export default function Modal({
     <div
       ref={overlayRef}
       className={cn(
-        "fixed inset-0 z-50 flex justify-center backdrop-blur-sm",
+        "fixed inset-0 z-50 flex justify-center sm:backdrop-blur-sm",
         closing ? "pointer-events-none animate-fade-out" : "animate-fade-in",
         bare ? "items-center bg-black/70 p-4" : "items-end bg-slate-900/50 sm:items-center sm:p-4"
       )}

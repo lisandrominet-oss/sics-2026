@@ -1,7 +1,6 @@
 // Mismas funciones de solo-escritura de xlsx que lib/exportSics.ts (nunca
 // XLSX.read/readFile), fuera del alcance de las vulnerabilidades conocidas
 // de la librería.
-import * as XLSX from "xlsx";
 
 export type ContractExportRow = {
   proveedor: string;
@@ -17,7 +16,9 @@ export type ContractExportRow = {
 
 const COLUMN_WIDTHS = [22, 34, 20, 16, 14, 14, 14, 14, 16];
 
-export function downloadContractsXlsx(rows: ContractExportRow[], filename: string) {
+export async function downloadContractsXlsx(rows: ContractExportRow[], filename: string) {
+  // Import dinámico: la librería (~90 kB) solo se baja al exportar, no al abrir la pantalla.
+  const XLSX = await import("xlsx");
   const sheetRows = rows.map((r) => ({
     Proveedor: r.proveedor,
     Equipos: r.equipos,

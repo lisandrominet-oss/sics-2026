@@ -143,7 +143,7 @@ export default function AppShell({
         aria-hidden="true"
         onClick={() => setMenuOpen(false)}
         className={cn(
-          "fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm transition-opacity lg:hidden",
+          "fixed inset-0 z-40 bg-slate-900/50 transition-opacity sm:backdrop-blur-sm lg:hidden",
           menuOpen ? "opacity-100 duration-base" : "pointer-events-none opacity-0 duration-fast"
         )}
       />
