@@ -370,9 +370,11 @@ function ReturnForm({ contractId, onDone, onError }: { contractId: string; onDon
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   async function submit() {
-    if (!file) { onError("Hace falta adjuntar el acta de devolución"); return; }
+    if (!file) { setFormError("Hace falta adjuntar el acta de devolución"); return; }
+    setFormError(null);
     setLoading(true);
     onError(null);
     const supabase = createClient();
@@ -400,7 +402,7 @@ function ReturnForm({ contractId, onDone, onError }: { contractId: string; onDon
         </div>
         <div>
           <label className={labelClass}>Acta de devolución (obligatoria)</label>
-          <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+          <input type="file" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setFormError(null); }} className="mt-1 w-full text-xs" />
         </div>
       </div>
       <div className="mt-3">
@@ -411,6 +413,7 @@ function ReturnForm({ contractId, onDone, onError }: { contractId: string; onDon
       <Button variant="danger" onClick={submit} loading={loading} disabled={!returnDate || !file} className="mt-3">
         {loading ? "Guardando…" : "Confirmar devolución"}
       </Button>
+      {formError && <p role="alert" className="mt-2 text-xs text-red-600">{formError}</p>}
     </Card>
   );
 }
@@ -783,11 +786,13 @@ function UsageForm({
   const [manualNote, setManualNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   async function submit() {
     const installment = installments.find((i) => i.period_start === periodStart);
-    if (!installment) { onError("Elegí un período"); return; }
+    if (!installment) { setFormError("Elegí un período"); return; }
+    setFormError(null);
     setLoading(true);
     onError(null);
     const supabase = createClient();
@@ -824,7 +829,7 @@ function UsageForm({
       <div className="mt-2 grid grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Período</label>
-          <select value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className={inputClass}>
+          <select value={periodStart} onChange={(e) => { setPeriodStart(e.target.value); setFormError(null); }} className={inputClass}>
             {installments.map((i) => (
               <option key={i.id} value={i.period_start}>
                 {formatDateOnly(i.period_start)} — {formatDateOnly(i.period_end)}
@@ -852,6 +857,7 @@ function UsageForm({
       <Button onClick={submit} loading={loading} disabled={!periodStart || !hours} className="mt-3">
         {loading ? "Guardando…" : "Guardar horas"}
       </Button>
+      {formError && <p role="alert" className="mt-2 text-xs text-red-600">{formError}</p>}
     </div>
   );
 }
@@ -873,12 +879,14 @@ function DocumentosTab({
   const [expiresAt, setExpiresAt] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const uploadableTypes: ContractDocumentType[] = ["contrato", "adenda", "condiciones", "seguro", "otro"];
 
   async function submit() {
-    if (!file) { onError("Elegí un archivo"); return; }
+    if (!file) { setFormError("Elegí un archivo"); return; }
+    setFormError(null);
     setLoading(true);
     onError(null);
     const supabase = createClient();
@@ -920,12 +928,13 @@ function DocumentosTab({
           </div>
           <div>
             <label className={labelClass}>Archivo</label>
-            <input ref={fileInput} type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+            <input ref={fileInput} type="file" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setFormError(null); }} className="mt-1 w-full text-xs" />
           </div>
         </div>
         <Button onClick={submit} loading={loading} disabled={!file} className="mt-3">
           {loading ? "Subiendo…" : "Agregar"}
         </Button>
+        {formError && <p role="alert" className="mt-2 text-xs text-red-600">{formError}</p>}
       </Card>
 
       <Card title={`Documentos (${documents.length})`}>
