@@ -2,17 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Cuenta desde el valor anterior hasta el nuevo. Con movimiento reducido, muestra el valor directo.
-export default function AnimatedNumber({ value, duration = 700 }: { value: number; duration?: number }) {
+// Muestra el valor ya al montar; cuando cambia, cuenta desde lo que se veía hasta el nuevo (300 ms).
+// Con movimiento reducido, muestra el valor directo.
+export default function AnimatedNumber({ value, duration = 300 }: { value: number; duration?: number }) {
   const [shown, setShown] = useState(value);
+  // Último valor que se llegó a mostrar: si el valor cambia a mitad de una cuenta, sigue desde ahí.
   const from = useRef(value);
-  const first = useRef(true);
 
   useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const start = first.current ? 0 : from.current;
-    first.current = false;
-    if (reduce || start === value) {
+    const start = from.current;
+    if (start === value) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setShown(value);
       from.current = value;
       return;
@@ -20,17 +20,15 @@ export default function AnimatedNumber({ value, duration = 700 }: { value: numbe
     let raf = 0;
     const t0 = performance.now();
     const tick = (now: number) => {
-      const t = Math.min((now - t0) / duration, 1);
+      const t = Math.min(Math.max((now - t0) / duration, 0), 1);
       const eased = 1 - Math.pow(1 - t, 3);
-      setShown(Math.round(start + (value - start) * eased));
+      const next = Math.round(start + (value - start) * eased);
+      from.current = next;
+      setShown(next);
       if (t < 1) raf = requestAnimationFrame(tick);
-      else from.current = value;
     };
     raf = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(raf);
-      from.current = value;
-    };
+    return () => cancelAnimationFrame(raf);
   }, [value, duration]);
 
   return <span className="tabular-nums">{shown.toLocaleString("es-AR")}</span>;

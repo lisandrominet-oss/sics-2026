@@ -25,12 +25,12 @@ const config: Config = {
         drawer: DRAWER,
         spring: SPRING,
       },
-      // `enter` > `exit`: lo que aparece tarda un poco más que lo que se va.
+      // `open` > `close`: lo que se despliega tarda un poco más que lo que se repliega.
       transitionDuration: {
         fast: "120ms",
         base: "200ms",
-        enter: "240ms",
-        exit: "160ms",
+        open: "240ms",
+        close: "160ms",
         slow: "320ms",
       },
       // `transition-colors` también transiciona `scale` para no cancelar la presión de los botones (globals.css).
@@ -51,6 +51,13 @@ const config: Config = {
         "scale-in": {
           from: { opacity: "0", transform: "scale(0.96) translateY(4px)" },
           to: { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+        // Entrada de página: solo opacidad (se ve decenas de veces al día; puente suave esqueleto → contenido).
+        "page-in": { from: { opacity: "0" }, to: { opacity: "1" } },
+        // Filas de listas del Tablero: apenas suben 4 px, con escalonado corto desde el componente.
+        "row-in": {
+          from: { opacity: "0", transform: "translateY(4px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
         "slide-up": {
           from: { transform: "translateY(100%)" },
@@ -86,6 +93,8 @@ const config: Config = {
         // Igual que fade-up pero sin dejar `transform` aplicado al terminar (importa si adentro hay elementos `fixed`).
         enter: `fade-up 360ms ${OUT_EXPO} backwards`,
         "scale-in": `scale-in 220ms ${OUT_EXPO} both`,
+        "page-in": "page-in 160ms ease-out backwards",
+        "row-in": `row-in 200ms ${OUT_EXPO} backwards`,
         "slide-down": `slide-down 200ms ${OUT_EXPO} both`,
         "slide-up": `slide-up 280ms ${OUT_EXPO} both`,
         shimmer: "shimmer 1.6s linear infinite",

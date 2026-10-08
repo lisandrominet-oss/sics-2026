@@ -33,7 +33,7 @@ Keyframes nuevos en `tailwind.config.ts` (`keyframes` + `animation`):
 ```
 - `AppShell.tsx:253`: `<div className="animate-page-in">{children}</div>`.
 - `dashboard/page.tsx` StatCard: quitar `animate-enter`, `style` y la prop `delay` (y los `delay={…}` de las 3 llamadas); no son una lista.
-- `SicsList.tsx`: `animate-row-in` en lugar de `animate-enter` y `Math.min(index, 6) * 30` (máximo 180 ms de demora + 200 ms = 380 ms).
+- `SicsList.tsx`: `animate-row-in` en lugar de `animate-enter` y `Math.min(index, 5) * 30` (máximo 150 ms de demora + 200 ms = 350 ms).
 - `AppShell.tsx:52`: `<span>{icon}</span>` (sin transición ni escala).
 - `AnimatedNumber`: `duration` por defecto 300; el primer montaje muestra el valor sin animar (`first` → `setShown(value)` y salir); solo anima cuando `value` cambia, desde el valor anterior.
 
@@ -52,5 +52,5 @@ Keyframes nuevos en `tailwind.config.ts` (`keyframes` + `animation`):
 
 ## Verification
 - **Mecánica**: `tsc` = 83.
-- **Feel check**: navegar Tablero ↔ SIC ↔ Contratos: el contenido hace un fade corto, sin subir ni dejar un cuadro en blanco visible; las primeras 6 filas del Tablero entran escalonadas y a las 7.ª en adelante aparecen con la 6.ª; los números del Tablero aparecen ya con su valor, sin salto a 0; pasar el mouse por el menú no mueve los íconos. `document.getAnimations()` en la navegación: ninguna dura más de 360 ms (incluida la demora).
+- **Feel check**: navegar Tablero ↔ SIC ↔ Contratos: el contenido hace un fade corto, sin subir ni dejar un cuadro en blanco visible; las primeras 5 filas del Tablero entran escalonadas y de la 6.ª en adelante aparecen con la 5.ª; los números del Tablero aparecen ya con su valor, sin salto a 0; pasar el mouse por el menú no mueve los íconos. `document.getAnimations()` en la navegación: ninguna dura más de 360 ms (incluida la demora).
 - **Done when**: no queda `animate-enter` en `AppShell`, `SicsList` ni `StatCard`.

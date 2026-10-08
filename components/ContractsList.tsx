@@ -500,7 +500,7 @@ function MoneyCard({
       onClick={onToggle}
       aria-expanded={open}
       aria-controls={controls}
-      className={`${cardClass({ padding: "lg" })} block w-full text-left hover:bg-slate-50`}
+      className={`${cardClass({ padding: "lg" })} block w-full text-left hover:bg-slate-50 press-soft`}
     >
       {content}
     </button>

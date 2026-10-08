@@ -39,7 +39,7 @@ const OUT_EXPO = "cubic-bezier(0.16, 1, 0.3, 1)";
 const DRAWER = "cubic-bezier(0.32, 0.72, 0, 1)";
 const SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 // transitionTimingFunction: { "out-expo": OUT_EXPO, drawer: DRAWER, spring: SPRING }
-// transitionDuration: { fast: "120ms", base: "200ms", enter: "240ms", exit: "160ms", slow: "320ms" }
+// transitionDuration: { fast: "120ms", base: "200ms", open: "240ms", close: "160ms", slow: "320ms" }
 // transitionProperty: { colors: "color, background-color, border-color, text-decoration-color, fill, stroke, scale" }
 // animation: reemplazar los literales de cubic-bezier por ${OUT_EXPO} / ${SPRING} (mismos valores).
 ```
@@ -69,7 +69,7 @@ const SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 - Parche oscuro: `hover:border-slate-300 hover:bg-slate-50` son clases que el generador reconoce; correr `node scripts/generar-modo-oscuro.js` y revisar el diff de `app/dark-theme.css`.
 
 ## Steps
-1. `tailwind.config.ts`: constantes, `drawer`, duraciones `enter`/`exit`, `transitionProperty.colors` con `scale`, y literales de las `animation` por las constantes (mismo valor, mismo resultado).
+1. `tailwind.config.ts`: constantes, `drawer`, duraciones `open`/`close`, `transitionProperty.colors` con `scale`, y literales de las `animation` por las constantes (mismo valor, mismo resultado).
 2. `app/globals.css`: reemplazar el bloque de presión por el de arriba.
 3. `components/ui/Button.tsx`: clase `press` en `buttonClass`.
 4. `app/dashboard/page.tsx:203`: FilterTab.

@@ -106,9 +106,9 @@ export default async function DashboardPage({
         />
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <StatCard label="SICs totales" value={totalCount ?? 0} caption="Vista general" delay={0} />
-          <StatCard label="Pendientes de mi acción" value={pendingCount} caption="Requieren revisión" accent delay={70} />
-          <StatCard label="Cerradas" value={closedCount ?? 0} caption="Historial completo" delay={140} />
+          <StatCard label="SICs totales" value={totalCount ?? 0} caption="Vista general" />
+          <StatCard label="Pendientes de mi acción" value={pendingCount} caption="Requieren revisión" accent />
+          <StatCard label="Cerradas" value={closedCount ?? 0} caption="Historial completo" />
         </div>
 
         <div className="mt-8 flex flex-wrap gap-2 text-sm">
@@ -167,16 +167,14 @@ function StatCard({
   value,
   caption,
   accent,
-  delay = 0,
 }: {
   label: string;
   value: number;
   caption: string;
   accent?: boolean;
-  delay?: number;
 }) {
   return (
-    <Card padding="lg" style={{ animationDelay: `${delay}ms` }} className="animate-enter">
+    <Card padding="lg">
       <p className={eyebrowClass}>{label}</p>
       <p className={`mt-2 text-3xl font-semibold tracking-tight ${numClass} ${accent ? "text-indigo-600" : "text-slate-900"}`}>
         <AnimatedNumber value={value} />
@@ -200,7 +198,7 @@ function FilterTab({
   return (
     <Link
       href={href}
-      className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-colors duration-base ease-out-expo press ${
+      className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-colors duration-fast ease-out-expo press ${
         active ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"
       }`}
     >

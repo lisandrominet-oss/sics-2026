@@ -34,17 +34,17 @@ className={`h-4 w-4 transition-transform duration-300 ${isDetailOpen ? "rotate-1
 `ease-in-out` nativo es débil y 300 ms es lento. En `ContractDetail`, al cerrar, `open ? children : null` quita el contenido de golpe: lo que se anima es una caja vacía encogiéndose. (El desmontaje es intencional: resetea los formularios `InvoiceForm`/`RegisterPaymentForm`.)
 
 ## Target
-- Curva `drawer` (`ease-drawer`, token del plan 001: `cubic-bezier(0.32, 0.72, 0, 1)`), abrir `duration-enter` (240 ms), cerrar `duration-exit` (160 ms), también en los chevrons:
+- Curva `drawer` (`ease-drawer`, token del plan 001: `cubic-bezier(0.32, 0.72, 0, 1)`), abrir `duration-open` (240 ms), cerrar `duration-close` (160 ms), también en los chevrons:
 ```tsx
-`grid transition-[grid-template-rows] ease-drawer ${open ? "grid-rows-[1fr] duration-enter" : "grid-rows-[0fr] duration-exit"} ...`
-`... transition-transform ease-drawer ${open ? "rotate-180 duration-enter" : "duration-exit"}`
+`grid transition-[grid-template-rows] ease-drawer ${open ? "grid-rows-[1fr] duration-open" : "grid-rows-[0fr] duration-close"} ...`
+`... transition-transform ease-drawer ${open ? "rotate-180 duration-open" : "duration-close"}`
 ```
 - `CollapsiblePanel`: el contenido se mantiene montado mientras dura el cierre y se desmonta después:
 ```tsx
 const [mounted, setMounted] = useState(open);
 useEffect(() => {
   if (open) { setMounted(true); return; }
-  const t = setTimeout(() => setMounted(false), 200); // un poco más que `exit` (160 ms)
+  const t = setTimeout(() => setMounted(false), 200); // un poco más que `close` (160 ms)
   return () => clearTimeout(t);
 }, [open]);
 // ...<div className="py-3">{mounted ? children : null}</div>
@@ -52,7 +52,7 @@ useEffect(() => {
 Si se vuelve a abrir antes de los 200 ms el temporizador se cancela y no se pierde el contenido.
 
 ## Repo conventions to follow
-Los tokens `ease-drawer`, `duration-enter`, `duration-exit` salen del plan 001. Se acepta animar `grid-template-rows` (no hay alternativa solo-`transform` para altura automática y el contenido es liviano).
+Los tokens `ease-drawer`, `duration-open`, `duration-close` salen del plan 001. Se acepta animar `grid-template-rows` (no hay alternativa solo-`transform` para altura automática y el contenido es liviano).
 
 ## Steps
 1. `ContractsList.tsx`: `CollapsibleRows` y el chevron (línea 489).

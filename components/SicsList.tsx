@@ -112,8 +112,8 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
           return (
             <li
               key={sic.id}
-              style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}
-              className="group relative flex animate-enter flex-wrap items-center justify-between gap-3 px-6 py-4 transition-colors hover:bg-slate-50"
+              style={{ animationDelay: `${Math.min(index, 5) * 30}ms` }}
+              className="group relative flex animate-row-in flex-wrap items-center justify-between gap-3 px-6 py-4 transition-colors hover:bg-slate-50"
             >
               <Link
                 href={`/sic/${sic.id}`}

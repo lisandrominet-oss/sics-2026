@@ -49,7 +49,7 @@ function NavLink({
           : "text-sidebar-muted hover:bg-white/5 hover:text-sidebar-strong"
       }`}
     >
-      <span className="transition-transform duration-base ease-out-expo group-hover:scale-110">{icon}</span>
+      {icon}
       {label}
     </Link>
   );
@@ -250,7 +250,7 @@ export default function AppShell({
 
       <div ref={contentRef} className="min-w-0 flex-1">
         <main className="pb-[max(2rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-8 sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] lg:px-10">
-          <div className="animate-enter">{children}</div>
+          <div className="animate-page-in">{children}</div>
         </main>
       </div>
     </div>

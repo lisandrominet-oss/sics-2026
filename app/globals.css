@@ -73,19 +73,25 @@ body {
 }
 
 /* Presión: una sola regla para todo lo que se toca (botones, y enlaces con la clase `press` como los de buttonClass).
+   No aplica con el foco de teclado (Espacio/Enter no se animan).
    Usa la propiedad `scale` (no `transform`): compone con los transform de Tailwind y no se pisa con ellos.
    `transition-colors` de Tailwind incluye `scale` (ver tailwind.config.ts), así que ni siquiera una utilidad la cancela. */
 @layer base {
-  button:not(:disabled):active,
-  .press:not(:disabled):active {
+  button:not(:disabled):active:not(:focus-visible),
+  [role="button"]:not([aria-disabled="true"]):active:not(:focus-visible),
+  .press:not(:disabled):active:not(:focus-visible) {
     scale: 0.97;
+  }
+  /* Superficies grandes (tarjetas clicables): un 3 % mueve cada borde varios píxeles, se usa un hundimiento más leve. */
+  button.press-soft:not(:disabled):active:not(:focus-visible) {
+    scale: 0.985;
   }
   button,
   [role="button"],
   .press {
     transition-property: color, background-color, border-color, box-shadow, opacity, scale;
     transition-duration: 120ms;
-    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); /* = ease-out-expo */
   }
 }
 
@@ -177,6 +183,16 @@ input[type="file"]:disabled::file-selector-button {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  /* Sin hundimiento (es movimiento); el color y la opacidad de cada componente se conservan. */
+  button:active,
+  [role="button"]:active,
+  .press:active {
+    scale: none !important;
+  }
+  /* Sin movimiento el brillo quedaría como una franja fija en el centro. */
+  .shimmer-bg {
+    display: none;
   }
 }
 

@@ -16,7 +16,7 @@ export default function ModuleSections({ sections }: { sections: string[] }) {
             key={name}
             type="button"
             onClick={() => setSelected(name)}
-            className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-6 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50/40"
+            className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-6 text-left transition-colors duration-fast ease-out-expo hover:border-indigo-200 hover:bg-indigo-50/40 press-soft"
           >
             <span className="text-sm font-semibold text-slate-900">{name}</span>
             <IconArrowRight className="h-4 w-4 text-slate-400" />
