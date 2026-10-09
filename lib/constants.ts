@@ -99,6 +99,16 @@ export function formatSqlDate(isoDate: string) {
   return new Intl.DateTimeFormat("es-AR", { dateStyle: "short", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
 }
 
+// Días de hoy (en Buenos Aires) hasta una fecha sin hora; negativo si ya pasó.
+export function daysUntilSqlDate(isoDate: string) {
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires" }).format(new Date());
+  const toUtc = (s: string) => {
+    const [y, m, d] = s.slice(0, 10).split("-").map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+  return Math.round((toUtc(isoDate) - toUtc(today)) / 86_400_000);
+}
+
 export function formatDate(iso: string) {
   // Zona fija: en el servidor (Vercel, UTC) y en el navegador la hora tiene que ser la misma.
   return new Intl.DateTimeFormat("es-AR", {
