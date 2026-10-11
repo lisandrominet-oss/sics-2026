@@ -445,20 +445,18 @@ export default function SicActions({
           className={inputClass}
         />
         {NoteBox}
-        <div className="mt-3">
+        <div className="mt-3 flex flex-wrap gap-2">
           <Btn onClick={() => run(() => supabase.rpc("issue_po", { p_sic_id: sicId, p_po_number: poNumber || null, p_note: note || null }))} loading={loading}>
             Emitir orden de compra
           </Btn>
           {(isCurrentAccount || isDirect) && (
-            <span className="ml-2">
-              <Btn
-                variant="warning"
-                onClick={() => run(() => supabase.rpc("revert_sic_to_normal", { p_sic_id: sicId, p_note: note || null }))}
-                loading={loading}
-              >
-                Volver a compra normal
-              </Btn>
-            </span>
+            <Btn
+              variant="warning"
+              onClick={() => run(() => supabase.rpc("revert_sic_to_normal", { p_sic_id: sicId, p_note: note || null }))}
+              loading={loading}
+            >
+              Volver a compra normal
+            </Btn>
           )}
         </div>
       </ActionCard>
