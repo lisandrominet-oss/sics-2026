@@ -8,6 +8,7 @@ import FilePreview from "@/components/FilePreview";
 import ExportSicButton from "@/components/ExportSicButton";
 import { IconArrowLeft, IconFileText } from "@/components/icons";
 import {
+  CAN_SEE_AMOUNTS,
   COMPRAS_EXPORTABLE_STATUSES,
   FILE_TYPE_LABELS,
   STATUS_LABELS,
@@ -58,7 +59,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
   if (sicError) throw new Error(sicError.message);
   if (!sic) notFound();
 
-  const [{ data: events }, { data: files }, { data: items }, { data: projects }, { data: ccProviders }, { data: children }, { data: parentSic }] = await Promise.all([
+  const [{ data: events }, { data: files }, { data: items }, { data: projects }, { data: ccProviders }, { data: children }, { data: parentSic }, { data: finance }] = await Promise.all([
     supabase
       .from("sic_events")
       .select("*, actor:profiles(full_name)")
@@ -74,7 +75,11 @@ export default async function SicDetailPage({ params }: { params: { id: string }
     sic.parent_sic_id
       ? supabase.from("sics").select("id, code").eq("id", sic.parent_sic_id).maybeSingle()
       : Promise.resolve({ data: null }),
+    // El monto vive en sic_finance: la base solo lo entrega a Compras, Gerencia, admin, el jefe del área y,
+    // mientras valida técnicamente, al solicitante. Para el resto llega null.
+    supabase.from("sic_finance").select("final_amount").eq("sic_id", params.id).maybeSingle(),
   ]);
+  const finalAmount = finance?.final_amount ?? null;
 
   const filesWithUrls = await Promise.all(
     (files ?? []).map(async (f) => {
@@ -94,6 +99,11 @@ export default async function SicDetailPage({ params }: { params: { id: string }
   const activeProviders = (ccProviders ?? []) as { id: string; name: string; has_current_account: boolean }[];
 
   const isRequester = sic.requester_id === profile.id;
+  // Los roles con acceso ven la tarjeta aunque todavía no haya monto ("-"). El operativo solo mientras valida
+  // técnicamente su propia SIC (la base se lo entrega solo entonces). Pañol nunca: así "Ver como" muestra lo que vería de verdad.
+  const showAmount =
+    CAN_SEE_AMOUNTS.includes(role) ||
+    (role === "operativo" && isRequester && sic.status === "pendiente_validacion_tecnica" && finance !== null);
   const isAreaBoss = role === "area" && !!profile.plant_id && profile.plant_id === sic.plant_id;
   // Aviso "te toca aprobar": mantener junto con las condiciones de SicActions.renderStatusPanel (aprobación del jefe, validación técnica y Gerencia).
   const needsMyApproval =
@@ -103,6 +113,11 @@ export default async function SicDetailPage({ params }: { params: { id: string }
 
   // El formulario de corrección de artículos necesita ancho: en ese estado la pantalla vuelve a una sola columna.
   const stacked = sic.status === "en_observacion" && (role === "admin" || isRequester);
+
+  // Sugerencias del campo Artículo: solo se piden cuando se muestra el formulario de corrección.
+  const catalogNames = stacked
+    ? ((await supabase.from("item_catalog").select("name").eq("active", true).order("uses_count", { ascending: false }).order("name").limit(1000)).data ?? []).map((c) => c.name)
+    : [];
 
   const requesterName = requester?.full_name ?? requester?.email ?? "-";
   const daysLeft = sic.needed_by_date && !NO_DEADLINE_STATUSES.includes(sic.status) ? daysUntilSqlDate(sic.needed_by_date) : null;
@@ -192,6 +207,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
             role={role}
             isRequester={isRequester}
             isAreaBoss={isAreaBoss}
+            catalog={catalogNames}
             existingFiles={(files ?? [])
               .filter((f) => !f.item_id)
               .map((f) => ({
@@ -231,7 +247,8 @@ export default async function SicDetailPage({ params }: { params: { id: string }
             }}
             projects={projects ?? []}
             purchaseType={sic.purchase_type as "normal" | "cuenta_corriente" | "directa"}
-            finalAmount={sic.final_amount}
+            finalAmount={finalAmount}
+            isService={sic.is_service}
             currentAccountProviders={activeProviders.filter((p) => p.has_current_account)}
             allProviders={activeProviders}
           />
@@ -239,13 +256,23 @@ export default async function SicDetailPage({ params }: { params: { id: string }
 
         <div className={cn("space-y-4", !stacked && "lg:col-start-1 lg:row-span-2 lg:row-start-1")}>
           <Card className="flex flex-wrap gap-x-10 gap-y-5">
-            <div>
-              <p className={eyebrowClass}>Monto final</p>
-              <p className={`${numClass} mt-0.5 text-3xl font-semibold tracking-tight text-slate-900`}>
-                {formatAmount(sic.final_amount, sic.currency)}
-              </p>
-            </div>
-            {(isCurrentAccount || isDirect) && (
+            {showAmount && (
+              <div>
+                <p className={eyebrowClass}>Monto final</p>
+                <p className={`${numClass} mt-0.5 text-3xl font-semibold tracking-tight text-slate-900`}>
+                  {formatAmount(finalAmount, sic.currency)}
+                </p>
+              </div>
+            )}
+            {sic.is_service && (
+              <div>
+                <p className={eyebrowClass}>Tipo</p>
+                <Badge tone="violet" size="sm" className="mt-1.5">
+                  Servicio
+                </Badge>
+              </div>
+            )}
+            {showAmount && (isCurrentAccount || isDirect) && (
               <div className="min-w-0">
                 <p className={eyebrowClass}>Proveedor</p>
                 <p className="mt-1.5 text-base font-medium text-slate-800 [overflow-wrap:anywhere]">{provider?.name ?? "-"}</p>

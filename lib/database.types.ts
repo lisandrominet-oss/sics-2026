@@ -492,6 +492,47 @@ export type Database = {
           },
         ]
       }
+      item_catalog: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          last_used_at: string | null
+          name: string
+          name_norm: string | null
+          uses_count: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_used_at?: string | null
+          name: string
+          name_norm?: string | null
+          uses_count?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_used_at?: string | null
+          name?: string
+          name_norm?: string | null
+          uses_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_catalog_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_reads: {
         Row: {
           profile_id: string
@@ -1075,6 +1116,32 @@ export type Database = {
           },
         ]
       }
+      sic_finance: {
+        Row: {
+          final_amount: number | null
+          sic_id: string
+          updated_at: string
+        }
+        Insert: {
+          final_amount?: number | null
+          sic_id: string
+          updated_at?: string
+        }
+        Update: {
+          final_amount?: number | null
+          sic_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sic_finance_sic_id_fkey"
+            columns: ["sic_id"]
+            isOneToOne: true
+            referencedRelation: "sics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sic_items: {
         Row: {
           created_at: string
@@ -1138,6 +1205,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -1162,6 +1230,7 @@ export type Database = {
           estimated_amount?: number | null
           final_amount?: number | null
           id?: string
+          is_service?: boolean
           needed_by_date?: string | null
           on_behalf_of?: string | null
           parent_sic_id?: string | null
@@ -1186,6 +1255,7 @@ export type Database = {
           estimated_amount?: number | null
           final_amount?: number | null
           id?: string
+          is_service?: boolean
           needed_by_date?: string | null
           on_behalf_of?: string | null
           parent_sic_id?: string | null
@@ -1395,6 +1465,12 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      can_read_sic_file: {
+        Args: { p_file_type: string; p_sic_id: string }
+        Returns: boolean
+      }
+      can_read_sic_file_path: { Args: { p_name: string }; Returns: boolean }
+      can_read_sic_finance: { Args: { p_sic_id: string }; Returns: boolean }
       cancel_sic: {
         Args: { p_note: string; p_sic_id: string }
         Returns: {
@@ -1406,6 +1482,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -1428,6 +1505,49 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      catalog_norm: { Args: { p_text: string }; Returns: string }
+      catalog_register: {
+        Args: { p_count: boolean; p_names: string[] }
+        Returns: undefined
+      }
+      catalog_save: {
+        Args: { p_id: string; p_name: string }
+        Returns: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          last_used_at: string | null
+          name: string
+          name_norm: string | null
+          uses_count: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "item_catalog"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      catalog_set_active: {
+        Args: { p_active: boolean; p_id: string }
+        Returns: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          last_used_at: string | null
+          name: string
+          name_norm: string | null
+          uses_count: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "item_catalog"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       classify_sic_current_account: {
         Args: { p_note?: string; p_provider_id: string; p_sic_id: string }
         Returns: {
@@ -1439,6 +1559,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -1477,6 +1598,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -1510,6 +1632,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -1547,6 +1670,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -1629,6 +1753,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -1667,6 +1792,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -1726,8 +1852,14 @@ export type Database = {
         Args: { p_plant_id: string }
         Returns: boolean
       }
+      is_jefe_of_plant: { Args: { p_plant_id: string }; Returns: boolean }
       issue_po: {
-        Args: { p_note?: string; p_po_number?: string; p_sic_id: string }
+        Args: {
+          p_is_service?: boolean
+          p_note?: string
+          p_po_number?: string
+          p_sic_id: string
+        }
         Returns: {
           code: string
           created_at: string
@@ -1737,6 +1869,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -1774,6 +1907,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -1843,6 +1977,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -1982,6 +2117,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -2015,6 +2151,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -2074,6 +2211,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -2186,6 +2324,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -2219,6 +2358,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null
@@ -2362,6 +2502,7 @@ export type Database = {
           estimated_amount: number | null
           final_amount: number | null
           id: string
+          is_service: boolean
           needed_by_date: string | null
           on_behalf_of: string | null
           parent_sic_id: string | null

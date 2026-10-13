@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { SORT_OPTIONS } from "@/lib/constants";
+import { sortOptionsFor, type UserRole } from "@/lib/constants";
 import { startNavProgress } from "@/lib/navProgress";
 import { IconSearch } from "@/components/icons";
 import Button from "@/components/ui/Button";
@@ -11,10 +11,12 @@ export default function DashboardControls({
   defaultQuery,
   sort,
   dir,
+  role,
 }: {
   defaultQuery: string;
   sort: string;
   dir: "asc" | "desc";
+  role: UserRole;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -76,7 +78,7 @@ export default function DashboardControls({
         onChange={(e) => pushParams({ sort: e.target.value })}
         className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
       >
-        {SORT_OPTIONS.map((opt) => (
+        {sortOptionsFor(role).map((opt) => (
           <option key={opt.value} value={opt.value}>
             Ordenar por: {opt.label}
           </option>

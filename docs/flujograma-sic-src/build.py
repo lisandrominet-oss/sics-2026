@@ -6,7 +6,7 @@ W, H = 2950, 2020
 FONT = "-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 LANES = [  # nombre, líneas, y0, y1, tinte de carril, borde
-    ("EMISOR", ["Operativo,", "Pañol o jefe"], 120, 380, "#EEF3FA", "#5B7BA6"),
+    ("EMISOR", ["Operativo", "o jefe"], 120, 380, "#EEF3FA", "#5B7BA6"),
     ("JEFE DE ÁREA", ["Aprueba lo de", "su equipo"], 380, 640, "#F1EEF8", "#7B6BA8"),
     ("COMPRAS", ["Revisa, cotiza,", "emite y cierra"], 640, 1250, "#EAF5EF", "#4E8E75"),
     ("GERENCIA", ["Aprueba si se", "supera el tope"], 1250, 1480, "#F8F1E6", "#A98756"),
@@ -39,7 +39,7 @@ def tag(kind, x, y, text, w=None):
     tags.append(dict(kind=kind, x=x, y=y, text=text, w=w or int(len(text) * 16 * 0.53 + 46)))
 
 # ---------------------------------------------------------------- nodos
-node("N1", "emisor", 350, 250, 310, 104, "Emisión de la SIC", "Operativo, Pañol o jefe", "Pendiente jefe · Enviada")
+node("N1", "emisor", 350, 250, 310, 104, "Emisión de la SIC", "Operativo o jefe", "Pendiente jefe · Enviada")
 node("D2", "jefe", 700, 500, 260, 104, "Decisión del jefe", "Jefe del área", "Pendiente del jefe", "decision")
 node("FJ", "jefe", 700, 618, 300, 44, "Rechazada por el jefe", None, None, "final_neg")
 node("D3", "compras", 980, 900, 270, 104, "Revisión de Compras", "Compras", "Enviada", "decision")
@@ -53,14 +53,15 @@ node("APR", "compras", 2260, 930, 150, 50, "Aprobada", None, None, "chip")
 node("G", "gerencia", 1960, 1365, 310, 104, "Decisión de Gerencia", "Gerencia", "Pendiente Gerencia", "decision")
 node("FG", "gerencia", 1560, 1365, 320, 46, "Rechazada por Gerencia", None, None, "final_neg")
 node("OC", "compras", 2530, 930, 250, 104, "Orden de compra", "Compras", "Orden emitida")
-node("REC", "panol", 2640, 1590, 250, 104, "Recepción", "Pañol (todas las áreas)", "Recibida")
+node("REC", "panol", 2640, 1590, 250, 104, "Recepción", "Pañol (bienes)", "Recibida")
+node("RECC", "compras", 2790, 1150, 180, 90, "Recepción", "Compras", "Recibida")
 node("CIE", "compras", 2810, 770, 240, 110, "Cierre", "Compras", "Cerrada")
 node("FCER", "compras", 2810, 670, 160, 46, "Cerrada", None, None, "final_ok")
 node("PEND", "compras", 2490, 770, 300, 84, "Liquidación mensual", "Cuenta corriente", "Pendiente de desarrollo", "pending")
 
 # ---------------------------------------------------------------- flechas
 S = side
-edge([S("N1", "r"), (700, 250), S("D2", "t")])                                   # operativo/pañol -> jefe
+edge([S("N1", "r"), (700, 250), S("D2", "t")])                                   # operativo -> jefe
 edge([S("N1", "l"), (172, 250), (172, 900), S("D3", "l")], "alt")                # salta al jefe
 edge([S("D2", "r"), (1000, 500), (1000, 848)], "main")                           # jefe aprueba -> compras
 edge([S("D2", "l"), (330, 500), (330, 302)], "loop")                             # corrección jefe -> emisor
@@ -82,12 +83,14 @@ edge([S("G", "l"), S("FG", "r")], "alt")                                        
 edge([S("CC", "b"), (1330, 1440), (2260, 1440), (2260, 955)], "main")            # cta cte -> aprobada
 edge([S("APR", "r"), S("OC", "l")], "main")
 edge([(2640, 982), S("REC", "t")], "main")                                       # OC -> recepción (sale por la base de OC)
-edge([S("REC", "r"), (2810, 1590), S("CIE", "b")], "main")                       # recepción -> cierre
+edge([S("REC", "r"), (2915, 1590), (2915, 825)], "main")                         # recepción Pañol -> cierre
+edge([(2640, 1150), S("RECC", "l")], "alt")                                      # OC -> recepción por Compras (servicio o si Pañol no recibe)
+edge([S("RECC", "t"), (2790, 825)], "main")                                      # recepción Compras -> cierre
 edge([S("CIE", "t"), S("FCER", "b")], "main")
 edge([S("CIE", "l"), S("PEND", "r")], "pend")
 
 # ---------------------------------------------------------------- rótulos
-label(590, 250, "Operativo o Pañol")
+label(590, 250, "Operativo")
 label(500, 900, "Si emite jefe, Compras o Gerencia: salta al jefe")
 label(915, 500, "Aprueba")
 label(450, 500, "Pide corrección")
@@ -103,13 +106,15 @@ label(1960, 1150, "Sí: supera el tope")
 label(2188, 1365, "Aprueba")
 label(1762, 1338, "Rechaza")
 label(1700, 1440, "Cuenta corriente: sin tope")
+label(2520, 1150, "Servicio o sin Pañol")
 
 # ---------------------------------------------------------------- capas
 # archivos
 tag("files", 345, 312, "Referencia por artículo (opcional)")
 tag("files", 1215, 800, "Cotizaciones y comparación (opc.)")
 tag("files", 2405, 990, "Orden de compra (opc.)")
-tag("files", 2420, 1650, "Remito obligatorio · factura (opc.)")
+tag("files", 2420, 1650, "Remito o conformidad (obligatorio)")
+tag("files", 2665, 1200, "Remito · factura (opc.)")
 tag("files", 2500, 834, "Factura (cta. cte.: el monto)")
 # notificaciones
 tag("notif", 345, 344, "Avisa al operativo (corrección)")
@@ -119,7 +124,7 @@ tag("notif", 1215, 830, "Avisa a Compras")
 tag("notif", 1545, 315, "Avisa a quien emitió")
 tag("notif", 1690, 1282, "Avisa a Gerencia")
 tag("notif", 2185, 865, "Avisa a Compras")
-tag("notif", 2405, 1022, "Avisa a Pañol")
+tag("notif", 2405, 1022, "Avisa a quien recibe")
 tag("notif", 2235, 1576, "Avisa a Compras al recibir")
 # reglas
 tag("rules", 1215, 990, "Monto obligatorio · proveedor opcional")
@@ -253,10 +258,10 @@ def render_bottom():
     o.append(f'<rect x="{vx}" y="{y}" width="980" height="268" rx="14" fill="#FFFFFF" stroke="#C9D0D6" stroke-width="1.6"/>')
     o.append(f'<text x="{vx+24}" y="{y+36}" font-size="20" font-weight="700" fill="#1B2631">Quién ve la SIC</text>')
     vis = [
-      ("Operativo", "Las suyas y todas las de su área (solo lectura de las ajenas)."),
-      ("Jefe de área", "Todas las de su área, en cualquier estado."),
-      ("Pañol", "Todas las SIC de todas las áreas; recibe para cualquier área."),
-      ("Compras y Gerencia", "Todas las SIC de la empresa."),
+      ("Operativo", "Las de su área, sin montos. Ve cotización y monto de la suya al validarla."),
+      ("Jefe de área", "Todas las de su área, en cualquier estado, con montos."),
+      ("Pañol", "Solo recibe: bienes con orden emitida en adelante, sin montos ni cotizaciones."),
+      ("Compras y Gerencia", "Todas las SIC de la empresa, con montos y cotizaciones."),
       ("Administrador", "Todo, además de la configuración del sistema."),
     ]
     for i, (who, what) in enumerate(vis):
@@ -269,8 +274,8 @@ def render_bottom():
     rules = [
       "Quien emitió la SIC puede anularla hasta que Compras la acepta.",
       "Compras puede anularla en cualquier momento, salvo si ya está cerrada.",
-      "La anulación y los rechazos exigen un motivo, que queda en el historial.",
-      "El rechazo es definitivo; para seguir, se emite una SIC nueva.",
+      "Anulación y rechazos exigen motivo; el rechazo es definitivo (se emite otra SIC).",
+      "Servicio: Compras lo marca al emitir la orden y es quien lo recibe (no pasa por Pañol).",
       "Compra directa o cuenta corriente: Compras puede volver a compra normal hasta emitir la orden.",
       "Certificados de calidad: Compras los sube al llegar, incluso con la SIC cerrada.",
     ]

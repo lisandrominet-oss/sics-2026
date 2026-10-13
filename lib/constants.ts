@@ -61,7 +61,16 @@ export const TERMINAL_STATUSES: SicStatus[] = ["cerrada", "anulada"];
 
 export const COMPRAS_EXPORTABLE_STATUSES: SicStatus[] = ["enviada", "en_observacion", "cotizando"];
 
-export const CAN_CREATE_SIC: UserRole[] = ["operativo", "panol", "area", "gerencia", "compras", "admin"];
+// Pañol es solo recepción: los pedidos los emite el operativo de taller.
+export const CAN_CREATE_SIC: UserRole[] = ["operativo", "area", "gerencia", "compras", "admin"];
+
+// Quién ve montos en el tablero y el detalle. Operativo y Pañol no: el operativo solo ve cotización y monto
+// de su propia SIC mientras la valida técnicamente (lo decide la base con RLS; la UI muestra lo que llegue).
+export const CAN_SEE_AMOUNTS: UserRole[] = ["admin", "gerencia", "compras", "area"];
+
+export function sortOptionsFor(role: UserRole) {
+  return CAN_SEE_AMOUNTS.includes(role) ? SORT_OPTIONS : SORT_OPTIONS.filter((o) => o.value !== "final_amount");
+}
 
 // Roles que Gerencia puede asignar al gestionar usuarios (todos menos administrador).
 export const STAFF_ASSIGNABLE_ROLES: UserRole[] = ["operativo", "area", "compras", "gerencia", "panol"];

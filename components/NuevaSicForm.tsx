@@ -18,11 +18,13 @@ export default function NuevaSicForm({
   projects,
   defaultPlantId,
   canPickPlant,
+  catalog,
 }: {
   plants: Plant[];
   projects: Project[];
   defaultPlantId: string | null;
   canPickPlant: boolean;
+  catalog: string[];
 }) {
   const router = useRouter();
   // Si el usuario no tiene una planta asignada en su perfil, no hay nada a lo que
@@ -235,7 +237,7 @@ export default function NuevaSicForm({
       <div>
         <label className="block text-sm font-medium text-slate-700">Artículos solicitados</label>
         <div className="mt-2">
-          <ItemsEditor items={items} onChange={setItems} />
+          <ItemsEditor items={items} onChange={setItems} catalog={catalog} />
         </div>
       </div>
 

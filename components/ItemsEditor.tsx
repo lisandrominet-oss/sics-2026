@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { inputClass, eyebrowClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
+import ArticleCombobox from "@/components/ui/ArticleCombobox";
 import { MAX_SIC_ITEMS } from "@/lib/constants";
 
 export type ItemDraft = {
@@ -31,9 +32,12 @@ export const EMPTY_ITEM: ItemDraft = {
 export default function ItemsEditor({
   items,
   onChange,
+  catalog = [],
 }: {
   items: ItemDraft[];
   onChange: (items: ItemDraft[]) => void;
+  /** Nombres del catálogo de artículos, los más usados primero. Sin catálogo el campo es texto libre. */
+  catalog?: string[];
 }) {
   // Clave estable por tarjeta: con `key={index}`, al quitar un artículo el <input type="file"> (no controlado)
   // conservaba el archivo de la posición y la pantalla mostraba uno distinto del que se subía.
@@ -81,12 +85,12 @@ export default function ItemsEditor({
           <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="sm:col-span-2">
               <label className="block text-xs font-medium text-slate-700">Artículo</label>
-              <input
+              <ArticleCombobox
                 value={item.description}
-                onChange={(e) => updateItem(index, { description: e.target.value })}
+                onChange={(description) => updateItem(index, { description })}
+                catalog={catalog}
                 required
                 placeholder="Ej: Rodamiento 6205-2RS"
-                className={inputClass}
               />
             </div>
             <div>

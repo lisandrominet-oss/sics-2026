@@ -64,11 +64,13 @@ export default function SicActions({
   role,
   isRequester,
   isAreaBoss,
+  catalog,
   existingFiles,
   editData,
   projects,
   purchaseType,
   finalAmount: savedAmount,
+  isService,
   currentAccountProviders,
   allProviders,
 }: {
@@ -77,11 +79,13 @@ export default function SicActions({
   role: UserRole;
   isRequester: boolean;
   isAreaBoss: boolean;
+  catalog: string[];
   existingFiles: SicFile[];
   editData: EditData;
   projects: { id: string; name: string }[];
   purchaseType: "normal" | "cuenta_corriente" | "directa";
   finalAmount: number | null;
+  isService: boolean;
   currentAccountProviders: { id: string; name: string }[];
   allProviders: { id: string; name: string }[];
 }) {
@@ -90,6 +94,7 @@ export default function SicActions({
   const [note, setNote] = useState("");
   const [finalAmount, setFinalAmount] = useState("");
   const [poNumber, setPoNumber] = useState("");
+  const [poIsService, setPoIsService] = useState(false);
   const [ccProviderId, setCcProviderId] = useState("");
   const [directAmount, setDirectAmount] = useState("");
   const [directProviderId, setDirectProviderId] = useState("");
@@ -146,13 +151,15 @@ export default function SicActions({
 
   const supabase = createClient();
   const NoteBox = (
-    <textarea
-      value={note}
-      onChange={(e) => setNote(e.target.value)}
-      placeholder="Comentario (opcional)"
-      rows={2}
-      className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-    />
+    <>
+      <textarea
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder={isCompras ? "Comentario (opcional). No escribas montos ni proveedores: el recorrido lo ve el taller." : "Comentario (opcional)"}
+        rows={2}
+        className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+      />
+    </>
   );
 
   // Compras/admin anulan en cualquier estado no terminal; quien emitió la SIC, solo antes de que Compras la acepte.
@@ -343,7 +350,7 @@ export default function SicActions({
   }
 
   if (status === "en_observacion" && (role === "admin" || isRequester)) {
-    return <ObservacionEditor sicId={sicId} editData={editData} projects={projects} onDone={() => { notify.success("SIC corregida y reenviada"); router.refresh(); }} />;
+    return <ObservacionEditor sicId={sicId} editData={editData} projects={projects} catalog={catalog} onDone={() => { notify.success("SIC corregida y reenviada"); router.refresh(); }} />;
   }
 
   if (status === "cotizando" && ["compras", "admin"].includes(role)) {
@@ -444,9 +451,35 @@ export default function SicActions({
           onChange={(e) => setPoNumber(e.target.value)}
           className={inputClass}
         />
+        <label className="mt-3 flex items-start gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={poIsService}
+            onChange={(e) => setPoIsService(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600"
+          />
+          <span>
+            Es un servicio
+            <span className="block text-xs text-slate-500">
+              No pasa por Pañol: la recepción la registra Compras con el remito o la conformidad.
+            </span>
+          </span>
+        </label>
         {NoteBox}
         <div className="mt-3 flex flex-wrap gap-2">
-          <Btn onClick={() => run(() => supabase.rpc("issue_po", { p_sic_id: sicId, p_po_number: poNumber || null, p_note: note || null }))} loading={loading}>
+          <Btn
+            onClick={() =>
+              run(() =>
+                supabase.rpc("issue_po", {
+                  p_sic_id: sicId,
+                  p_po_number: poNumber || null,
+                  p_note: note || null,
+                  p_is_service: poIsService,
+                })
+              )
+            }
+            loading={loading}
+          >
             Emitir orden de compra
           </Btn>
           {(isCurrentAccount || isDirect) && (
@@ -463,14 +496,16 @@ export default function SicActions({
     );
   }
 
-  if (status === "orden_emitida" && ["panol", "admin"].includes(role)) {
+  // Pañol recibe la mercadería; Compras puede recibir cualquier compra y es quien recibe los servicios.
+  if (status === "orden_emitida" && (role === "compras" || role === "admin" || (role === "panol" && !isService))) {
     return (
       <RecepcionEditor
         sicId={sicId}
         items={editData.items}
+        isService={isService}
         remitoFiles={existingFiles.filter((f) => f.file_type === "remito")}
-        facturaFiles={existingFiles.filter((f) => f.file_type === "factura")}
         onUploadRemito={(f) => run(() => uploadFile(f, "remito").then(() => ({ error: null })))}
+        facturaFiles={isCompras ? existingFiles.filter((f) => f.file_type === "factura") : undefined}
         onUploadFactura={(f) => run(() => uploadFile(f, "factura").then(() => ({ error: null })))}
         onDeleteFile={(f) => run(() => deleteFile(f))}
         onDone={() => { notify.success("Recepción registrada"); router.refresh(); }}
@@ -630,18 +665,21 @@ function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void })
 function RecepcionEditor({
   sicId,
   items,
+  isService,
   remitoFiles,
-  facturaFiles,
   onUploadRemito,
+  facturaFiles,
   onUploadFactura,
   onDeleteFile,
   onDone,
 }: {
   sicId: string;
   items: EditItem[];
+  isService: boolean;
   remitoFiles: SicFile[];
-  facturaFiles: SicFile[];
   onUploadRemito: (file: File) => void;
+  // Solo Compras/admin: Pañol no ve ni sube facturas.
+  facturaFiles?: SicFile[];
   onUploadFactura: (file: File) => void;
   onDeleteFile: (file: SicFile) => void;
   onDone: () => void;
@@ -673,22 +711,29 @@ function RecepcionEditor({
   }
 
   return (
-    <ActionCard title="Recepción de mercadería">
+    <ActionCard title={isService ? "Recepción del servicio" : "Recepción de mercadería"}>
       <MultiFileRow
-        label="Remitos (obligatorio al menos uno)"
+        label={isService ? "Remito o conformidad del servicio (obligatorio al menos uno)" : "Remitos (obligatorio al menos uno)"}
         files={remitoFiles}
         onUpload={onUploadRemito}
         onDelete={onDeleteFile}
       />
-      <div className="mt-2">
-        <MultiFileRow
-          label="Facturas (opcional en este paso)"
-          files={facturaFiles}
-          onUpload={onUploadFactura}
-          onDelete={onDeleteFile}
-        />
-      </div>
+      {facturaFiles && (
+        <div className="mt-2">
+          <MultiFileRow
+            label="Facturas (opcional en este paso)"
+            files={facturaFiles}
+            onUpload={onUploadFactura}
+            onDelete={onDeleteFile}
+          />
+        </div>
+      )}
 
+      {isService ? (
+        <p className="mt-4 text-sm text-slate-600">
+          Al registrar la recepción, el servicio se da por recibido completo: no hace falta cargar cantidades.
+        </p>
+      ) : (
       <div className="mt-4 space-y-2">
         <p className={eyebrowClass}>Cantidad recibida ahora, por artículo</p>
         {items.map((it) => {
@@ -715,6 +760,7 @@ function RecepcionEditor({
           );
         })}
       </div>
+      )}
 
       <textarea
         value={note}
@@ -726,16 +772,20 @@ function RecepcionEditor({
 
       <div className="mt-3">
         <Btn onClick={handleSubmit} loading={loading} disabled={remitoFiles.length === 0}>
-          Registrar recepción
+          {isService ? "Registrar servicio recibido" : "Marcar como recibida"}
         </Btn>
       </div>
       {remitoFiles.length === 0 && (
-        <p className="mt-2 text-xs text-amber-600">Subí al menos un remito antes de registrar la recepción.</p>
+        <p className="mt-2 text-xs text-amber-600">
+          {isService ? "Subí el remito o la conformidad antes de registrar la recepción." : "Subí al menos un remito antes de registrar la recepción."}
+        </p>
       )}
-      <p className="mt-2 text-xs text-slate-400">
-        Si llega menos de lo pedido, dejá cargada solo la cantidad que llegó ahora — la SIC queda abierta hasta
-        recibir el resto.
-      </p>
+      {!isService && (
+        <p className="mt-2 text-xs text-slate-400">
+          Si llega menos de lo pedido, dejá cargada solo la cantidad que llegó ahora — la SIC queda abierta hasta
+          recibir el resto.
+        </p>
+      )}
     </ActionCard>
   );
 }
@@ -744,11 +794,13 @@ function ObservacionEditor({
   sicId,
   editData,
   projects,
+  catalog,
   onDone,
 }: {
   sicId: string;
   editData: EditData;
   projects: { id: string; name: string }[];
+  catalog: string[];
   onDone: () => void;
 }) {
   const [subject, setSubject] = useState(editData.subject);
@@ -894,7 +946,7 @@ function ObservacionEditor({
       )}
 
       <div className="mt-4">
-        <ItemsEditor items={items} onChange={setItems} />
+        <ItemsEditor items={items} onChange={setItems} catalog={catalog} />
       </div>
 
       <div className="mt-4">

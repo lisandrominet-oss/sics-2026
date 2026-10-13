@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import { downloadSicsXlsx, type SicExportRow } from "@/lib/exportSics";
 import {
   CAN_CREATE_SIC,
+  CAN_SEE_AMOUNTS,
   COMPRAS_EXPORTABLE_STATUSES,
   formatAmount,
   formatDate,
@@ -26,8 +27,8 @@ export type SicRow = {
   subject: string;
   status: SicStatus;
   currency: "ARS" | "USD";
-  final_amount: number | null;
-  estimated_amount: number | null;
+  // Solo llega para quien puede ver montos (ver CAN_SEE_AMOUNTS); para el resto la consulta ni lo pide.
+  finance?: { final_amount: number | null } | null;
   updated_at: string;
   needed_by_date: string | null;
   department: string | null;
@@ -42,6 +43,7 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState(false);
   const canExport = role === "compras" || role === "admin";
+  const showAmount = CAN_SEE_AMOUNTS.includes(role);
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -162,8 +164,9 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                   )}
                   {/* En pantallas angostas el monto y la fecha pasan debajo (a la derecha no entran). */}
                   <p className="text-xs tabular-nums text-slate-500 sm:hidden">
-                    {formatAmount(sic.final_amount ?? sic.estimated_amount, sic.currency)}
-                    {sic.needed_by_date ? ` · Necesaria: ${formatSqlDate(sic.needed_by_date)}` : ""}
+                    {showAmount && formatAmount(sic.finance?.final_amount ?? null, sic.currency)}
+                    {showAmount && sic.needed_by_date ? " · " : ""}
+                    {sic.needed_by_date ? `Necesaria: ${formatSqlDate(sic.needed_by_date)}` : ""}
                   </p>
                 </div>
               </div>
@@ -171,9 +174,11 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                 <span className="hidden text-xs text-slate-400 lg:block">
                   {sic.needed_by_date ? `Necesaria: ${formatSqlDate(sic.needed_by_date)}` : ""}
                 </span>
-                <span className="hidden text-sm text-slate-500 sm:block">
-                  {formatAmount(sic.final_amount ?? sic.estimated_amount, sic.currency)}
-                </span>
+                {showAmount && (
+                  <span className="hidden text-sm text-slate-500 sm:block">
+                    {formatAmount(sic.finance?.final_amount ?? null, sic.currency)}
+                  </span>
+                )}
                 <span className="hidden text-xs text-slate-400 md:block">{formatDate(sic.updated_at)}</span>
                 <StatusBadge status={sic.status} />
                 {/* pointer-events-none: al moverse en hover (transform) el span queda sobre el link de la fila y se comería el clic. */}

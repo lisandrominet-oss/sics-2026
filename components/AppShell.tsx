@@ -199,6 +199,7 @@ export default function AppShell({
                 Compras
               </p>
               <NavLink href="/proveedores" label="Proveedores" icon={<IconTruck />} />
+              <NavLink href="/catalogo" label="Catálogo" icon={<IconPackage />} />
               <NavLink href="/contratos" label="Contratos" icon={<IconFileText />} />
             </>
           )}

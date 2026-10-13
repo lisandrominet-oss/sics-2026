@@ -12,7 +12,7 @@ import Card from "@/components/ui/Card";
 import { buttonClass } from "@/components/ui/Button";
 import { IconPlusCircle } from "@/components/icons";
 import { eyebrowClass, numClass } from "@/lib/ui";
-import { CAN_CREATE_SIC, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
+import { CAN_CREATE_SIC, CAN_SEE_AMOUNTS, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
 import { PENDING_STATUSES_BY_ROLE, applyPendingFilter, getPendingSicsCount } from "@/lib/pendingSics";
 
 // Tope de filas del Tablero; si se alcanza, se avisa debajo de la lista.
@@ -32,13 +32,16 @@ export default async function DashboardPage({
   const canSeeCerts = role === "compras" || role === "admin";
   const showPending = searchParams.filter === "mia";
   const isAreaRole = role === "area" || role === "operativo";
-  const canHaveOwn = isAreaRole || role === "panol";
+  const canHaveOwn = isAreaRole;
+  const showAmounts = CAN_SEE_AMOUNTS.includes(role);
   const showMine = searchParams.filter === "mias" && canHaveOwn;
   const showPendingCerts = searchParams.filter === "certificados" && canSeeCerts;
   const pendingStatuses = PENDING_STATUSES_BY_ROLE[role] ?? [];
 
   const searchQuery = (searchParams.q ?? "").trim();
-  const sortColumn = SORT_COLUMNS.has(searchParams.sort ?? "") ? searchParams.sort! : "updated_at";
+  // Quien no ve montos no puede ordenar por monto (ni siquiera por URL): el orden revelaría los importes.
+  const requestedSort = SORT_COLUMNS.has(searchParams.sort ?? "") ? searchParams.sort! : "updated_at";
+  const sortColumn = requestedSort === "final_amount" && !showAmounts ? "updated_at" : requestedSort;
   const sortDir: "asc" | "desc" = searchParams.dir === "asc" ? "asc" : "desc";
 
   const { data: certRows } = canSeeCerts
@@ -46,12 +49,17 @@ export default async function DashboardPage({
     : { data: [] as { sic_id: string }[] | null };
   const certSicIds = Array.from(new Set((certRows ?? []).map((r) => r.sic_id)));
 
+  // El monto vive en sic_finance (con RLS por rol); solo se pide a quien puede verlo.
+  const financeEmbed = showAmounts ? ", finance:sic_finance(final_amount)" : "";
   let query = supabase
     .from("sics")
     .select(
-      "id, code, subject, status, currency, final_amount, estimated_amount, created_at, updated_at, needed_by_date, department, requester_id, on_behalf_of, purchase_type, plants(name, prefix), project:projects(name), requester:profiles!sics_requester_id_fkey(full_name, email)"
+      `id, code, subject, status, currency, created_at, updated_at, needed_by_date, department, requester_id, on_behalf_of, purchase_type, plants(name, prefix), project:projects(name), requester:profiles!sics_requester_id_fkey(full_name, email)${financeEmbed}`
     )
-    .order(sortColumn, { ascending: sortDir === "asc", nullsFirst: false });
+    .order(sortColumn === "final_amount" ? "finance(final_amount)" : sortColumn, {
+      ascending: sortDir === "asc",
+      nullsFirst: false,
+    });
 
   if (showPending && pendingStatuses.length > 0) {
     query = applyPendingFilter(query, role, profile.id);
@@ -139,7 +147,7 @@ export default async function DashboardPage({
           </div>
         }
       >
-        <DashboardControls defaultQuery={searchQuery} sort={sortColumn} dir={sortDir} />
+        <DashboardControls defaultQuery={searchQuery} sort={sortColumn} dir={sortDir} role={role} />
       </Suspense>
 
       {error && <p role="alert" className="animate-shake mt-4 text-sm text-red-600">{error.message}</p>}

@@ -12,9 +12,11 @@ export default async function NuevaSicPage() {
   if (!CAN_CREATE_SIC.includes(role)) redirect("/dashboard");
 
   const supabase = createClient();
-  const [{ data: plants }, { data: projects }] = await Promise.all([
+  const [{ data: plants }, { data: projects }, { data: catalog }] = await Promise.all([
     supabase.from("plants").select("id, name, prefix").eq("active", true).order("name"),
     supabase.from("projects").select("id, name").eq("active", true).order("name"),
+    // Sugerencias del campo Artículo: los más pedidos primero. Si el catálogo supera los mil, pasar a búsqueda en servidor.
+    supabase.from("item_catalog").select("name").eq("active", true).order("uses_count", { ascending: false }).order("name").limit(1000),
   ]);
 
   const canPickPlant = role === "compras" || role === "admin";
@@ -35,6 +37,7 @@ export default async function NuevaSicPage() {
           projects={projects ?? []}
           defaultPlantId={profile.plant_id}
           canPickPlant={canPickPlant}
+          catalog={(catalog ?? []).map((c) => c.name)}
         />
       </div>
     </div>

@@ -5,9 +5,10 @@ import type { SicStatus, UserRole } from "@/lib/constants";
 // Estados que esperan una acción de cada rol. Para "area" (jefe) y "operativo" se complementa con
 // lo que ya es suyo (ver applyPendingFilter): el jefe también ve lo que espera su aprobación.
 export const PENDING_STATUSES_BY_ROLE: Partial<Record<UserRole, SicStatus[]>> = {
-  compras: ["enviada", "cotizando", "aprobada", "recibida"],
+  // orden_emitida: Compras recibe los servicios y también los bienes si Pañol no los recibe.
+  compras: ["enviada", "cotizando", "aprobada", "recibida", "orden_emitida"],
   gerencia: ["pendiente_aprobacion_gerencia"],
-  panol: ["orden_emitida", "pendiente_validacion_tecnica", "en_observacion"],
+  panol: ["orden_emitida"],
   area: ["pendiente_aprobacion_jefe", "pendiente_validacion_tecnica", "en_observacion"],
   operativo: ["pendiente_validacion_tecnica", "en_observacion"],
 };
@@ -24,10 +25,12 @@ export function applyPendingFilter<Q extends { in: any; eq: any; or: any }>(quer
     );
   }
   if (role === "panol") {
-    // Pañol: órdenes que esperan recepción + lo suyo propio como solicitante.
-    return query.or(
-      `status.eq.orden_emitida,and(requester_id.eq.${profileId},status.in.(pendiente_validacion_tecnica,en_observacion))`
-    );
+    // Pañol: solo bienes con orden emitida que esperan recepción (no emite SIC).
+    return query.eq("status", "orden_emitida").eq("is_service", false);
+  }
+  if (role === "compras") {
+    // Compras: su circuito + toda orden emitida (recibe los servicios y puede recibir los bienes si Pañol no lo hace).
+    return query.in("status", statuses);
   }
   if (role === "operativo") {
     return query.eq("requester_id", profileId).in("status", statuses);
