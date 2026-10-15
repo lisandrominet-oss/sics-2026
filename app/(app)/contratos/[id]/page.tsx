@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import ContractDetail from "@/components/ContractDetail";
 import { IconArrowLeft } from "@/components/icons";
-import { effectiveRole } from "@/lib/constants";
+import { hasModule } from "@/lib/modules";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -12,8 +12,7 @@ export const revalidate = 0;
 export default async function ContratoDetailPage({ params }: { params: { id: string } }) {
   const profile = await getCurrentProfile();
   if (!profile || !profile.role) redirect("/login");
-  const role = effectiveRole(profile)!;
-  if (role !== "compras" && role !== "admin") redirect("/dashboard");
+  if (!hasModule(profile, "contratos")) redirect("/dashboard");
 
   const supabase = createClient();
 

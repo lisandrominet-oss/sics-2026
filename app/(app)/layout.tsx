@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { effectiveRole } from "@/lib/constants";
+import { enabledModules } from "@/lib/modules";
 import AppShell from "@/components/AppShell";
 
 // Menú y marco compartidos por todas las pantallas con sesión: el menú queda montado al navegar
@@ -14,6 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <AppShell
       role={role}
+      modules={enabledModules(profile)}
       realRole={profile.role}
       userId={profile.id}
       actingAsRole={profile.acting_as_role}

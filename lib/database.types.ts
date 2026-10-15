@@ -595,6 +595,7 @@ export type Database = {
           acting_as_role: Database["public"]["Enums"]["user_role"] | null
           active: boolean
           avatar_path: string | null
+          module_overrides: Json
           created_at: string
           department: string | null
           email: string
@@ -607,6 +608,7 @@ export type Database = {
           acting_as_role?: Database["public"]["Enums"]["user_role"] | null
           active?: boolean
           avatar_path?: string | null
+          module_overrides?: Json
           created_at?: string
           department?: string | null
           email: string
@@ -619,6 +621,7 @@ export type Database = {
           acting_as_role?: Database["public"]["Enums"]["user_role"] | null
           active?: boolean
           avatar_path?: string | null
+          module_overrides?: Json
           created_at?: string
           department?: string | null
           email?: string
@@ -1852,6 +1855,10 @@ export type Database = {
         Args: { p_plant_id: string }
         Returns: boolean
       }
+      has_module: {
+        Args: { p_effective?: boolean; p_module: string }
+        Returns: boolean
+      }
       is_jefe_of_plant: { Args: { p_plant_id: string }; Returns: boolean }
       issue_po: {
         Args: {
@@ -1929,6 +1936,13 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      module_default: {
+        Args: {
+          p_module: string
+          p_role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
       }
       my_plant_id: { Args: never; Returns: string }
       my_role: {
@@ -2260,6 +2274,28 @@ export type Database = {
         }
       }
       staff_delete_user_access: { Args: { p_id: string }; Returns: undefined }
+      staff_set_user_modules: {
+        Args: { p_overrides: Json; p_profile_id: string }
+        Returns: {
+          acting_as_role: Database["public"]["Enums"]["user_role"] | null
+          active: boolean
+          avatar_path: string | null
+          created_at: string
+          department: string | null
+          email: string
+          full_name: string | null
+          id: string
+          module_overrides: Json
+          plant_id: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       staff_update_user: {
         Args: {
           p_active: boolean
@@ -2272,6 +2308,7 @@ export type Database = {
           acting_as_role: Database["public"]["Enums"]["user_role"] | null
           active: boolean
           avatar_path: string | null
+          module_overrides: Json
           created_at: string
           department: string | null
           email: string

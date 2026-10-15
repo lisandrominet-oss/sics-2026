@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/database.types";
+import { hasModule, moduleForPath } from "@/lib/modules";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 
 const PUBLIC_PATHS = ["/login", "/auth/callback"];
@@ -87,6 +88,14 @@ export async function middleware(request: NextRequest) {
     // Cuenta el rol efectivo: un admin "viendo como" otro rol no accede a /admin.
     const effectiveRole = profile?.role === "admin" && profile.acting_as_role ? profile.acting_as_role : profile?.role;
     if (hasRole && path.startsWith("/admin") && effectiveRole !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+    // Módulos habilitados por usuario (rol + ajustes). Las páginas lo vuelven a validar y la base manda.
+    const requiredModule = moduleForPath(path);
+    if (hasRole && profile && requiredModule && !hasModule(profile, requiredModule)) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);

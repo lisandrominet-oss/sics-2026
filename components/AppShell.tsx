@@ -24,7 +24,7 @@ import {
   IconX,
 } from "@/components/icons";
 import { CAN_CREATE_SIC, ROLE_LABELS, type UserRole } from "@/lib/constants";
-import { DEMO_MODULE_ROLES } from "@/lib/modules";
+import type { ModuleKey } from "@/lib/modules";
 import { cn } from "@/lib/cn";
 
 function NavLink({
@@ -57,6 +57,7 @@ function NavLink({
 
 export default function AppShell({
   role,
+  modules,
   realRole,
   userId,
   actingAsRole,
@@ -64,6 +65,8 @@ export default function AppShell({
   children,
 }: {
   role: UserRole;
+  // Módulos habilitados para este usuario (rol + ajustes propios), ya resueltos por el servidor.
+  modules: ModuleKey[];
   realRole: UserRole;
   userId: string;
   actingAsRole: UserRole | null;
@@ -193,25 +196,37 @@ export default function AppShell({
             <NavLink href="/sic/nueva" label="Nueva SIC" icon={<IconPlusCircle />} />
           )}
 
-          {(role === "compras" || role === "admin") && (
+          {(modules.includes("proveedores") || modules.includes("catalogo") || modules.includes("contratos")) && (
             <>
               <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
                 Compras
               </p>
-              <NavLink href="/proveedores" label="Proveedores" icon={<IconTruck />} />
-              <NavLink href="/catalogo" label="Catálogo" icon={<IconPackage />} />
-              <NavLink href="/contratos" label="Contratos" icon={<IconFileText />} />
+              {modules.includes("proveedores") && (
+                <NavLink href="/proveedores" label="Proveedores" icon={<IconTruck />} />
+              )}
+              {modules.includes("catalogo") && (
+                <NavLink href="/catalogo" label="Catálogo" icon={<IconPackage />} />
+              )}
+              {modules.includes("contratos") && (
+                <NavLink href="/contratos" label="Contratos" icon={<IconFileText />} />
+              )}
             </>
           )}
 
-          {(DEMO_MODULE_ROLES as readonly string[]).includes(role) && (
+          {(modules.includes("recursos-humanos") || modules.includes("logistica") || modules.includes("administracion")) && (
             <>
               <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
                 Módulos
               </p>
-              <NavLink href="/modulos/recursos-humanos" label="Recursos Humanos" icon={<IconBadge />} />
-              <NavLink href="/modulos/logistica" label="Logística" icon={<IconPackage />} />
-              <NavLink href="/modulos/administracion" label="Administración" icon={<IconBarChart />} />
+              {modules.includes("recursos-humanos") && (
+                <NavLink href="/modulos/recursos-humanos" label="Recursos Humanos" icon={<IconBadge />} />
+              )}
+              {modules.includes("logistica") && (
+                <NavLink href="/modulos/logistica" label="Logística" icon={<IconPackage />} />
+              )}
+              {modules.includes("administracion") && (
+                <NavLink href="/modulos/administracion" label="Administración" icon={<IconBarChart />} />
+              )}
             </>
           )}
 

@@ -8,6 +8,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { notify } from "@/lib/notify";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import UserModulesButton from "@/components/UserModulesButton";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 import {
   ROLES_REQUIRING_PLANT,
@@ -227,9 +228,24 @@ function UserRow({ user, plants, isSelf }: { user: Profile; plants: Plant[]; isS
         </label>
       </td>
       <td className="px-4 py-3">
-        <Button size="sm" onClick={save} loading={saving}>
-          Guardar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" onClick={save} loading={saving}>
+            Guardar
+          </Button>
+          <UserModulesButton
+            profileId={user.id}
+            fullName={user.full_name}
+            role={user.role}
+            moduleOverrides={user.module_overrides}
+            disabledReason={
+              isSelf
+                ? "No podés cambiar tus propios módulos"
+                : !user.role
+                  ? "Asignale un rol y guardá antes de elegir módulos"
+                  : undefined
+            }
+          />
+        </div>
       </td>
     </tr>
   );

@@ -6,7 +6,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import ContractsList, { type InvoiceLine } from "@/components/ContractsList";
 import { buttonClass } from "@/components/ui/Button";
 import { IconPlusCircle } from "@/components/icons";
-import { effectiveRole } from "@/lib/constants";
+import { hasModule } from "@/lib/modules";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,8 +14,7 @@ export const revalidate = 0;
 export default async function ContratosPage() {
   const profile = await getCurrentProfile();
   if (!profile || !profile.role) redirect("/login");
-  const role = effectiveRole(profile)!;
-  if (role !== "compras" && role !== "admin") redirect("/dashboard");
+  if (!hasModule(profile, "contratos")) redirect("/dashboard");
 
   const supabase = createClient();
 

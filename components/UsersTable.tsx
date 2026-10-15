@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
 import Button from "@/components/ui/Button";
+import UserModulesButton from "@/components/UserModulesButton";
 import { inputCompactClass } from "@/lib/ui";
 import { ROLE_LABELS, type UserRole } from "@/lib/constants";
 import type { Database } from "@/lib/database.types";
@@ -137,9 +138,24 @@ function UserRow({
         />
       </td>
       <td className="px-4 py-3">
-        <Button size="sm" onClick={save} loading={saving}>
-          Guardar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" onClick={save} loading={saving}>
+            Guardar
+          </Button>
+          <UserModulesButton
+            profileId={profile.id}
+            fullName={profile.full_name}
+            role={profile.role}
+            moduleOverrides={profile.module_overrides}
+            disabledReason={
+              profile.role === "admin"
+                ? "Los administradores siempre tienen todos los módulos"
+                : !profile.role
+                  ? "Asignale un rol y guardá antes de elegir módulos"
+                  : undefined
+            }
+          />
+        </div>
       </td>
     </tr>
   );

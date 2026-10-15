@@ -5,6 +5,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import { ROLE_LABELS, effectiveRole, formatDate, type UserRole } from "@/lib/constants";
 import UsersTable from "@/components/UsersTable";
 import ProvisioningManager from "@/components/ProvisioningManager";
+import { MODULES, parseOverrides } from "@/lib/modules";
 import { eyebrowClass } from "@/lib/ui";
 import EmptyState from "@/components/ui/EmptyState";
 
@@ -15,6 +16,7 @@ const ACTION_LABELS: Record<string, string> = {
   edicion_usuario: "Edición de usuario",
   pausa_usuario: "Pausa de usuario",
   reactivacion_usuario: "Reactivación de usuario",
+  edicion_modulos: "Edición de módulos",
 };
 
 type ChangeSnapshot = { role?: string | null; department?: string | null; active?: boolean };
@@ -26,8 +28,20 @@ function describe(s: ChangeSnapshot | undefined) {
     .join(" / ");
 }
 
-function summarizeChange(detail: unknown): string {
+function describeModules(raw: unknown) {
+  const overrides = parseOverrides(raw as Parameters<typeof parseOverrides>[0]);
+  const parts = MODULES.filter((m) => overrides[m.key] !== undefined).map(
+    (m) => `${m.title}: ${overrides[m.key] ? "habilitado" : "deshabilitado"}`
+  );
+  return parts.length > 0 ? parts.join(", ") : "por rol";
+}
+
+function summarizeChange(action: string, detail: unknown): string {
   if (!detail || typeof detail !== "object") return "";
+  if (action === "edicion_modulos") {
+    const m = detail as { antes?: unknown; despues?: unknown };
+    return `${describeModules(m.antes)} → ${describeModules(m.despues)}`;
+  }
   const d = detail as { antes?: ChangeSnapshot; despues?: ChangeSnapshot; role?: string; department?: string | null };
   if (d.antes || d.despues) return `${describe(d.antes)} → ${describe(d.despues)}`;
   return describe(d);
@@ -90,8 +104,8 @@ export default async function UsuariosPage() {
                   <p className="text-xs text-slate-500">
                     {actor?.full_name ?? actor?.email ?? "Sistema"} · {formatDate(entry.created_at)}
                   </p>
-                  {summarizeChange(entry.detail) && (
-                    <p className="mt-0.5 text-xs text-slate-400">{summarizeChange(entry.detail)}</p>
+                  {summarizeChange(entry.action, entry.detail) && (
+                    <p className="mt-0.5 text-xs text-slate-400">{summarizeChange(entry.action, entry.detail)}</p>
                   )}
                 </li>
               );

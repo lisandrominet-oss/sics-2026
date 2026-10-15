@@ -13,6 +13,7 @@ import { buttonClass } from "@/components/ui/Button";
 import { IconPlusCircle } from "@/components/icons";
 import { eyebrowClass, numClass } from "@/lib/ui";
 import { CAN_CREATE_SIC, CAN_SEE_AMOUNTS, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
+import { hasModule } from "@/lib/modules";
 import { PENDING_STATUSES_BY_ROLE, applyPendingFilter, getPendingSicsCount } from "@/lib/pendingSics";
 
 // Tope de filas del Tablero; si se alcanza, se avisa debajo de la lista.
@@ -29,7 +30,7 @@ export default async function DashboardPage({
   const role = effectiveRole(profile)!;
 
   const supabase = createClient();
-  const canSeeCerts = role === "compras" || role === "admin";
+  const canSeeCerts = hasModule(profile, "certificados");
   const showPending = searchParams.filter === "mia";
   const isAreaRole = role === "area" || role === "operativo";
   const canHaveOwn = isAreaRole;

@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import PageHeader from "@/components/ui/PageHeader";
 import ProvidersManager from "@/components/ProvidersManager";
-import { effectiveRole } from "@/lib/constants";
+import { hasModule } from "@/lib/modules";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,8 +11,7 @@ export const revalidate = 0;
 export default async function ProveedoresPage() {
   const profile = await getCurrentProfile();
   if (!profile || !profile.role) redirect("/login");
-  const role = effectiveRole(profile)!;
-  if (role !== "compras" && role !== "admin") redirect("/dashboard");
+  if (!hasModule(profile, "proveedores")) redirect("/dashboard");
 
   const supabase = createClient();
 
