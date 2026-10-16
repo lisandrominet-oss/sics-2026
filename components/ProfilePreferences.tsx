@@ -9,6 +9,8 @@ import UserAvatar, { AVATAR_EVENT, clearAvatarCache, setAvatarCache } from "@/co
 import InfoItem from "@/components/ui/InfoItem";
 import Button from "@/components/ui/Button";
 import { cardClass } from "@/components/ui/Card";
+import { DropOverlay } from "@/components/ui/FileDropzone";
+import { useFileDrop } from "@/lib/useFileDrop";
 
 const MAX_INPUT_BYTES = 25 * 1024 * 1024;
 const AVATAR_SIZE = 256;
@@ -54,6 +56,11 @@ export default function ProfilePreferences({
   const [currentPath, setCurrentPath] = useState<string | null>(avatarPath);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isDragging, dropProps } = useFileDrop({
+    onFiles: (files) => void handleFile(files[0]),
+    accept: "image/*",
+    disabled: busy,
+  });
 
   async function handleFile(file: File) {
     setError(null);
@@ -128,7 +135,8 @@ export default function ProfilePreferences({
     <div className="space-y-6">
       <section className={cardClass({ padding: "lg" })}>
         <h2 className="text-sm font-semibold text-slate-900">Perfil</h2>
-        <div className="mt-4 flex flex-wrap items-center gap-5">
+        <div {...dropProps} className="relative mt-4 flex flex-wrap items-center gap-5 rounded-lg">
+          {isDragging && <DropOverlay text="Soltá la foto acá" />}
           <UserAvatar userId={userId} fullName={fullName} size="h-24 w-24" text="text-2xl" />
           <div>
             <div className="flex flex-wrap gap-2">

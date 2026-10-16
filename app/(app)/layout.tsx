@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { effectiveRole } from "@/lib/constants";
 import { enabledModules } from "@/lib/modules";
 import AppShell from "@/components/AppShell";
+import FileDropGuard from "@/components/FileDropGuard";
 
 // Menú y marco compartidos por todas las pantallas con sesión: el menú queda montado al navegar
 // (antes cada página renderizaba su propio AppShell y el menú se perdía mientras cargaba).
@@ -21,6 +22,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       actingAsRole={profile.acting_as_role}
       fullName={profile.full_name}
     >
+      <FileDropGuard />
       {children}
     </AppShell>
   );

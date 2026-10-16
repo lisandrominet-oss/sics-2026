@@ -33,6 +33,7 @@ import Badge from "@/components/ui/Badge";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
 import PromptDialog from "@/components/ui/PromptDialog";
+import FileDropzone from "@/components/ui/FileDropzone";
 
 type Contract = Database["public"]["Tables"]["contracts"]["Row"] & {
   provider: { id: string; name: string; email: string | null; phone: string | null } | null;
@@ -420,7 +421,7 @@ function ReturnForm({ contractId, onDone, onError }: { contractId: string; onDon
         </div>
         <div>
           <label className={labelClass}>Acta de devolución (obligatoria)</label>
-          <input type="file" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setFormError(null); }} className="mt-1 w-full text-xs" />
+          <FileDropzone compact disabled={loading} value={file} onFile={(f) => { setFile(f); setFormError(null); }} onClear={() => setFile(null)} />
         </div>
       </div>
       <div className="mt-3">
@@ -805,7 +806,6 @@ function UsageForm({
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const fileInput = useRef<HTMLInputElement>(null);
 
   async function submit() {
     const installment = installments.find((i) => i.period_start === periodStart);
@@ -837,7 +837,7 @@ function UsageForm({
     });
     setLoading(false);
     if (error) { onError(error.message); return; }
-    if (fileInput.current) fileInput.current.value = "";
+    setFile(null);
     onDone();
   }
 
@@ -861,7 +861,7 @@ function UsageForm({
         </div>
         <div className="col-span-2">
           <label className={labelClass}>Informe del sector (opcional)</label>
-          <input ref={fileInput} type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+          <FileDropzone compact disabled={loading} value={file} onFile={setFile} onClear={() => setFile(null)} />
         </div>
         <div>
           <label className={labelClass}>Monto esperado manual (USD, si aplica)</label>
@@ -898,7 +898,6 @@ function DocumentosTab({
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const fileInput = useRef<HTMLInputElement>(null);
 
   const uploadableTypes: ContractDocumentType[] = ["contrato", "adenda", "condiciones", "seguro", "otro"];
 
@@ -920,7 +919,6 @@ function DocumentosTab({
     });
     setLoading(false);
     if (error) { onError(error.message); return; }
-    if (fileInput.current) fileInput.current.value = "";
     setFile(null);
     setExpiresAt("");
     onDone();
@@ -946,7 +944,7 @@ function DocumentosTab({
           </div>
           <div>
             <label className={labelClass}>Archivo</label>
-            <input ref={fileInput} type="file" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setFormError(null); }} className="mt-1 w-full text-xs" />
+            <FileDropzone compact disabled={loading} value={file} onFile={(f) => { setFile(f); setFormError(null); }} onClear={() => setFile(null)} />
           </div>
         </div>
         <Button onClick={submit} loading={loading} disabled={!file} className="mt-3">
@@ -1417,7 +1415,7 @@ function EditComprobanteForm({
       )}
       <div className="mt-3">
         <label className={labelClass}>Reemplazar archivo (opcional)</label>
-        <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+        <FileDropzone compact disabled={loading} value={file} onFile={setFile} onClear={() => setFile(null)} />
       </div>
       <Button size="sm" onClick={submit} loading={loading} disabled={!issueDate || (!isPago && isUsd && (!subtotalUsd || !fxRate))} className="mt-3">
         {loading ? "Guardando…" : "Guardar cambios"}
@@ -1576,7 +1574,7 @@ function InvoiceForm({
 
       <div className="mt-3">
         <label className={labelClass}>Archivo</label>
-        <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+        <FileDropzone compact disabled={loading} value={file} onFile={setFile} onClear={() => setFile(null)} />
       </div>
 
       <Button onClick={submit} loading={loading} disabled={!issueDate || (isUsd ? !subtotalUsd || !fxRate : !netAmount)} className="mt-4">
@@ -1689,7 +1687,7 @@ function RegisterPaymentForm({
       </div>
       <div className="mt-3">
         <label className={labelClass}>Comprobante de pago (opcional)</label>
-        <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 w-full text-xs" />
+        <FileDropzone compact disabled={loading} value={file} onFile={setFile} onClear={() => setFile(null)} />
       </div>
 
       <Button onClick={submit} loading={loading} disabled={!issueDate || !totalAmount || !paidInvoiceId} className="mt-4">

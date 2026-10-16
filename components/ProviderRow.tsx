@@ -1,7 +1,7 @@
 "use client";
 
 import { inputClass, eyebrowClass } from "@/lib/ui";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify, reportResult } from "@/lib/notify";
@@ -13,6 +13,7 @@ import type { Database } from "@/lib/database.types";
 import InfoItem from "@/components/ui/InfoItem";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
+import FileDropzone from "@/components/ui/FileDropzone";
 
 type Provider = Database["public"]["Tables"]["providers"]["Row"];
 type Category = { id: string; name: string; active: boolean };
@@ -66,7 +67,6 @@ export default function ProviderRow({
 
   const [newComment, setNewComment] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
-  const fileInput = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
   const categoryNames = categories.filter((c) => categoryIds.includes(c.id)).map((c) => c.name);
@@ -192,7 +192,6 @@ export default function ProviderRow({
       notify.error("No se pudo registrar el archivo", insertErr.message);
       return;
     }
-    if (fileInput.current) fileInput.current.value = "";
     notify.success("Archivo subido");
     router.refresh();
   }
@@ -354,17 +353,7 @@ export default function ProviderRow({
               {files.length === 0 && <EmptyState size="sm" title="Sin archivos todavía." />}
             </div>
             <div className="mt-2">
-              <input
-                ref={fileInput}
-                type="file"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) uploadFile(file);
-                }}
-                disabled={uploading}
-                className="text-xs text-slate-500"
-              />
-              {uploading && <p className="mt-1 text-xs text-slate-400">Subiendo…</p>}
+              <FileDropzone compact onFile={uploadFile} loading={uploading} />
             </div>
           </div>
         </div>

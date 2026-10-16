@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { inputClass, eyebrowClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
 import ArticleCombobox from "@/components/ui/ArticleCombobox";
+import FileDropzone from "@/components/ui/FileDropzone";
 import { MAX_SIC_ITEMS } from "@/lib/constants";
 
 export type ItemDraft = {
@@ -135,16 +136,13 @@ export default function ItemsEditor({
               <label className="block text-xs font-medium text-slate-700">
                 Archivo de referencia (opcional)
               </label>
-              <input
-                type="file"
-                onChange={(e) => updateItem(index, { file: e.target.files?.[0] ?? null })}
-                className="mt-1 w-full text-xs"
+              <FileDropzone
+                compact
+                value={item.file}
+                onFile={(file) => updateItem(index, { file })}
+                onClear={() => updateItem(index, { file: null })}
+                existingFileName={item.existingFileName}
               />
-              {item.existingFileName && !item.file && (
-                <p className="mt-1 text-xs text-slate-400 [overflow-wrap:anywhere]">
-                  Ya subido: {item.existingFileName} (se reemplaza si elegís otro)
-                </p>
-              )}
             </div>
           </div>
 

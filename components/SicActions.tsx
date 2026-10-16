@@ -10,6 +10,8 @@ import { notify } from "@/lib/notify";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
 import EmptyState from "@/components/ui/EmptyState";
+import { DropOverlay } from "@/components/ui/FileDropzone";
+import { useFileDrop } from "@/lib/useFileDrop";
 import {
   REQUESTER_CANCELLABLE_STATUSES,
   TERMINAL_STATUSES,
@@ -123,6 +125,22 @@ export default function SicActions({
       ...(itemId ? { p_item_id: itemId } : {}),
     });
     if (rpcErr) throw rpcErr;
+  }
+
+  // Varios archivos (arrastrados juntos o elegidos juntos): se suben en fila dentro de una sola acción.
+  async function uploadFiles(files: File[], fileType: SicFileType, itemId?: string) {
+    let done = 0;
+    for (const f of files) {
+      try {
+        await uploadFile(f, fileType, itemId);
+        done += 1;
+      } catch (e) {
+        if (done > 0) router.refresh();
+        const msg = e instanceof Error ? e.message : (e as { message?: string })?.message ?? "Ocurrió un error";
+        return { error: { message: files.length > 1 ? `${msg} (se subieron ${done} de ${files.length})` : msg } };
+      }
+    }
+    return { error: null };
   }
 
   async function deleteFile(file: SicFile) {
@@ -358,12 +376,14 @@ export default function SicActions({
       <ActionCard title="Cotización y comparación de proveedores">
         <div className="space-y-2 text-sm">
           <MultiFileRow
+            disabled={loading}
             label="Cotizaciones (opcional)"
             files={existingFiles.filter((f) => f.file_type === "cotizacion")}
-            onUpload={(f) => run(() => uploadFile(f, "cotizacion").then(() => ({ error: null })))}
+            onUpload={(fs) => run(() => uploadFiles(fs, "cotizacion"))}
             onDelete={(f) => run(() => deleteFile(f))}
           />
           <FileRow
+            disabled={loading}
             label="Comparación de precios (opcional)"
             inputRef={comparacionInput}
             file={findFile("comparacion")}
@@ -439,6 +459,7 @@ export default function SicActions({
     return (
       <ActionCard title="Emitir orden de compra">
         <FileRow
+          disabled={loading}
           label="Orden de compra (opcional)"
           inputRef={ordenInput}
           file={findFile("orden_compra")}
@@ -504,9 +525,10 @@ export default function SicActions({
         items={editData.items}
         isService={isService}
         remitoFiles={existingFiles.filter((f) => f.file_type === "remito")}
-        onUploadRemito={(f) => run(() => uploadFile(f, "remito").then(() => ({ error: null })))}
+        onUploadRemito={(fs) => run(() => uploadFiles(fs, "remito"))}
+        filesDisabled={loading}
         facturaFiles={isCompras ? existingFiles.filter((f) => f.file_type === "factura") : undefined}
-        onUploadFactura={(f) => run(() => uploadFile(f, "factura").then(() => ({ error: null })))}
+        onUploadFactura={(fs) => run(() => uploadFiles(fs, "factura"))}
         onDeleteFile={(f) => run(() => deleteFile(f))}
         onDone={() => { notify.success("Recepción registrada"); router.refresh(); }}
       />
@@ -517,9 +539,10 @@ export default function SicActions({
     return (
       <ActionCard title="Cierre de la SIC">
         <MultiFileRow
+          disabled={loading}
           label={isCurrentAccount ? "Facturas (opcional: en cuenta corriente llega mensual)" : "Facturas (obligatoria al menos una)"}
           files={existingFiles.filter((f) => f.file_type === "factura")}
-          onUpload={(f) => run(() => uploadFile(f, "factura").then(() => ({ error: null })))}
+          onUpload={(fs) => run(() => uploadFiles(fs, "factura"))}
           onDelete={(f) => run(() => deleteFile(f))}
         />
         {NoteBox}
@@ -581,12 +604,11 @@ export default function SicActions({
           <div className="space-y-2">
             {itemsRequiringCert.map((item) => (
               <MultiFileRow
+                disabled={loading}
                 key={item.id}
                 label={item.description}
                 files={item.certFiles}
-                onUpload={(f) =>
-                  run(() => uploadFile(f, "certificado_calidad", item.id).then(() => ({ error: null })))
-                }
+                onUpload={(fs) => run(() => uploadFiles(fs, "certificado_calidad", item.id))}
                 onDelete={(f) => run(() => deleteFile(f))}
               />
             ))}
@@ -668,6 +690,7 @@ function RecepcionEditor({
   isService,
   remitoFiles,
   onUploadRemito,
+  filesDisabled,
   facturaFiles,
   onUploadFactura,
   onDeleteFile,
@@ -677,10 +700,11 @@ function RecepcionEditor({
   items: EditItem[];
   isService: boolean;
   remitoFiles: SicFile[];
-  onUploadRemito: (file: File) => void;
+  onUploadRemito: (files: File[]) => void;
+  filesDisabled?: boolean;
   // Solo Compras/admin: Pañol no ve ni sube facturas.
   facturaFiles?: SicFile[];
-  onUploadFactura: (file: File) => void;
+  onUploadFactura: (files: File[]) => void;
   onDeleteFile: (file: SicFile) => void;
   onDone: () => void;
 }) {
@@ -713,6 +737,7 @@ function RecepcionEditor({
   return (
     <ActionCard title={isService ? "Recepción del servicio" : "Recepción de mercadería"}>
       <MultiFileRow
+        disabled={filesDisabled}
         label={isService ? "Remito o conformidad del servicio (obligatorio al menos uno)" : "Remitos (obligatorio al menos uno)"}
         files={remitoFiles}
         onUpload={onUploadRemito}
@@ -721,6 +746,7 @@ function RecepcionEditor({
       {facturaFiles && (
         <div className="mt-2">
           <MultiFileRow
+            disabled={filesDisabled}
             label="Facturas (opcional en este paso)"
             files={facturaFiles}
             onUpload={onUploadFactura}
@@ -1131,30 +1157,35 @@ function MultiFileRow({
   files,
   onUpload,
   onDelete,
+  disabled = false,
 }: {
   label: string;
   files: SicFile[];
-  onUpload: (file: File) => void;
+  onUpload: (files: File[]) => void;
   onDelete: (file: SicFile) => void;
+  disabled?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const { isDragging, dropProps } = useFileDrop({ onFiles: onUpload, multiple: true, disabled });
   return (
-    <div className="rounded-lg border border-slate-200 px-3 py-2">
+    <div {...dropProps} className="relative rounded-lg border border-slate-200 px-3 py-2">
+      {isDragging && <DropOverlay />}
       <div className="flex items-center justify-between gap-3">
         <span className="min-w-0 text-slate-700 [overflow-wrap:anywhere]">{label}</span>
         <div className="shrink-0">
           <input
             ref={inputRef}
             type="file"
+            multiple
             className="hidden"
             onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (!f) return;
-              onUpload(f);
+              const fs = Array.from(e.target.files ?? []);
+              if (fs.length === 0) return;
+              onUpload(fs);
               e.target.value = "";
             }}
           />
-          <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()}>
+          <Button variant="secondary" size="sm" disabled={disabled} onClick={() => inputRef.current?.click()}>
             + Agregar
           </Button>
         </div>
@@ -1185,15 +1216,24 @@ function FileRow({
   file,
   onUpload,
   onDelete,
+  disabled = false,
 }: {
   label: string;
   inputRef: React.RefObject<HTMLInputElement>;
   file?: SicFile;
   onUpload: (file: File) => void;
   onDelete: (file: SicFile) => void;
+  disabled?: boolean;
 }) {
+  // Soltar equivale a elegir con el botón: si ya había un archivo, se reemplaza.
+  const replaceWith = (f: File) => {
+    if (file) onDelete(file);
+    onUpload(f);
+  };
+  const { isDragging, dropProps } = useFileDrop({ onFiles: (fs) => replaceWith(fs[0]), disabled });
   return (
-    <div className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
+    <div {...dropProps} className="relative flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
+      {isDragging && <DropOverlay text={file ? "Soltá para reemplazar" : "Soltá para subir"} />}
       <span className="text-slate-700">
         {label}{" "}
         {file && (
@@ -1213,12 +1253,11 @@ function FileRow({
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (!f) return;
-            if (file) onDelete(file);
-            onUpload(f);
+            replaceWith(f);
             e.target.value = "";
           }}
         />
-        <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()}>
+        <Button variant="secondary" size="sm" disabled={disabled} onClick={() => inputRef.current?.click()}>
           {file ? "Reemplazar" : "Subir archivo"}
         </Button>
       </div>
