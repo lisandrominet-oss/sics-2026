@@ -4,7 +4,7 @@ import { inputClass, eyebrowClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
@@ -14,6 +14,7 @@ import { DropOverlay } from "@/components/ui/FileDropzone";
 import { useFileDrop } from "@/lib/useFileDrop";
 import {
   REQUESTER_CANCELLABLE_STATUSES,
+  REQUESTER_EDITABLE_STATUSES,
   TERMINAL_STATUSES,
   PROJECT_TALLER,
   sanitizeFileName,
@@ -66,6 +67,7 @@ export default function SicActions({
   role,
   isRequester,
   isAreaBoss,
+  editing,
   catalog,
   existingFiles,
   editData,
@@ -81,6 +83,8 @@ export default function SicActions({
   role: UserRole;
   isRequester: boolean;
   isAreaBoss: boolean;
+  // Formulario de edición abierto (?editar=1): solo antes de que Compras la acepte.
+  editing: boolean;
   catalog: string[];
   existingFiles: SicFile[];
   editData: EditData;
@@ -92,6 +96,7 @@ export default function SicActions({
   allProviders: { id: string; name: string }[];
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState("");
   const [finalAmount, setFinalAmount] = useState("");
@@ -184,6 +189,9 @@ export default function SicActions({
   const canCancel =
     (isCompras && !TERMINAL_STATUSES.includes(status)) ||
     (isRequester && REQUESTER_CANCELLABLE_STATUSES.includes(status));
+  // Antes de que Compras la acepte, quien emitió la SIC (o admin) puede corregirla. En observación ya tiene su propio panel.
+  const canEditBeforeCompras =
+    status !== "en_observacion" && REQUESTER_EDITABLE_STATUSES.includes(status) && (role === "admin" || isRequester);
   const canApproveAsBoss = role === "admin" || isAreaBoss;
   const canValidateTechnically = role === "admin" || isRequester || isAreaBoss;
   const itemsRequiringCert = editData.items.filter((it) => it.requiresQualityCert);
@@ -368,7 +376,7 @@ export default function SicActions({
   }
 
   if (status === "en_observacion" && (role === "admin" || isRequester)) {
-    return <ObservacionEditor sicId={sicId} editData={editData} projects={projects} catalog={catalog} onDone={() => { notify.success("SIC corregida y reenviada"); router.refresh(); }} />;
+    return <ObservacionEditor mode="observacion" sicId={sicId} editData={editData} projects={projects} catalog={catalog} onDone={() => { notify.success("SIC corregida y reenviada"); router.refresh(); }} />;
   }
 
   if (status === "cotizando" && ["compras", "admin"].includes(role)) {
@@ -564,6 +572,24 @@ export default function SicActions({
   return null;
   }
 
+  if (canEditBeforeCompras && editing) {
+    return (
+      <ObservacionEditor
+        mode="edicion"
+        sicId={sicId}
+        editData={editData}
+        projects={projects}
+        catalog={catalog}
+        onCancel={() => router.replace(pathname)}
+        onDone={() => {
+          notify.success("SIC actualizada");
+          router.replace(pathname);
+          router.refresh();
+        }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       {isCurrentAccount && isCompras && ["orden_emitida", "recibida"].includes(status) && (
@@ -612,6 +638,18 @@ export default function SicActions({
                 onDelete={(f) => run(() => deleteFile(f))}
               />
             ))}
+          </div>
+        </ActionCard>
+      )}
+      {canEditBeforeCompras && (
+        <ActionCard title="Editar solicitud">
+          <p className="text-sm text-slate-500">
+            Si algo quedó mal, podés corregir el pedido hasta que Compras lo tome. Cada cambio queda registrado en el recorrido.
+          </p>
+          <div className="mt-3">
+            <Button variant="secondary" onClick={() => router.push(`${pathname}?editar=1`)}>
+              Editar solicitud
+            </Button>
           </div>
         </ActionCard>
       )}
@@ -816,19 +854,26 @@ function RecepcionEditor({
   );
 }
 
+// Formulario de corrección. "observacion": Compras o el jefe la devolvieron y se reenvía.
+// "edicion": el solicitante la corrige antes de que Compras la tome (no cambia de estado).
 function ObservacionEditor({
+  mode,
   sicId,
   editData,
   projects,
   catalog,
   onDone,
+  onCancel,
 }: {
+  mode: "observacion" | "edicion";
   sicId: string;
   editData: EditData;
   projects: { id: string; name: string }[];
   catalog: string[];
   onDone: () => void;
+  onCancel?: () => void;
 }) {
+  const [confirming, setConfirming] = useState(false);
   const [subject, setSubject] = useState(editData.subject);
   const [projectId, setProjectId] = useState(editData.projectId ?? PROJECT_TALLER);
   const [neededByDate, setNeededByDate] = useState(editData.neededByDate ?? "");
@@ -851,8 +896,13 @@ function ObservacionEditor({
   );
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  // El primer envío del formulario (ya validado) pide confirmación; el guardado real ocurre en save().
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setConfirming(true);
+  }
+
+  async function save() {
     setLoading(true);
 
     const supabase = createClient();
@@ -876,6 +926,7 @@ function ObservacionEditor({
     if (updateError || !sic) {
       notify.error("No se pudo guardar", updateError?.message);
       setLoading(false);
+      setConfirming(false);
       return;
     }
 
@@ -918,14 +969,17 @@ function ObservacionEditor({
 
     setLoading(false);
     if (failedFiles.length > 0) {
-      notify.error("La SIC se reenvió, pero no se pudo subir un archivo", `${failedFiles.join(", ")}. Avisale a Compras.`);
+      notify.error(
+        mode === "edicion" ? "La SIC se guardó, pero no se pudo subir un archivo" : "La SIC se reenvió, pero no se pudo subir un archivo",
+        `${failedFiles.join(", ")}. Podés volver a editarla para adjuntarlo.`
+      );
     }
     onDone();
   }
 
   return (
     <form onSubmit={handleSubmit} className="rounded-xl border border-amber-300 bg-amber-50 p-5">
-      <h2 className="text-sm font-semibold text-slate-900">Corregir y reenviar</h2>
+      <h2 className="text-sm font-semibold text-slate-900">{mode === "edicion" ? "Editar solicitud" : "Corregir y reenviar"}</h2>
       <p className="mt-1 text-xs text-slate-500">
         Los archivos de referencia ya subidos se conservan. Adjuntá uno nuevo solo si querés reemplazar el anterior.
       </p>
@@ -975,11 +1029,35 @@ function ObservacionEditor({
         <ItemsEditor items={items} onChange={setItems} catalog={catalog} />
       </div>
 
-      <div className="mt-4">
-        <Button type="submit" loading={loading}>
-          {loading ? "Guardando…" : "Guardar y reenviar"}
-        </Button>
-      </div>
+      {confirming ? (
+        <div className="mt-4 rounded-lg border border-amber-300 bg-white p-4" role="alertdialog" aria-label="Confirmar cambios">
+          <p className="text-sm font-semibold text-slate-900">
+            {mode === "edicion" ? "¿Guardar los cambios?" : "¿Reenviar la SIC corregida?"}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            {mode === "edicion"
+              ? "Revisá que esté todo bien: Compras va a ver la versión nueva. Mientras no la tome, la podés volver a editar."
+              : "Revisá que esté todo bien antes de reenviarla."}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button onClick={save} loading={loading}>
+              {loading ? "Guardando…" : mode === "edicion" ? "Sí, guardar" : "Sí, reenviar"}
+            </Button>
+            <Button variant="secondary" onClick={() => setConfirming(false)} disabled={loading}>
+              Seguir editando
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button type="submit">{mode === "edicion" ? "Guardar cambios" : "Guardar y reenviar"}</Button>
+          {onCancel && (
+            <Button variant="secondary" onClick={onCancel}>
+              Cancelar
+            </Button>
+          )}
+        </div>
+      )}
     </form>
   );
 }

@@ -11,6 +11,7 @@ import {
   CAN_SEE_AMOUNTS,
   COMPRAS_EXPORTABLE_STATUSES,
   FILE_TYPE_LABELS,
+  REQUESTER_EDITABLE_STATUSES,
   STATUS_LABELS,
   daysUntilSqlDate,
   effectiveRole,
@@ -41,7 +42,13 @@ function deadlineText(days: number) {
   return days === -1 ? "Vencida hace 1 día" : `Vencida hace ${-days} días`;
 }
 
-export default async function SicDetailPage({ params }: { params: { id: string } }) {
+export default async function SicDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { editar?: string };
+}) {
   const profile = await getCurrentProfile();
   if (!profile || !profile.role) redirect("/login");
   const role = effectiveRole(profile)!;
@@ -112,7 +119,13 @@ export default async function SicDetailPage({ params }: { params: { id: string }
     (sic.status === "pendiente_aprobacion_gerencia" && (role === "gerencia" || role === "admin"));
 
   // El formulario de corrección de artículos necesita ancho: en ese estado la pantalla vuelve a una sola columna.
-  const stacked = sic.status === "en_observacion" && (role === "admin" || isRequester);
+  // Antes de que Compras la acepte, "Editar solicitud" (?editar=1) abre el mismo formulario.
+  const editing =
+    searchParams.editar === "1" &&
+    sic.status !== "en_observacion" &&
+    REQUESTER_EDITABLE_STATUSES.includes(sic.status) &&
+    (role === "admin" || isRequester);
+  const stacked = editing || (sic.status === "en_observacion" && (role === "admin" || isRequester));
 
   // Sugerencias del campo Artículo: solo se piden cuando se muestra el formulario de corrección.
   const catalogNames = stacked
@@ -207,6 +220,7 @@ export default async function SicDetailPage({ params }: { params: { id: string }
             role={role}
             isRequester={isRequester}
             isAreaBoss={isAreaBoss}
+            editing={editing}
             catalog={catalogNames}
             existingFiles={(files ?? [])
               .filter((f) => !f.item_id)

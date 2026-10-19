@@ -272,7 +272,7 @@ def render_bottom():
     o.append(f'<text x="{ax+24}" y="{y+36}" font-size="20" font-weight="700" fill="#1B2631">Anulación y reglas generales</text>')
     o.append(f'<rect x="{ax+24}" y="{y+52}" width="130" height="38" rx="19" fill="#F7E1E1" stroke="#B04A4A" stroke-width="2.4"/><text x="{ax+89}" y="{y+78}" text-anchor="middle" font-size="19" font-weight="600" fill="#6B1F1F">Anulada</text>')
     rules = [
-      "Quien emitió la SIC puede anularla hasta que Compras la acepta.",
+      "Quien emitió la SIC puede editarla o anularla hasta que Compras la acepta.",
       "Compras puede anularla en cualquier momento, salvo si ya está cerrada.",
       "Anulación y rechazos exigen motivo; el rechazo es definitivo (se emite otra SIC).",
       "Servicio: Compras lo marca al emitir la orden y es quien lo recibe (no pasa por Pañol).",

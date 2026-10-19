@@ -2,13 +2,14 @@
 
 import { inputClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
-import { PROJECT_TALLER, STATUS_LABELS, sanitizeFileName, type SicStatus } from "@/lib/constants";
+import { useConfirm } from "@/components/ui/ConfirmProvider";
+import { PROJECT_TALLER, STATUS_LABELS, formatSqlDate, sanitizeFileName, type SicStatus } from "@/lib/constants";
 
 type Plant = { id: string; name: string; prefix: string };
 type Project = { id: string; name: string };
@@ -27,6 +28,8 @@ export default function NuevaSicForm({
   catalog: string[];
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
+  const askingRef = useRef(false);
   // Si el usuario no tiene una planta asignada en su perfil, no hay nada a lo que
   // bloquearlo: mostramos el selector igual aunque su rol no sea compras/admin.
   const plantEditable = canPickPlant || !defaultPlantId;
@@ -80,6 +83,21 @@ export default function NuevaSicForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // El ref cubre también el lapso en que el cartel está abierto (un segundo Enter no abre otro).
+    if (loading || askingRef.current) return;
+    askingRef.current = true;
+
+    // Una vez enviada ya la ve el jefe o Compras: se pide confirmar con un resumen antes de crearla.
+    const itemsLabel = `${items.length} ${items.length === 1 ? "artículo" : "artículos"}`;
+    const confirmed = await confirm({
+      title: "¿Enviar la solicitud?",
+      description: `${subject.trim()} · ${itemsLabel}${neededByDate ? ` · necesaria para el ${formatSqlDate(neededByDate)}` : ""}. Revisá que esté todo bien. Mientras Compras no la tome, vas a poder editarla o anularla.`,
+      confirmLabel: "Enviar",
+      cancelLabel: "Revisar",
+    });
+    askingRef.current = false;
+    if (!confirmed) return;
+
     setLoading(true);
     setError(null);
 
@@ -144,7 +162,7 @@ export default function NuevaSicForm({
     if (failedFiles.length > 0) {
       setCreatedId(sic.id);
       setError(
-        `La SIC se creó, pero no se pudo subir: ${failedFiles.join(", ")}. Podés anularla y crearla de nuevo, o pedirle a Compras que te la devuelva para corregir.`
+        `La SIC se creó, pero no se pudo subir: ${failedFiles.join(", ")}. Podés abrirla y usar "Editar solicitud" para adjuntarlo de nuevo, o anularla y crearla otra vez.`
       );
       setLoading(false);
       return;

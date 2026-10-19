@@ -56,6 +56,9 @@ export const MAX_SIC_ITEMS = 50;
 // Estados en los que quien emitió la SIC todavía puede anularla (antes de que Compras la acepte).
 export const REQUESTER_CANCELLABLE_STATUSES: SicStatus[] = ["pendiente_aprobacion_jefe", "en_observacion", "enviada"];
 
+// Estados en los que quien emitió la SIC todavía puede editarla (antes de que Compras la acepte).
+export const REQUESTER_EDITABLE_STATUSES: SicStatus[] = ["pendiente_aprobacion_jefe", "enviada", "en_observacion"];
+
 // Estados que ya no se pueden anular ni seguir (cerrados definitivamente).
 export const TERMINAL_STATUSES: SicStatus[] = ["cerrada", "anulada"];
 
