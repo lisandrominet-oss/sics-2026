@@ -40,6 +40,7 @@ type Contract = Database["public"]["Tables"]["contracts"]["Row"] & {
   plant: { name: string; prefix: string } | null;
   project: { name: string } | null;
   owner: { full_name: string | null } | null;
+  voider: { full_name: string | null } | null;
 };
 type ContractItem = Database["public"]["Tables"]["contract_items"]["Row"];
 type ContractItemRate = Database["public"]["Tables"]["contract_item_rates"]["Row"];
@@ -113,6 +114,16 @@ export default function ContractDetail({
         title={items.map((i) => i.description).join(", ") || "Contrato"}
         actions={<Badge tone={CONTRACT_DISPLAY_STATUS_TONES[status]}>{CONTRACT_DISPLAY_STATUS_LABELS[status]}</Badge>}
       />
+
+      {contract.voided_at && (
+        <div role="status" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+          <p className="font-semibold">Contrato anulado</p>
+          <p className="mt-1 [overflow-wrap:anywhere]">Motivo: {contract.void_reason ?? "-"}</p>
+          <p className="mt-1 text-xs text-red-700">
+            {contract.voider?.full_name ?? "Sistema"} · {formatDate(contract.voided_at)} · No cuenta en la deuda ni en los avisos y ya no se puede modificar.
+          </p>
+        </div>
+      )}
 
       <Card className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
         <InfoItem label="Inicio" value={formatDateOnly(contract.start_date)} />
@@ -216,6 +227,19 @@ function DatosTab({
   const [renewOpen, setRenewOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [voidOpen, setVoidOpen] = useState(false);
+
+  async function voidContract(reason: string): Promise<boolean> {
+    onError(null);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("void_contract", { p_contract_id: contract.id, p_reason: reason });
+    if (error) {
+      onError(error.message);
+      return false;
+    }
+    onDone();
+    return true;
+  }
 
   return (
     <div className="space-y-4">
@@ -239,19 +263,37 @@ function DatosTab({
         )}
       </Card>
 
-      {!contract.returned && (
+      {!contract.voided_at && (
         <div className="flex flex-wrap gap-3">
-          <Button variant="secondary" onClick={() => setEditOpen((v) => !v)}>
-            {editOpen ? "Cancelar" : "Editar contrato"}
-          </Button>
-          <Button variant="secondary" onClick={() => setRenewOpen((v) => !v)}>
-            {renewOpen ? "Cancelar" : "Renovar"}
-          </Button>
-          <Button variant="danger-outline" onClick={() => setReturnOpen((v) => !v)}>
-            {returnOpen ? "Cancelar" : "Devolver equipo y finalizar contrato"}
+          {!contract.returned && (
+            <>
+              <Button variant="secondary" onClick={() => setEditOpen((v) => !v)}>
+                {editOpen ? "Cancelar" : "Editar contrato"}
+              </Button>
+              <Button variant="secondary" onClick={() => setRenewOpen((v) => !v)}>
+                {renewOpen ? "Cancelar" : "Renovar"}
+              </Button>
+              <Button variant="danger-outline" onClick={() => setReturnOpen((v) => !v)}>
+                {returnOpen ? "Cancelar" : "Devolver equipo y finalizar contrato"}
+              </Button>
+            </>
+          )}
+          <Button variant="danger-outline" onClick={() => setVoidOpen(true)}>
+            Anular contrato
           </Button>
         </div>
       )}
+
+      <PromptDialog
+        open={voidOpen}
+        onClose={() => setVoidOpen(false)}
+        title="Anular contrato"
+        description="Usalo si el contrato se cargó mal. No se borra: queda en el historial como anulado, con el motivo, y deja de contar en la deuda. No se puede deshacer. Si tiene facturas o pagos vigentes, anulá primero esos comprobantes."
+        fields={[{ name: "reason", label: "Motivo de la anulación", required: true }]}
+        confirmLabel="Anular contrato"
+        destructive
+        onSubmit={({ reason }) => voidContract(reason)}
+      />
 
       {editOpen && (
         <EditContractForm
@@ -1705,6 +1747,7 @@ function HistorialTab({ events }: { events: ContractEvent[] }) {
     cambio_tarifa: "Cambio de tarifa",
     aceptar_diferencia: "Diferencia aceptada",
     anulacion: "Comprobante anulado",
+    anulacion_contrato: "Contrato anulado",
     edicion_fechas: "Fechas editadas",
     edicion_equipo: "Equipo editado",
     numero_interno: "N° interno modificado",

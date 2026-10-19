@@ -19,7 +19,7 @@ export default async function ContratoDetailPage({ params }: { params: { id: str
   const { data: contract, error: contractError } = await supabase
     .from("contracts")
     .select(
-      "*, provider:providers(id, name, email, phone), plant:plants(name, prefix), project:projects(name), owner:profiles!contracts_owner_id_fkey(full_name)"
+      "*, provider:providers(id, name, email, phone), plant:plants(name, prefix), project:projects(name), owner:profiles!contracts_owner_id_fkey(full_name), voider:profiles!contracts_voided_by_fkey(full_name)"
     )
     .eq("id", params.id)
     .maybeSingle();

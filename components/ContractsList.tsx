@@ -77,6 +77,7 @@ export default function ContractsList({
   providers,
   invoiceLines,
   contractDebts,
+  view,
 }: {
   contracts: Contract[];
   items: ContractItem[];
@@ -87,6 +88,8 @@ export default function ContractsList({
   providers: Provider[];
   invoiceLines: InvoiceLine[];
   contractDebts: { contract_id: string; remaining_usd: number }[];
+  /** Pestaña: "activos" (todo lo no devuelto ni anulado, incluido lo vencido) o "historial" (devueltos y anulados). */
+  view: "activos" | "historial";
 }) {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<ContractDisplayStatus | "">("");
@@ -115,8 +118,20 @@ export default function ContractsList({
     });
   }, [contracts, items, rates, installments]);
 
+  const inHistory = view === "historial";
+  const isHistoryStatus = (st: ContractDisplayStatus) => st === "devuelto" || st === "anulado";
+  const activeCount = summaries.filter((s) => !isHistoryStatus(s.status)).length;
+  const historyCount = summaries.length - activeCount;
+  // Los contratos anulados no cuentan para nada (ni "de N" ni avisos).
+  const voidedIds = useMemo(() => new Set(contracts.filter((c) => c.voided_at).map((c) => c.id)), [contracts]);
+  const countedContracts = summaries.filter((s) => s.status !== "anulado").length;
+  // Al cambiar de pestaña el filtro de estado puede quedar fuera de lugar: se ignora en Historial (todo es "Devuelto").
+  const activeStatusFilter = inHistory ? "" : statusFilter;
+  const statusOptions = (Object.keys(CONTRACT_DISPLAY_STATUS_LABELS) as ContractDisplayStatus[]).filter((s) => !isHistoryStatus(s));
+
   const filtered = summaries.filter((s) => {
-    if (statusFilter && s.status !== statusFilter) return false;
+    if (isHistoryStatus(s.status) !== inHistory) return false;
+    if (activeStatusFilter && s.status !== activeStatusFilter) return false;
     if (providerFilter && s.contract.provider_id !== providerFilter) return false;
     if (typeFilter && !s.items.some((i) => i.type === typeFilter)) return false;
     return true;
@@ -184,11 +199,12 @@ export default function ContractsList({
   const renewalAlerts = contracts.filter((c) => isRenewalAlertActive(c) && !attendedSet.has(`renovacion:${c.id}`));
   const documentAlerts = documents.filter((d) => {
     if (!d.expires_at || attendedSet.has(`documento:${d.id}`)) return false;
+    if (d.contract_id && voidedIds.has(d.contract_id)) return false;
     const days = daysUntil(new Date(d.expires_at + "T00:00:00"));
     return days <= ALERT_WINDOW_DAYS;
   });
   const differenceAlerts = installments.filter(
-    (inst) => inst.status === "con_diferencia" && !attendedSet.has(`diferencia:${inst.id}`)
+    (inst) => inst.status === "con_diferencia" && !voidedIds.has(inst.contract_id) && !attendedSet.has(`diferencia:${inst.id}`)
   );
   const totalAlerts = renewalAlerts.length + documentAlerts.length + differenceAlerts.length;
 
@@ -263,8 +279,8 @@ export default function ContractsList({
             <div className="py-3">
               <p className={eyebrowClass}>Contratos activos</p>
               <p className="mt-0.5 text-lg font-semibold tabular-nums text-slate-900">
-                {summaries.filter((s) => s.status === "vigente" || s.status === "por_vencer").length}
-                <span className="ml-1.5 text-xs font-normal text-slate-400">de {summaries.length}</span>
+                {activeCount}
+                <span className="ml-1.5 text-xs font-normal text-slate-400">de {countedContracts}</span>
               </p>
             </div>
             <div className="py-3">
@@ -325,20 +341,27 @@ export default function ContractsList({
         </div>
       )}
 
+      <nav aria-label="Contratos" className="flex gap-6 border-b border-slate-200">
+        <ViewTab href="/contratos" active={!inHistory} label="Contratos activos" count={activeCount} />
+        <ViewTab href="/contratos?vista=historial" active={inHistory} label="Historial" count={historyCount} />
+      </nav>
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as ContractDisplayStatus | "")}
-            className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:max-w-xs"
-          >
-            <option value="">Todos los estados</option>
-            {(Object.keys(CONTRACT_DISPLAY_STATUS_LABELS) as ContractDisplayStatus[]).map((s) => (
-              <option key={s} value={s}>
-                {CONTRACT_DISPLAY_STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
+          {!inHistory && (
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as ContractDisplayStatus | "")}
+              className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:max-w-xs"
+            >
+              <option value="">Todos los estados</option>
+              {statusOptions.map((s) => (
+                <option key={s} value={s}>
+                  {CONTRACT_DISPLAY_STATUS_LABELS[s]}
+                </option>
+              ))}
+            </select>
+          )}
           <select
             value={providerFilter}
             onChange={(e) => setProviderFilter(e.target.value)}
@@ -371,7 +394,15 @@ export default function ContractsList({
 
       <Card padding="none" className="overflow-hidden">
         {filtered.length === 0 ? (
-          <EmptyState title="No hay contratos para mostrar" description="Probá con otro filtro o cargá un contrato nuevo." className="!border-0" />
+          <EmptyState
+            title={inHistory ? "No hay contratos en el historial" : "No hay contratos para mostrar"}
+            description={
+              inHistory
+                ? "Cuando se devuelvan los equipos de un contrato o se anule uno, va a aparecer acá."
+                : "Probá con otro filtro o cargá un contrato nuevo."
+            }
+            className="!border-0"
+          />
         ) : (
           <ul className="divide-y divide-slate-100">
             {filtered.map((s) => (
@@ -391,15 +422,20 @@ export default function ContractsList({
                     <p className="truncate text-xs text-slate-400">
                       {s.contract.plant ? `${s.contract.plant.name} (${s.contract.plant.prefix})` : s.contract.project?.name ?? "-"}
                     </p>
+                    {s.status === "anulado" && s.contract.void_reason && (
+                      <p className="truncate text-xs text-red-600" title={s.contract.void_reason}>Motivo: {s.contract.void_reason}</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-4 text-xs tabular-nums">
                     <span className="hidden text-slate-500 sm:block">{formatUsd(s.monthlyUsd)}/mes</span>
                     <span className="hidden text-slate-400 xl:block">
                       {formatDateOnly(s.contract.start_date)} — {formatDateOnly(s.contract.end_date)}
                     </span>
-                    <span className="hidden text-slate-500 xl:block">
-                      {s.paid}/{s.paid + s.remaining} cuotas
-                    </span>
+                    {s.status !== "anulado" && (
+                      <span className="hidden text-slate-500 xl:block">
+                        {s.paid}/{s.paid + s.remaining} cuotas
+                      </span>
+                    )}
                     <Badge tone={CONTRACT_DISPLAY_STATUS_TONES[s.status]}>{CONTRACT_DISPLAY_STATUS_LABELS[s.status]}</Badge>
                   </div>
                 </Link>
@@ -409,6 +445,24 @@ export default function ContractsList({
         )}
       </Card>
     </div>
+  );
+}
+
+function ViewTab({ href, active, label, count }: { href: string; active: boolean; label: string; count: number }) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      scroll={false}
+      className={`-mb-px flex items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition-colors duration-fast ease-out-expo ${
+        active ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"
+      }`}
+    >
+      {label}
+      <span className={`rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-500"}`}>
+        {count}
+      </span>
+    </Link>
   );
 }
 

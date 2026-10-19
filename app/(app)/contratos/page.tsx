@@ -11,7 +11,7 @@ import { hasModule } from "@/lib/modules";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function ContratosPage() {
+export default async function ContratosPage({ searchParams }: { searchParams: { vista?: string } }) {
   const profile = await getCurrentProfile();
   if (!profile || !profile.role) redirect("/login");
   if (!hasModule(profile, "contratos")) redirect("/dashboard");
@@ -69,6 +69,7 @@ export default async function ContratosPage() {
           attendedAlerts={alerts ?? []}
           providers={providers ?? []}
           invoiceLines={(invoiceLines ?? []) as unknown as InvoiceLine[]}
+          view={searchParams.vista === "historial" ? "historial" : "activos"}
           contractDebts={(contractDebts ?? []) as { contract_id: string; remaining_usd: number }[]}
         />
       </div>

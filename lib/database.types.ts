@@ -406,6 +406,9 @@ export type Database = {
           sic_id: string | null
           start_date: string
           updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
         }
         Insert: {
           created_at?: string
@@ -426,6 +429,9 @@ export type Database = {
           sic_id?: string | null
           start_date: string
           updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
         }
         Update: {
           created_at?: string
@@ -446,6 +452,9 @@ export type Database = {
           sic_id?: string | null
           start_date?: string
           updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
         }
         Relationships: [
           {
@@ -474,6 +483,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_voided_by_fkey"
+            columns: ["voided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1729,6 +1745,9 @@ export type Database = {
           sic_id: string | null
           start_date: string
           updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
         }
         SetofOptions: {
           from: "*"
@@ -2077,6 +2096,9 @@ export type Database = {
           sic_id: string | null
           start_date: string
           updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
         }
         SetofOptions: {
           from: "*"
@@ -2112,6 +2134,44 @@ export type Database = {
           sic_id: string | null
           start_date: string
           updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contracts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      void_contract: {
+        Args: {
+          p_contract_id: string
+          p_reason: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          notes: string | null
+          notice_days: number
+          owner_id: string
+          plant_id: string | null
+          project_id: string | null
+          provider_id: string
+          renewal_months: number | null
+          renewal_type: Database["public"]["Enums"]["contract_renewal_type"]
+          return_note: string | null
+          returned: boolean
+          returned_at: string | null
+          sic_id: string | null
+          start_date: string
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
         }
         SetofOptions: {
           from: "*"
@@ -2447,6 +2507,9 @@ export type Database = {
           sic_id: string | null
           start_date: string
           updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
         }
         SetofOptions: {
           from: "*"

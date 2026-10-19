@@ -62,6 +62,15 @@ export const REQUESTER_EDITABLE_STATUSES: SicStatus[] = ["pendiente_aprobacion_j
 // Estados que ya no se pueden anular ni seguir (cerrados definitivamente).
 export const TERMINAL_STATUSES: SicStatus[] = ["cerrada", "anulada"];
 
+// Estados que van a la pestaña "Historial" del Tablero: ya no avanzan (ninguna acción saca a una SIC de rechazada_*).
+export const HISTORY_STATUSES: SicStatus[] = [
+  "cerrada",
+  "anulada",
+  "rechazada_jefe",
+  "rechazada_compras",
+  "rechazada_gerencia",
+];
+
 export const COMPRAS_EXPORTABLE_STATUSES: SicStatus[] = ["enviada", "en_observacion", "cotizando"];
 
 // Pañol es solo recepción: los pedidos los emite el operativo de taller.

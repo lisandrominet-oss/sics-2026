@@ -52,13 +52,18 @@ export const CONTRACT_DOCUMENT_TYPE_LABELS: Record<ContractDocumentType, string>
   otro: "Otro",
 };
 
-export type ContractDisplayStatus = "vigente" | "por_vencer" | "vencido" | "devuelto";
+export type ContractDisplayStatus = "vigente" | "por_vencer" | "vencido" | "devuelto" | "anulado";
 
 const POR_VENCER_WINDOW_DAYS = 60;
 
 // "vigente/por_vencer/vencido" no se guardan: se calculan acá por fecha,
-// tal como pide la especificación (solo "devuelto" es un hecho real).
-export function contractDisplayStatus(contract: { end_date: string; returned: boolean }): ContractDisplayStatus {
+// tal como pide la especificación (solo "devuelto" y "anulado" son hechos reales).
+export function contractDisplayStatus(contract: {
+  end_date: string;
+  returned: boolean;
+  voided_at?: string | null;
+}): ContractDisplayStatus {
+  if (contract.voided_at) return "anulado";
   if (contract.returned) return "devuelto";
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -74,6 +79,7 @@ export const CONTRACT_DISPLAY_STATUS_LABELS: Record<ContractDisplayStatus, strin
   por_vencer: "Por vencer",
   vencido: "Vencido",
   devuelto: "Devuelto",
+  anulado: "Anulado",
 };
 
 export const CONTRACT_DISPLAY_STATUS_TONES: Record<ContractDisplayStatus, BadgeTone> = {
@@ -81,6 +87,7 @@ export const CONTRACT_DISPLAY_STATUS_TONES: Record<ContractDisplayStatus, BadgeT
   por_vencer: "warning",
   vencido: "danger",
   devuelto: "muted",
+  anulado: "danger",
 };
 
 export function formatDateOnly(iso: string) {
@@ -111,8 +118,8 @@ export function daysUntil(date: Date): number {
 }
 
 // Alertas de renovación: 60/30/15 días antes de la fecha límite (regla 4.5).
-export function isRenewalAlertActive(contract: { end_date: string; notice_days: number; returned: boolean; renewal_type: ContractRenewalType }): boolean {
-  if (contract.returned || contract.renewal_type === "sin_renovacion") return false;
+export function isRenewalAlertActive(contract: { end_date: string; notice_days: number; returned: boolean; voided_at?: string | null; renewal_type: ContractRenewalType }): boolean {
+  if (contract.returned || contract.voided_at || contract.renewal_type === "sin_renovacion") return false;
   const days = daysUntil(noticeDeadline(contract));
   return days <= 60;
 }
