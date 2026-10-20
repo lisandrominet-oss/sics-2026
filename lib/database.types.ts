@@ -1149,6 +1149,386 @@ export type Database = {
           },
         ]
       }
+      roster_assignments: {
+        Row: {
+          alternate_shift: boolean
+          anchor_date: string
+          created_at: string
+          created_by: string | null
+          crew_id: string | null
+          employee_id: string
+          id: string
+          pattern_id: string
+          position_id: string | null
+          shift: string
+          site_id: string
+          updated_at: string
+          updated_by: string | null
+          valid_from: string
+          valid_to: string | null
+        }
+        Insert: {
+          alternate_shift?: boolean
+          anchor_date: string
+          created_at?: string
+          created_by?: string | null
+          crew_id?: string | null
+          employee_id: string
+          id?: string
+          pattern_id: string
+          position_id?: string | null
+          shift?: string
+          site_id: string
+          updated_at?: string
+          updated_by?: string | null
+          valid_from: string
+          valid_to?: string | null
+        }
+        Update: {
+          alternate_shift?: boolean
+          anchor_date?: string
+          created_at?: string
+          created_by?: string | null
+          crew_id?: string | null
+          employee_id?: string
+          id?: string
+          pattern_id?: string
+          position_id?: string | null
+          shift?: string
+          site_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          valid_from?: string
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roster_assignments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_assignments_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "roster_crews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_assignments_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "roster_patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_assignments_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "roster_positions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_assignments_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "roster_sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_assignments_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roster_crews: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          site_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          site_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roster_crews_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "roster_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roster_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          entity: string
+          entity_id: string | null
+          event_type: string
+          id: string
+          new_value: Json | null
+          note: string | null
+          old_value: Json | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          event_type: string
+          id?: string
+          new_value?: Json | null
+          note?: string | null
+          old_value?: Json | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          event_type?: string
+          id?: string
+          new_value?: Json | null
+          note?: string | null
+          old_value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roster_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roster_exceptions: {
+        Row: {
+          covers_employee_id: string | null
+          created_at: string
+          created_by: string | null
+          date_from: string
+          date_to: string
+          employee_id: string
+          id: string
+          kind: string
+          note: string | null
+        }
+        Insert: {
+          covers_employee_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_from: string
+          date_to: string
+          employee_id: string
+          id?: string
+          kind: string
+          note?: string | null
+        }
+        Update: {
+          covers_employee_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_from?: string
+          date_to?: string
+          employee_id?: string
+          id?: string
+          kind?: string
+          note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roster_exceptions_covers_employee_id_fkey"
+            columns: ["covers_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_exceptions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_exceptions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roster_patterns: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          rest_days: number
+          travel_in_days: number
+          travel_inside_cycle: boolean
+          travel_out_days: number
+          work_days: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          rest_days: number
+          travel_in_days?: number
+          travel_inside_cycle?: boolean
+          travel_out_days?: number
+          work_days: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          rest_days?: number
+          travel_in_days?: number
+          travel_inside_cycle?: boolean
+          travel_out_days?: number
+          work_days?: number
+        }
+        Relationships: []
+      }
+      roster_positions: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          required_count: number
+          shift: string
+          site_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          required_count?: number
+          shift?: string
+          site_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          required_count?: number
+          shift?: string
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roster_positions_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "roster_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roster_rules: {
+        Row: {
+          day_shift_start: string
+          id: boolean
+          max_consecutive_nights: number
+          max_consecutive_work_days: number
+          min_rest_hours: number
+          night_shift_start: string
+          shift_hours: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          day_shift_start?: string
+          id?: boolean
+          max_consecutive_nights?: number
+          max_consecutive_work_days?: number
+          min_rest_hours?: number
+          night_shift_start?: string
+          shift_hours?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          day_shift_start?: string
+          id?: boolean
+          max_consecutive_nights?: number
+          max_consecutive_work_days?: number
+          min_rest_hours?: number
+          night_shift_start?: string
+          shift_hours?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roster_rules_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roster_sites: {
+        Row: {
+          active: boolean
+          code: string | null
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          code?: string | null
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          code?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       sic_counters: {
         Row: {
           last_seq: number
@@ -2421,6 +2801,269 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "sics"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      roster_add_exception: {
+        Args: {
+          p_covers_employee_id?: string
+          p_employee_id: string
+          p_from: string
+          p_kind: string
+          p_note?: string
+          p_to: string
+        }
+        Returns: {
+          covers_employee_id: string | null
+          created_at: string
+          created_by: string | null
+          date_from: string
+          date_to: string
+          employee_id: string
+          id: string
+          kind: string
+          note: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "roster_exceptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      roster_assign_crew: {
+        Args: { p_data: Json; p_employee_ids: string[] }
+        Returns: number
+      }
+      roster_assignments_list: {
+        Args: {
+          p_from?: string
+          p_only_current?: boolean
+          p_site_id?: string
+          p_to?: string
+        }
+        Returns: {
+          alternate_shift: boolean
+          anchor_date: string
+          crew_id: string | null
+          crew_name: string | null
+          employee_id: string
+          employee_status: string
+          first_name: string
+          id: string
+          last_name: string
+          legajo: string | null
+          pattern_id: string
+          pattern_name: string
+          position_id: string | null
+          position_name: string | null
+          shift: string
+          site_id: string
+          site_name: string
+          valid_from: string
+          valid_to: string | null
+        }[]
+      }
+      roster_change_assignment: {
+        Args: { p_data: Json; p_effective_from: string; p_id: string }
+        Returns: {
+          alternate_shift: boolean
+          anchor_date: string
+          created_at: string
+          created_by: string | null
+          crew_id: string | null
+          employee_id: string
+          id: string
+          pattern_id: string
+          position_id: string | null
+          shift: string
+          site_id: string
+          updated_at: string
+          updated_by: string | null
+          valid_from: string
+          valid_to: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "roster_assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      roster_create_assignment: {
+        Args: { p_data: Json }
+        Returns: {
+          alternate_shift: boolean
+          anchor_date: string
+          created_at: string
+          created_by: string | null
+          crew_id: string | null
+          employee_id: string
+          id: string
+          pattern_id: string
+          position_id: string | null
+          shift: string
+          site_id: string
+          updated_at: string
+          updated_by: string | null
+          valid_from: string
+          valid_to: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "roster_assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      roster_delete_exception: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+      roster_employee_options: {
+        Args: never
+        Returns: {
+          first_name: string
+          id: string
+          last_name: string
+          legajo: string | null
+          status: string
+        }[]
+      }
+      roster_save_crew: {
+        Args: {
+          p_active?: boolean
+          p_id: string | null
+          p_name: string
+          p_site_id: string
+        }
+        Returns: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          site_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "roster_crews"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      roster_save_pattern: {
+        Args: {
+          p_active?: boolean
+          p_id: string | null
+          p_name: string
+          p_rest_days: number
+          p_travel_in_days?: number
+          p_travel_inside_cycle?: boolean
+          p_travel_out_days?: number
+          p_work_days: number
+        }
+        Returns: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          rest_days: number
+          travel_in_days: number
+          travel_inside_cycle: boolean
+          travel_out_days: number
+          work_days: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "roster_patterns"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      roster_save_position: {
+        Args: {
+          p_active?: boolean
+          p_id: string | null
+          p_name: string
+          p_required_count?: number
+          p_shift?: string
+          p_site_id: string
+        }
+        Returns: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          required_count: number
+          shift: string
+          site_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "roster_positions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      roster_save_site: {
+        Args: {
+          p_active?: boolean
+          p_code?: string
+          p_id: string | null
+          p_name: string
+        }
+        Returns: {
+          active: boolean
+          code: string | null
+          created_at: string
+          id: string
+          name: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "roster_sites"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      roster_state: {
+        Args: { p_from: string; p_site_id?: string; p_to: string }
+        Returns: {
+          assignment_id: string
+          crew_id: string | null
+          day: string
+          employee_id: string
+          extended: boolean
+          position_id: string | null
+          shift: string | null
+          site_id: string
+          state: string
+        }[]
+      }
+      roster_void_assignment: { Args: { p_id: string }; Returns: undefined }
+      roster_update_assignment: {
+        Args: { p_data: Json; p_id: string }
+        Returns: {
+          alternate_shift: boolean
+          anchor_date: string
+          created_at: string
+          created_by: string | null
+          crew_id: string | null
+          employee_id: string
+          id: string
+          pattern_id: string
+          position_id: string | null
+          shift: string
+          site_id: string
+          updated_at: string
+          updated_by: string | null
+          valid_from: string
+          valid_to: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "roster_assignments"
           isOneToOne: true
           isSetofReturn: false
         }

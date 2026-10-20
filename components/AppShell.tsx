@@ -21,6 +21,7 @@ import {
   IconSettings,
   IconTruck,
   IconUsers,
+  IconCalendar,
   IconX,
 } from "@/components/icons";
 import { CAN_CREATE_SIC, ROLE_LABELS, type UserRole } from "@/lib/constants";
@@ -213,13 +214,16 @@ export default function AppShell({
             </>
           )}
 
-          {(modules.includes("personal") || modules.includes("recursos-humanos") || modules.includes("logistica") || modules.includes("administracion")) && (
+          {(modules.includes("personal") || modules.includes("roster") || modules.includes("recursos-humanos") || modules.includes("logistica") || modules.includes("administracion")) && (
             <>
               <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
                 Módulos
               </p>
               {modules.includes("personal") && (
                 <NavLink href="/personal" label="Personal" icon={<IconUsers />} />
+              )}
+              {modules.includes("roster") && (
+                <NavLink href="/roster" label="Roster" icon={<IconCalendar />} />
               )}
               {modules.includes("recursos-humanos") && (
                 <NavLink href="/modulos/recursos-humanos" label="Recursos Humanos" icon={<IconBadge />} />

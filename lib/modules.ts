@@ -12,7 +12,8 @@ export type ModuleKey =
   | "recursos-humanos"
   | "logistica"
   | "administracion"
-  | "personal";
+  | "personal"
+  | "roster";
 
 export type ModuleDef = {
   key: ModuleKey;
@@ -63,6 +64,14 @@ export const MODULES: readonly ModuleDef[] = [
     description: "Base de datos de empleados de toda la empresa: legajos, altas, bajas e importación.",
     group: "modulos",
     href: "/personal",
+    defaultRoles: ["admin", "gerencia"],
+  },
+  {
+    key: "roster",
+    title: "Roster",
+    description: "Planificación de rotaciones del personal: sitios, regímenes, cuadrillas, turnos y calendario.",
+    group: "modulos",
+    href: "/roster",
     defaultRoles: ["admin", "gerencia"],
   },
   {
@@ -138,6 +147,7 @@ export function moduleForPath(path: string): ModuleKey | null {
   if (path === "/proveedores" || path.startsWith("/proveedores/")) return "proveedores";
   if (path === "/catalogo" || path.startsWith("/catalogo/")) return "catalogo";
   if (path === "/personal" || path.startsWith("/personal/")) return "personal";
+  if (path === "/roster" || path.startsWith("/roster/")) return "roster";
   if (path.startsWith("/modulos/")) {
     const slug = path.split("/")[2];
     return slug && isModuleKey(slug) ? slug : null;
@@ -160,13 +170,13 @@ export const DEMO_MODULES: DemoModule[] = [
     slug: "recursos-humanos",
     title: "Recursos Humanos",
     description: "Personas, pagos y personal en operación.",
-    sections: ["Sueldos", "Liquidaciones", "Asistencias", "Reclutamiento", "Roster minero"],
+    sections: ["Sueldos", "Liquidaciones", "Asistencias", "Reclutamiento"],
   },
   {
     slug: "logistica",
     title: "Logística",
     description: "Movimiento de personal y de cargas.",
-    sections: ["Roster minero", "Transporte"],
+    sections: ["Transporte"],
   },
   {
     slug: "administracion",
