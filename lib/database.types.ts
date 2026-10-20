@@ -508,6 +508,146 @@ export type Database = {
           },
         ]
       }
+      employee_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          employee_id: string | null
+          event_type: string
+          id: string
+          new_value: Json | null
+          note: string | null
+          old_value: Json | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          employee_id?: string | null
+          event_type: string
+          id?: string
+          new_value?: Json | null
+          note?: string | null
+          old_value?: Json | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          employee_id?: string | null
+          event_type?: string
+          id?: string
+          new_value?: Json | null
+          note?: string | null
+          old_value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_events_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          birth_date: string | null
+          cuil: string | null
+          created_at: string
+          created_by: string | null
+          dni: string
+          first_name: string
+          hire_date: string | null
+          id: string
+          job_category: string | null
+          last_name: string
+          legajo: string | null
+          plant_id: string | null
+          position: string | null
+          profile_id: string | null
+          status: string
+          termination_date: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          birth_date?: string | null
+          cuil?: string | null
+          created_at?: string
+          created_by?: string | null
+          dni: string
+          first_name: string
+          hire_date?: string | null
+          id?: string
+          job_category?: string | null
+          last_name: string
+          legajo?: string | null
+          plant_id?: string | null
+          position?: string | null
+          profile_id?: string | null
+          status?: string
+          termination_date?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          birth_date?: string | null
+          cuil?: string | null
+          created_at?: string
+          created_by?: string | null
+          dni?: string
+          first_name?: string
+          hire_date?: string | null
+          id?: string
+          job_category?: string | null
+          last_name?: string
+          legajo?: string | null
+          plant_id?: string | null
+          position?: string | null
+          profile_id?: string | null
+          status?: string
+          termination_date?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_plant_id_fkey"
+            columns: ["plant_id"]
+            isOneToOne: false
+            referencedRelation: "plants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       item_catalog: {
         Row: {
           active: boolean
@@ -1756,6 +1896,35 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_employee: {
+        Args: { p_data: Json }
+        Returns: {
+          birth_date: string | null
+          cuil: string | null
+          created_at: string
+          created_by: string | null
+          dni: string
+          first_name: string
+          hire_date: string | null
+          id: string
+          job_category: string | null
+          last_name: string
+          legajo: string | null
+          plant_id: string | null
+          position: string | null
+          profile_id: string | null
+          status: string
+          termination_date: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "employees"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_sic: {
         Args: {
           p_currency?: Database["public"]["Enums"]["currency_code"]
@@ -1878,6 +2047,10 @@ export type Database = {
         Args: { p_effective?: boolean; p_module: string }
         Returns: boolean
       }
+      import_employees: {
+        Args: { p_rows: Json }
+        Returns: Json
+      }
       is_jefe_of_plant: { Args: { p_plant_id: string }; Returns: boolean }
       issue_po: {
         Args: {
@@ -1955,6 +2128,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      log_employee_export: {
+        Args: { p_count: number }
+        Returns: undefined
       }
       module_default: {
         Args: {
@@ -2274,6 +2451,40 @@ export type Database = {
         }
       }
       set_my_avatar: { Args: { p_path?: string }; Returns: undefined }
+      set_employee_status: {
+        Args: {
+          p_date?: string
+          p_id: string
+          p_note?: string
+          p_status: string
+        }
+        Returns: {
+          birth_date: string | null
+          cuil: string | null
+          created_at: string
+          created_by: string | null
+          dni: string
+          first_name: string
+          hire_date: string | null
+          id: string
+          job_category: string | null
+          last_name: string
+          legajo: string | null
+          plant_id: string | null
+          position: string | null
+          profile_id: string | null
+          status: string
+          termination_date: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "employees"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       set_sic_current_account_amount: {
         Args: { p_amount: number; p_note?: string; p_sic_id: string }
         Returns: {
@@ -2542,6 +2753,35 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "contract_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_employee: {
+        Args: { p_data: Json; p_id: string }
+        Returns: {
+          birth_date: string | null
+          cuil: string | null
+          created_at: string
+          created_by: string | null
+          dni: string
+          first_name: string
+          hire_date: string | null
+          id: string
+          job_category: string | null
+          last_name: string
+          legajo: string | null
+          plant_id: string | null
+          position: string | null
+          profile_id: string | null
+          status: string
+          termination_date: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "employees"
           isOneToOne: true
           isSetofReturn: false
         }

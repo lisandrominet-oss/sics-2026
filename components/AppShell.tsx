@@ -213,11 +213,14 @@ export default function AppShell({
             </>
           )}
 
-          {(modules.includes("recursos-humanos") || modules.includes("logistica") || modules.includes("administracion")) && (
+          {(modules.includes("personal") || modules.includes("recursos-humanos") || modules.includes("logistica") || modules.includes("administracion")) && (
             <>
               <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
                 Módulos
               </p>
+              {modules.includes("personal") && (
+                <NavLink href="/personal" label="Personal" icon={<IconUsers />} />
+              )}
               {modules.includes("recursos-humanos") && (
                 <NavLink href="/modulos/recursos-humanos" label="Recursos Humanos" icon={<IconBadge />} />
               )}
