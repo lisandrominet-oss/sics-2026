@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Button from "@/components/ui/Button";
+import EmployeePicker from "@/components/ui/EmployeePicker";
 import { notify } from "@/lib/notify";
 import { inputClass, labelClass } from "@/lib/ui";
 import {
@@ -57,8 +58,7 @@ export default function AssignmentForm({
   const activePatterns = patterns.filter((p) => p.active || p.id === current?.pattern_id);
 
   const [employeeId, setEmployeeId] = useState("");
-  const [picked, setPicked] = useState<Set<string>>(new Set());
-  const [query, setQuery] = useState("");
+  const [picked, setPicked] = useState<string[]>([]);
   const [siteId, setSiteId] = useState(current?.site_id ?? defaultSiteId ?? activeSites[0]?.id ?? "");
   const [positionId, setPositionId] = useState(current?.position_id ?? "");
   const [crewId, setCrewId] = useState(current?.crew_id ?? "");
@@ -85,11 +85,6 @@ export default function AssignmentForm({
     return [...seen.values()];
   }, [assignments, siteId]);
 
-  const visibleOptions = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return options.filter((o) => !q || `${o.last_name} ${o.first_name} ${o.legajo ?? ""}`.toLowerCase().includes(q));
-  }, [options, query]);
-
   function mirrorFrom(refCrewId: string) {
     const ref = references.find((r) => r.crew_id === refCrewId);
     if (!ref) return;
@@ -102,20 +97,11 @@ export default function AssignmentForm({
     setAlternate(ref.alternate_shift);
   }
 
-  function togglePick(id: string) {
-    setPicked((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     if (mode === "single" && !employeeId) return setError("Elegí a la persona");
-    if (mode === "crew" && picked.size === 0) return setError("Elegí al menos una persona");
+    if (mode === "crew" && picked.length === 0) return setError("Elegí al menos una persona");
     if (!isIsoDate(from)) return setError(changing ? "Indicá desde qué fecha rige el cambio" : "Indicá la fecha de inicio");
     if (anchor && !isIsoDate(anchor)) return setError("La fecha ancla no es válida");
 
@@ -157,7 +143,7 @@ export default function AssignmentForm({
         if (err) return setError(err.message);
         notify.success("Asignación creada");
       } else {
-        const { data: n, error: err } = await supabase.rpc("roster_assign_crew", { p_data: data, p_employee_ids: [...picked] });
+        const { data: n, error: err } = await supabase.rpc("roster_assign_crew", { p_data: data, p_employee_ids: picked });
         setBusy(false);
         if (err) return setError(err.message);
         notify.success(n === 1 ? "1 persona asignada" : `${n} personas asignadas`);
@@ -178,52 +164,16 @@ export default function AssignmentForm({
       {mode === "single" && (
         <div>
           <label className={labelClass}>Persona</label>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por apellido, nombre o legajo"
-            aria-label="Buscar persona"
-            className={inputClass}
-          />
-          <div role="radiogroup" aria-label="Personas encontradas" className="mt-2 max-h-56 divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
-            {visibleOptions.map((o) => (
-              <label key={o.id} className={`flex cursor-pointer items-center gap-3 px-3 py-2 text-sm ${employeeId === o.id ? "bg-indigo-50" : "hover:bg-slate-50"}`}>
-                <input type="radio" name="employee" checked={employeeId === o.id} onChange={() => setEmployeeId(o.id)} className="h-4 w-4 border-slate-300" />
-                <span className="min-w-0 flex-1 truncate">{employeeLabel(o)}</span>
-                {o.status === "licencia" && <span className="shrink-0 text-xs text-amber-700">en licencia</span>}
-                <span className="shrink-0 text-xs text-slate-400">{o.legajo ? `Leg. ${o.legajo}` : ""}</span>
-              </label>
-            ))}
-            {visibleOptions.length === 0 && <p className="px-3 py-3 text-sm text-slate-500">No hay coincidencias.</p>}
-          </div>
+          <EmployeePicker options={options} selected={employeeId ? [employeeId] : []} onChange={(ids) => setEmployeeId(ids[0] ?? "")} ariaLabel="Buscar persona" />
           {options.length === 0 && <p className="mt-1 text-xs text-slate-500">No hay empleados activos: cargalos en el módulo Personal.</p>}
         </div>
       )}
 
       {mode === "crew" && (
         <div>
-          <label className={labelClass}>Personas de la cuadrilla ({picked.size} elegidas)</label>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por apellido, nombre o legajo"
-            aria-label="Buscar personas"
-            className={inputClass}
-          />
-          <ul className="mt-2 max-h-56 divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
-            {visibleOptions.map((o) => (
-              <li key={o.id}>
-                <label className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-slate-50">
-                  <input type="checkbox" checked={picked.has(o.id)} onChange={() => togglePick(o.id)} className="h-4 w-4 rounded border-slate-300" />
-                  <span className="min-w-0 flex-1 truncate">{employeeLabel(o)}</span>
-                  <span className="text-xs text-slate-400">{o.legajo ? `Leg. ${o.legajo}` : ""}</span>
-                </label>
-              </li>
-            ))}
-            {visibleOptions.length === 0 && <li className="px-3 py-3 text-sm text-slate-500">No hay coincidencias.</li>}
-          </ul>
+          <label className={labelClass}>Personas de la cuadrilla ({picked.length} elegidas)</label>
+          <EmployeePicker options={options} selected={picked} onChange={setPicked} multiple ariaLabel="Buscar personas" />
+          {options.length === 0 && <p className="mt-1 text-xs text-slate-500">No hay empleados activos: cargalos en el módulo Personal.</p>}
         </div>
       )}
 
