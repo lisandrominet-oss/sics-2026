@@ -186,15 +186,17 @@ export default function AssignmentForm({
             aria-label="Buscar persona"
             className={inputClass}
           />
-          <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} required size={5} aria-label="Personas encontradas" className={`${inputClass} !mt-2`}>
+          <div role="radiogroup" aria-label="Personas encontradas" className="mt-2 max-h-56 divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
             {visibleOptions.map((o) => (
-              <option key={o.id} value={o.id}>
-                {employeeLabel(o)}
-                {o.legajo ? ` · Leg. ${o.legajo}` : ""}
-                {o.status === "licencia" ? " · en licencia" : ""}
-              </option>
+              <label key={o.id} className={`flex cursor-pointer items-center gap-3 px-3 py-2 text-sm ${employeeId === o.id ? "bg-indigo-50" : "hover:bg-slate-50"}`}>
+                <input type="radio" name="employee" checked={employeeId === o.id} onChange={() => setEmployeeId(o.id)} className="h-4 w-4 border-slate-300" />
+                <span className="min-w-0 flex-1 truncate">{employeeLabel(o)}</span>
+                {o.status === "licencia" && <span className="shrink-0 text-xs text-amber-700">en licencia</span>}
+                <span className="shrink-0 text-xs text-slate-400">{o.legajo ? `Leg. ${o.legajo}` : ""}</span>
+              </label>
             ))}
-          </select>
+            {visibleOptions.length === 0 && <p className="px-3 py-3 text-sm text-slate-500">No hay coincidencias.</p>}
+          </div>
           {options.length === 0 && <p className="mt-1 text-xs text-slate-500">No hay empleados activos: cargalos en el módulo Personal.</p>}
         </div>
       )}
