@@ -1285,6 +1285,219 @@ export type Database = {
           },
         ]
       }
+      roster_closures: {
+        Row: {
+          closed_at: string
+          closed_by: string | null
+          date_from: string
+          date_to: string
+          id: string
+          note: string | null
+          reopen_reason: string | null
+          reopened_at: string | null
+          reopened_by: string | null
+          site_id: string | null
+        }
+        Insert: {
+          closed_at?: string
+          closed_by?: string | null
+          date_from: string
+          date_to: string
+          id?: string
+          note?: string | null
+          reopen_reason?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          site_id?: string | null
+        }
+        Update: {
+          closed_at?: string
+          closed_by?: string | null
+          date_from?: string
+          date_to?: string
+          id?: string
+          note?: string | null
+          reopen_reason?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          site_id?: string | null
+        }
+        Relationships: []
+      }
+      roster_day_records: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          created_by: string | null
+          day: string
+          employee_id: string
+          hours_extra100: number
+          hours_extra50: number
+          hours_night: number
+          hours_normal: number
+          hours_travel: number
+          id: string
+          note: string | null
+          reason: string | null
+          shift: string | null
+          site_id: string
+          state: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          created_by?: string | null
+          day: string
+          employee_id: string
+          hours_extra100?: number
+          hours_extra50?: number
+          hours_night?: number
+          hours_normal?: number
+          hours_travel?: number
+          id?: string
+          note?: string | null
+          reason?: string | null
+          shift?: string | null
+          site_id: string
+          state: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          created_by?: string | null
+          day?: string
+          employee_id?: string
+          hours_extra100?: number
+          hours_extra50?: number
+          hours_night?: number
+          hours_normal?: number
+          hours_travel?: number
+          id?: string
+          note?: string | null
+          reason?: string | null
+          shift?: string | null
+          site_id?: string
+          state?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      roster_holidays: {
+        Row: {
+          active: boolean
+          created_at: string
+          day: string
+          id: string
+          name: string
+          scope: string
+          site_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          day: string
+          id?: string
+          name: string
+          scope?: string
+          site_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          day?: string
+          id?: string
+          name?: string
+          scope?: string
+          site_id?: string | null
+        }
+        Relationships: []
+      }
+      roster_pay_rules: {
+        Row: {
+          holiday_all_hours: boolean
+          holiday_extra_pct: number
+          id: boolean
+          night_end: string
+          night_start: string
+          normal_hours_per_day: number
+          sunday_as_holiday: boolean
+          travel_day_hours: number
+          updated_at: string
+          updated_by: string | null
+          weekday_extra_pct: number
+        }
+        Insert: {
+          holiday_all_hours?: boolean
+          holiday_extra_pct?: number
+          id?: boolean
+          night_end?: string
+          night_start?: string
+          normal_hours_per_day?: number
+          sunday_as_holiday?: boolean
+          travel_day_hours?: number
+          updated_at?: string
+          updated_by?: string | null
+          weekday_extra_pct?: number
+        }
+        Update: {
+          holiday_all_hours?: boolean
+          holiday_extra_pct?: number
+          id?: boolean
+          night_end?: string
+          night_start?: string
+          normal_hours_per_day?: number
+          sunday_as_holiday?: boolean
+          travel_day_hours?: number
+          updated_at?: string
+          updated_by?: string | null
+          weekday_extra_pct?: number
+        }
+        Relationships: []
+      }
+      roster_rates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          employee_id: string | null
+          hourly_rate: number
+          id: string
+          job_category: string | null
+          note: string | null
+          valid_from: string
+          valid_to: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          employee_id?: string | null
+          hourly_rate: number
+          id?: string
+          job_category?: string | null
+          note?: string | null
+          valid_from: string
+          valid_to?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          employee_id?: string | null
+          hourly_rate?: number
+          id?: string
+          job_category?: string | null
+          note?: string | null
+          valid_from?: string
+          valid_to?: string | null
+        }
+        Relationships: []
+      }
       roster_events: {
         Row: {
           actor_id: string | null
@@ -1340,6 +1553,7 @@ export type Database = {
           id: string
           kind: string
           note: string | null
+          reason: string | null
         }
         Insert: {
           covers_employee_id?: string | null
@@ -1351,6 +1565,7 @@ export type Database = {
           id?: string
           kind: string
           note?: string | null
+          reason?: string | null
         }
         Update: {
           covers_employee_id?: string | null
@@ -1362,6 +1577,7 @@ export type Database = {
           id?: string
           kind?: string
           note?: string | null
+          reason?: string | null
         }
         Relationships: [
           {
@@ -2812,6 +3028,7 @@ export type Database = {
           p_from: string
           p_kind: string
           p_note?: string
+          p_reason?: string
           p_to: string
         }
         Returns: {
@@ -2824,6 +3041,7 @@ export type Database = {
           id: string
           kind: string
           note: string | null
+          reason: string | null
         }
         SetofOptions: {
           from: "*"
@@ -3031,6 +3249,7 @@ export type Database = {
         Args: { p_from: string; p_site_id?: string; p_to: string }
         Returns: {
           assignment_id: string
+          base_state: string
           crew_id: string | null
           day: string
           employee_id: string
@@ -3041,7 +3260,121 @@ export type Database = {
           state: string
         }[]
       }
-      roster_void_assignment: { Args: { p_id: string }; Returns: undefined }
+      roster_void_assignment: { Args: { p_id: string; p_reason?: string }; Returns: undefined }
+      roster_actual_state: {
+        Args: { p_from: string; p_site_id?: string; p_to: string }
+        Returns: {
+          assignment_id: string
+          base_state: string
+          closed: boolean
+          confirmed: boolean
+          crew_id: string | null
+          day: string
+          differs: boolean
+          employee_id: string
+          extended: boolean
+          holiday_name: string | null
+          hours_extra100: number
+          hours_extra50: number
+          hours_night: number
+          hours_normal: number
+          hours_travel: number
+          is_holiday: boolean
+          note: string | null
+          plan_shift: string | null
+          plan_state: string
+          position_id: string | null
+          reason: string | null
+          shift: string | null
+          site_id: string
+          state: string
+        }[]
+      }
+      roster_hours_summary: {
+        Args: { p_from: string; p_site_id?: string; p_to: string }
+        Returns: {
+          crew_name: string | null
+          days_absent: number
+          days_holiday_worked: number
+          days_license: number
+          days_other: number
+          days_rest: number
+          days_sick: number
+          days_travel: number
+          days_unconfirmed: number
+          days_vacation: number
+          days_worked: number
+          employee_id: string
+          first_name: string
+          hours_extra100: number
+          hours_extra50: number
+          hours_night: number
+          hours_normal: number
+          hours_total: number
+          hours_travel: number
+          last_name: string
+          legajo: string | null
+          site_names: string | null
+        }[]
+      }
+      roster_cost_summary: {
+        Args: { p_from: string; p_site_id?: string; p_to: string }
+        Returns: {
+          cost: number
+          currency: string | null
+          days_without_rate: number
+          employee_id: string
+          rate: number | null
+        }[]
+      }
+      roster_job_categories: { Args: never; Returns: { job_category: string }[] }
+      roster_rates_list: {
+        Args: never
+        Returns: {
+          currency: string
+          employee_id: string | null
+          first_name: string | null
+          hourly_rate: number
+          id: string
+          job_category: string | null
+          last_name: string | null
+          legajo: string | null
+          note: string | null
+          valid_from: string
+          valid_to: string | null
+        }[]
+      }
+      roster_save_rate: {
+        Args: { p_currency: string; p_employee_id: string; p_from: string; p_job_category: string; p_note?: string; p_rate: number }
+        Returns: Database["public"]["Tables"]["roster_rates"]["Row"]
+      }
+      roster_delete_rate: { Args: { p_id: string }; Returns: undefined }
+      roster_save_day_record: {
+        Args: { p_data: Json; p_day: string; p_employee_id: string }
+        Returns: Database["public"]["Tables"]["roster_day_records"]["Row"]
+      }
+      roster_delete_day_record: { Args: { p_day: string; p_employee_id: string }; Returns: undefined }
+      roster_confirm_range: {
+        Args: { p_crew_id?: string; p_employee_ids?: string[]; p_from: string; p_site_id: string; p_to: string }
+        Returns: number
+      }
+      roster_save_holiday: {
+        Args: { p_active?: boolean; p_day: string; p_id: string; p_name: string; p_scope?: string; p_site_id?: string }
+        Returns: Database["public"]["Tables"]["roster_holidays"]["Row"]
+      }
+      roster_delete_holiday: { Args: { p_id: string }; Returns: undefined }
+      roster_save_pay_rules: {
+        Args: { p_data: Json }
+        Returns: Database["public"]["Tables"]["roster_pay_rules"]["Row"]
+      }
+      roster_close_period: {
+        Args: { p_from: string; p_note?: string; p_site_id?: string; p_to: string }
+        Returns: Database["public"]["Tables"]["roster_closures"]["Row"]
+      }
+      roster_reopen_period: {
+        Args: { p_id: string; p_reason: string }
+        Returns: Database["public"]["Tables"]["roster_closures"]["Row"]
+      }
       roster_update_assignment: {
         Args: { p_data: Json; p_id: string }
         Returns: {

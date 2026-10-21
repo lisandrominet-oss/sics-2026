@@ -3,6 +3,7 @@ import Link from "next/link";
 const TABS = [
   { key: "calendario", href: "/roster", label: "Calendario" },
   { key: "asignaciones", href: "/roster/asignaciones", label: "Asignaciones" },
+  { key: "horas", href: "/roster/horas", label: "Horas" },
   { key: "configuracion", href: "/roster/configuracion", label: "Configuración" },
 ] as const;
 

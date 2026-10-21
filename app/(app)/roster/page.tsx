@@ -62,11 +62,17 @@ export default async function RosterPage({ searchParams }: { searchParams: { sit
   const from = isIsoDate(searchParams.desde) ? searchParams.desde : today;
   const to = addDays(from, days - 1);
 
-  const [states, assignments, allExceptions] = await Promise.all([
-    fetchAllRows((a, b) => supabase.rpc("roster_state", { p_from: from, p_to: to, p_site_id: site.id }).range(a, b)),
+  const [states, assignments, allExceptions, positions, crews, options] = await Promise.all([
+    fetchAllRows((a, b) => supabase.rpc("roster_actual_state", { p_from: from, p_to: to, p_site_id: site.id }).range(a, b)),
     fetchAllRows((a, b) => supabase.rpc("roster_assignments_list", { p_site_id: site.id, p_from: from, p_to: to }).range(a, b)),
     fetchAllRows((a, b) => supabase.from("roster_exceptions").select("*").lte("date_from", to).gte("date_to", from).order("id").range(a, b)),
+    supabase.from("roster_positions").select("*").order("name"),
+    supabase.from("roster_crews").select("*").order("name"),
+    fetchAllRows((a, b) => supabase.rpc("roster_employee_options").range(a, b)),
   ]);
+  for (const r of [positions, crews]) if (r.error) throw new Error(r.error.message);
+  // Dotación requerida del sitio: suma de los puestos activos (para la fila de cobertura del calendario).
+  const required = (positions.data ?? []).filter((p) => p.site_id === site.id && p.active).reduce((n, p) => n + p.required_count, 0);
   // Al navegador solo llegan las excepciones (y sus notas) de la gente de este sitio.
   const people = new Set(assignments.map((a) => a.employee_id));
   const exceptions = allExceptions.filter((x) => people.has(x.employee_id));
@@ -84,6 +90,10 @@ export default async function RosterPage({ searchParams }: { searchParams: { sit
           assignments={assignments}
           states={states}
           exceptions={exceptions}
+          positions={positions.data ?? []}
+          crews={crews.data ?? []}
+          options={options}
+          required={required}
         />
       </div>
     </div>

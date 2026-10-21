@@ -144,7 +144,7 @@ export default function RosterConfig({
   );
 }
 
-function Section({
+export function Section({
   title,
   description,
   onNew,
@@ -154,8 +154,8 @@ function Section({
 }: {
   title: string;
   description: string;
-  onNew: () => void;
-  newLabel: string;
+  onNew?: () => void;
+  newLabel?: string;
   disabled?: boolean;
   children: ReactNode;
 }) {
@@ -166,16 +166,18 @@ function Section({
           <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
           <p className="mt-0.5 max-w-xl text-pretty text-xs text-slate-500">{description}</p>
         </div>
-        <Button variant="secondary" size="sm" onClick={onNew} disabled={disabled} title={disabled ? "Primero creá un sitio" : undefined}>
-          {newLabel}
-        </Button>
+        {onNew && (
+          <Button variant="secondary" size="sm" onClick={onNew} disabled={disabled} title={disabled ? "Primero creá un sitio" : undefined}>
+            {newLabel}
+          </Button>
+        )}
       </div>
       {children}
     </Card>
   );
 }
 
-function Row({ title, subtitle, inactive, onEdit }: { title: string; subtitle?: string; inactive: boolean; onEdit: () => void }) {
+export function Row({ title, subtitle, inactive, onEdit }: { title: string; subtitle?: string; inactive: boolean; onEdit: () => void }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div className="min-w-0">
@@ -191,7 +193,7 @@ function Row({ title, subtitle, inactive, onEdit }: { title: string; subtitle?: 
   );
 }
 
-function FormShell({
+export function FormShell({
   onSubmit,
   onCancel,
   busy,
@@ -224,7 +226,7 @@ function FormShell({
   );
 }
 
-function ActiveCheck({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+export function ActiveCheck({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="flex items-center gap-2 text-sm text-slate-700">
       <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded border-slate-300" />
@@ -234,7 +236,7 @@ function ActiveCheck({ value, onChange }: { value: boolean; onChange: (v: boolea
 }
 
 // Corre una RPC y devuelve el mensaje de error (o null si salió bien).
-function useSave(onDone: () => void) {
+export function useSave(onDone: () => void) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function save(call: () => PromiseLike<{ error: { message: string } | null }>, okMessage: string) {

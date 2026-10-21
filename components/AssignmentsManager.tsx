@@ -9,8 +9,9 @@ import Button, { buttonClass } from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import EmptyState from "@/components/ui/EmptyState";
 import Modal from "@/components/ui/Modal";
-import { useConfirm } from "@/components/ui/ConfirmProvider";
 import AssignmentForm, { type AssignmentFormMode } from "@/components/AssignmentForm";
+import AssignmentEditForm from "@/components/AssignmentEditForm";
+import PromptDialog from "@/components/ui/PromptDialog";
 import { notify } from "@/lib/notify";
 import { formatSqlDate } from "@/lib/constants";
 import { inputClass, labelClass } from "@/lib/ui";
@@ -58,21 +59,22 @@ export default function AssignmentsManager({
   const shown = modal ?? lastModal;
   const today = todayIso();
   const router = useRouter();
-  const confirm = useConfirm();
+  const [voiding, setVoiding] = useState<RosterAssignment | null>(null);
+  // El diálogo conserva la asignación mientras dura la animación de salida.
+  const [lastVoiding, setLastVoiding] = useState<RosterAssignment | null>(null);
+  const voidShown = voiding ?? lastVoiding;
 
-  // Una asignación que todavía no empezó y se cargó por error se anula (queda en la auditoría).
-  async function voidAssignment(a: RosterAssignment) {
-    const ok = await confirm({
-      title: "¿Anular la asignación?",
-      description: `${employeeLabel(a)} en ${a.site_name}, desde el ${formatSqlDate(a.valid_from)}. Todavía no empezó: se quita del roster y queda registrado.`,
-      confirmLabel: "Anular",
-      destructive: true,
-    });
-    if (!ok) return;
-    const { error } = await createClient().rpc("roster_void_assignment", { p_id: a.id });
-    if (error) return notify.error("No se pudo anular", error.message);
+  // Una asignación cargada por error se anula (se quita del roster y queda en la auditoría con el motivo).
+  // Si ya empezó el motivo es obligatorio, y la base la rechaza si ya tiene días reales registrados o cae en un período cerrado.
+  async function voidAssignment(a: RosterAssignment, reason: string) {
+    const { error } = await createClient().rpc("roster_void_assignment", { p_id: a.id, p_reason: reason });
+    if (error) {
+      notify.error("No se pudo anular", error.message);
+      return false;
+    }
     notify.success("Asignación anulada");
     router.refresh();
+    return true;
   }
 
   function open(m: ModalState) {
@@ -174,7 +176,17 @@ export default function AssignmentsManager({
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    {left ? <Badge tone="muted">Empleado de baja</Badge> : ended ? <Badge tone="muted">Terminada</Badge> : upcoming ? <Badge tone="info">Futura</Badge> : <Badge tone="success">Vigente</Badge>}
+                    {left ? (
+                      <Badge tone="muted">Empleado de baja</Badge>
+                    ) : ended ? (
+                      <Badge tone="muted">Terminada</Badge>
+                    ) : upcoming ? (
+                      <Badge tone="info">Futura</Badge>
+                    ) : a.valid_to === today ? (
+                      <Badge tone="warning">Termina hoy</Badge>
+                    ) : (
+                      <Badge tone="success">Vigente</Badge>
+                    )}
                     {!ended && (
                       <>
                         <Button variant="link" size="sm" onClick={() => open({ type: "edit", assignment: a })}>
@@ -183,15 +195,22 @@ export default function AssignmentsManager({
                         <Button variant="link" size="sm" onClick={() => open({ type: "form", mode: "change", assignment: a })}>
                           Cambiar desde…
                         </Button>
-                        {upcoming ? (
-                          <Button variant="link-danger" size="sm" onClick={() => voidAssignment(a)}>
-                            Anular
-                          </Button>
-                        ) : (
+                        {!upcoming && (
                           <Button variant="link-danger" size="sm" onClick={() => open({ type: "end", assignment: a })}>
                             Terminar
                           </Button>
                         )}
+                        <Button
+                          variant="link-danger"
+                          size="sm"
+                          title="Para una asignación cargada por error: se quita del roster"
+                          onClick={() => {
+                            setVoiding(a);
+                            setLastVoiding(a);
+                          }}
+                        >
+                          Anular
+                        </Button>
                       </>
                     )}
                   </div>
@@ -232,7 +251,7 @@ export default function AssignmentsManager({
 
       <Modal open={modal?.type === "edit"} onClose={() => setModal(null)} title="Puesto y cuadrilla">
         {shown?.type === "edit" && (
-          <EditForm
+          <AssignmentEditForm
             key={shown.assignment.id}
             assignment={shown.assignment}
             positions={positions}
@@ -242,6 +261,23 @@ export default function AssignmentsManager({
           />
         )}
       </Modal>
+
+      <PromptDialog
+        open={voiding !== null}
+        onClose={() => setVoiding(null)}
+        title="Anular asignación"
+        description={
+          voidShown
+            ? voidShown.valid_from > today
+              ? `${employeeLabel(voidShown)} en ${voidShown.site_name}, desde el ${formatSqlDate(voidShown.valid_from)}. Todavía no empezó: se quita del roster y queda registrado.`
+              : `${employeeLabel(voidShown)} en ${voidShown.site_name}, desde el ${formatSqlDate(voidShown.valid_from)}. Usá Anular solo si se cargó por error: desaparece del calendario (si vino de un «Cambiar desde…», la asignación anterior vuelve a regir). Si la persona sí estuvo, usá Terminar.`
+            : undefined
+        }
+        fields={[{ name: "reason", label: voidShown && voidShown.valid_from > today ? "Motivo (opcional)" : "Motivo", required: !!voidShown && voidShown.valid_from <= today, placeholder: "Ej.: cargada por error, nunca subió" }]}
+        confirmLabel="Anular"
+        destructive
+        onSubmit={(v) => (voidShown ? voidAssignment(voidShown, v.reason ?? "") : false)}
+      />
     </div>
   );
 }
@@ -267,7 +303,7 @@ function EndForm({ assignment, onDone, onCancel }: { assignment: RosterAssignmen
   return (
     <form onSubmit={submit} className="mt-3 space-y-4">
       <p className="text-sm text-slate-600">
-        {employeeLabel(assignment)} deja de figurar en el calendario de {assignment.site_name} después de la fecha de fin. No se borra nada: queda en el historial.
+        {employeeLabel(assignment)} deja de figurar en el calendario de {assignment.site_name} después de la fecha de fin; ese último día sí figura. No se borra nada: queda en el historial. Si la asignación se cargó por error, usá «Anular».
       </p>
       <div>
         <label className={labelClass}>Último día en el roster</label>
@@ -284,85 +320,6 @@ function EndForm({ assignment, onDone, onCancel }: { assignment: RosterAssignmen
         </Button>
         <Button type="submit" variant="danger" loading={busy}>
           Terminar
-        </Button>
-      </div>
-    </form>
-  );
-}
-
-function EditForm({
-  assignment,
-  positions,
-  crews,
-  onDone,
-  onCancel,
-}: {
-  assignment: RosterAssignment;
-  positions: RosterPosition[];
-  crews: RosterCrew[];
-  onDone: () => void;
-  onCancel: () => void;
-}) {
-  const router = useRouter();
-  const [positionId, setPositionId] = useState(assignment.position_id ?? "");
-  const [crewId, setCrewId] = useState(assignment.crew_id ?? "");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const sitePositions = positions.filter((p) => p.site_id === assignment.site_id && (p.active || p.id === assignment.position_id));
-  const siteCrews = crews.filter((c) => c.site_id === assignment.site_id && (c.active || c.id === assignment.crew_id));
-
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setError(null);
-    const { error: err } = await createClient().rpc("roster_update_assignment", { p_id: assignment.id, p_data: { position_id: positionId, crew_id: crewId } });
-    setBusy(false);
-    if (err) return setError(err.message);
-    notify.success("Asignación actualizada");
-    router.refresh();
-    onDone();
-  }
-
-  return (
-    <form onSubmit={submit} className="mt-3 space-y-4">
-      <p className="text-sm text-slate-600">
-        {employeeLabel(assignment)} · {assignment.site_name}. Estos cambios no alteran el calendario; para cambiar el régimen, la fecha ancla o el turno usá «Cambiar desde…».
-      </p>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label className={labelClass}>Puesto</label>
-          <select value={positionId} onChange={(e) => setPositionId(e.target.value)} className={inputClass}>
-            <option value="">Sin puesto</option>
-            {sitePositions.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className={labelClass}>Cuadrilla</label>
-          <select value={crewId} onChange={(e) => setCrewId(e.target.value)} className={inputClass}>
-            <option value="">Sin cuadrilla</option>
-            {siteCrews.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      {error && (
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </p>
-      )}
-      <div className="flex justify-end gap-2">
-        <Button variant="secondary" onClick={onCancel} disabled={busy}>
-          Cancelar
-        </Button>
-        <Button type="submit" loading={busy}>
-          Guardar
         </Button>
       </div>
     </form>

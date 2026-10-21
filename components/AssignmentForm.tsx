@@ -57,11 +57,17 @@ export default function AssignmentForm({
   const activeSites = sites.filter((s) => s.active);
   const activePatterns = patterns.filter((p) => p.active || p.id === current?.pattern_id);
 
+  // Si el sitio tiene una sola cuadrilla activa, se propone por defecto (evita cargar gente "Sin cuadrilla" por descuido).
+  const defaultCrewFor = (site: string) => {
+    const active = crews.filter((c) => c.site_id === site && c.active);
+    return active.length === 1 ? active[0].id : "";
+  };
+
   const [employeeId, setEmployeeId] = useState("");
   const [picked, setPicked] = useState<string[]>([]);
   const [siteId, setSiteId] = useState(current?.site_id ?? defaultSiteId ?? activeSites[0]?.id ?? "");
   const [positionId, setPositionId] = useState(current?.position_id ?? "");
-  const [crewId, setCrewId] = useState(current?.crew_id ?? "");
+  const [crewId, setCrewId] = useState(current ? (current.crew_id ?? "") : defaultCrewFor(defaultSiteId ?? activeSites[0]?.id ?? ""));
   const [patternId, setPatternId] = useState(current?.pattern_id ?? activePatterns[0]?.id ?? "");
   const [shift, setShift] = useState<string>(current?.shift ?? "dia");
   const [alternate, setAlternate] = useState(current?.alternate_shift ?? false);
@@ -185,7 +191,7 @@ export default function AssignmentForm({
             onChange={(e) => {
               setSiteId(e.target.value);
               setPositionId("");
-              setCrewId("");
+              setCrewId(defaultCrewFor(e.target.value));
             }}
             required
             className={inputClass}

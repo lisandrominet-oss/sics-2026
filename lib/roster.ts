@@ -11,12 +11,50 @@ export type RosterException = Tables["roster_exceptions"]["Row"];
 export type RosterAssignment = Functions["roster_assignments_list"]["Returns"][number];
 export type RosterStateRow = Functions["roster_state"]["Returns"][number];
 export type RosterEmployeeOption = Functions["roster_employee_options"]["Returns"][number];
+export type RosterActualRow = Functions["roster_actual_state"]["Returns"][number];
+export type RosterHoursRow = Functions["roster_hours_summary"]["Returns"][number];
+export type RosterCostRow = Functions["roster_cost_summary"]["Returns"][number];
+export type RosterRateRow = Functions["roster_rates_list"]["Returns"][number];
+export type RosterHoliday = Tables["roster_holidays"]["Row"];
+export type RosterPayRules = Tables["roster_pay_rules"]["Row"];
+export type RosterClosure = Tables["roster_closures"]["Row"];
+export type RosterEvent = Tables["roster_events"]["Row"];
 
 // El cálculo de qué hace cada persona cada día vive en la base (roster_state): acá solo hay tipos, etiquetas,
 // colores y helpers de fechas para dibujarlo.
-export type DayState = "trabajo" | "franco" | "viaje_subida" | "viaje_bajada" | "vacaciones" | "licencia" | "enfermedad" | "ausencia";
-export type ExceptionKind = "vacaciones" | "licencia" | "enfermedad" | "ausencia" | "extension" | "franco_extra";
+export type DayState =
+  | "trabajo"
+  | "franco"
+  | "viaje_subida"
+  | "viaje_bajada"
+  | "vacaciones"
+  | "licencia"
+  | "enfermedad"
+  | "ausencia"
+  | "bajada_anticipada"
+  | "subida_demorada"
+  | "capacitacion"
+  | "suspension"
+  | "accidente_art";
+export type ExceptionKind =
+  | "vacaciones"
+  | "licencia"
+  | "enfermedad"
+  | "ausencia"
+  | "extension"
+  | "franco_extra"
+  | "bajada_anticipada"
+  | "subida_demorada"
+  | "capacitacion"
+  | "suspension"
+  | "accidente_art";
 export type Shift = "dia" | "noche";
+export type ReasonKey = "salud" | "familiar" | "operativa" | "clima" | "disciplinaria" | "otro";
+
+// Estados en los que la persona trabaja (llevan turno y horas de trabajo) y de viaje (llevan horas de viaje).
+export const WORK_STATES: readonly string[] = ["trabajo", "capacitacion"];
+export const TRAVEL_STATES: readonly string[] = ["viaje_subida", "viaje_bajada"];
+export const HOURS_STATES: readonly string[] = [...WORK_STATES, ...TRAVEL_STATES];
 
 export const DAY_STATE_LABELS: Record<DayState, string> = {
   trabajo: "Trabajo",
@@ -27,6 +65,20 @@ export const DAY_STATE_LABELS: Record<DayState, string> = {
   licencia: "Licencia",
   enfermedad: "Enfermedad",
   ausencia: "Ausencia",
+  bajada_anticipada: "Bajada anticipada",
+  subida_demorada: "Subida demorada",
+  capacitacion: "Capacitación",
+  suspension: "Suspensión",
+  accidente_art: "Accidente / ART",
+};
+
+export const REASON_LABELS: Record<ReasonKey, string> = {
+  salud: "Salud",
+  familiar: "Familiar",
+  operativa: "Operativa",
+  clima: "Clima",
+  disciplinaria: "Disciplinaria",
+  otro: "Otro",
 };
 
 export const SHIFT_LABELS: Record<Shift, string> = { dia: "Día", noche: "Noche" };
@@ -36,8 +88,13 @@ export const EXCEPTION_KIND_LABELS: Record<ExceptionKind, string> = {
   licencia: "Licencia",
   enfermedad: "Enfermedad",
   ausencia: "Ausencia",
-  extension: "Extensión de ciclo (trabaja)",
+  extension: "Extensión de ciclo (se queda trabajando)",
   franco_extra: "Franco extra (descansa)",
+  bajada_anticipada: "Bajada anticipada",
+  subida_demorada: "Subida demorada",
+  capacitacion: "Capacitación",
+  suspension: "Suspensión",
+  accidente_art: "Accidente / ART",
 };
 
 export const POSITION_SHIFT_LABELS: Record<string, string> = { dia: "Día", noche: "Noche", cualquiera: "Cualquiera" };
@@ -63,6 +120,16 @@ export function cellStyle(state: string, shift: string | null): { code: string; 
       return { code: "E", className: "bg-red-200 text-red-900" };
     case "ausencia":
       return { code: "A", className: "bg-red-100 text-red-800" };
+    case "bajada_anticipada":
+      return { code: "B!", className: "bg-orange-200 text-orange-900" };
+    case "subida_demorada":
+      return { code: "S!", className: "bg-orange-100 text-orange-800" };
+    case "capacitacion":
+      return { code: "C", className: "bg-teal-200 text-teal-900" };
+    case "suspension":
+      return { code: "Su", className: "bg-rose-200 text-rose-900" };
+    case "accidente_art":
+      return { code: "AR", className: "bg-rose-100 text-rose-800" };
     default:
       return { code: "?", className: "bg-slate-100 text-slate-500" };
   }
@@ -136,4 +203,27 @@ export function suggestMirrorAnchor(refAnchorIso: string, pattern: RosterPattern
 
 export function employeeLabel(e: { last_name: string; first_name: string }) {
   return `${e.last_name}, ${e.first_name}`;
+}
+
+// ---------------------------------------------------------------- horas y plata
+// Horas con coma y hasta 2 decimales ("12", "7,5").
+export function formatHours(n: number | null | undefined): string {
+  if (n === null || n === undefined) return "-";
+  return new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 }).format(n);
+}
+
+// Importe con centavos (los precios por hora no son enteros).
+export function formatMoney(n: number | null | undefined, currency: string | null | undefined): string {
+  if (n === null || n === undefined) return "-";
+  const cur = currency === "USD" ? "USD" : "ARS";
+  return new Intl.NumberFormat("es-AR", { style: "currency", currency: cur, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+}
+
+// Primer día y último día del mes de una fecha (texto AAAA-MM-DD).
+export function monthBounds(iso: string): { from: string; to: string } {
+  const y = Number(iso.slice(0, 4));
+  const m = Number(iso.slice(5, 7));
+  const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const mm = String(m).padStart(2, "0");
+  return { from: `${y}-${mm}-01`, to: `${y}-${mm}-${String(last).padStart(2, "0")}` };
 }
