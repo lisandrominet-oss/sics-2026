@@ -15,8 +15,8 @@ export default function Hoja02Problema({ total }: { total: number }) {
       n={2}
       total={total}
       etiqueta="El punto de partida"
-      titulo="Antes, todo se perseguía a mano"
-      bajada="Antes de SICS, nadie sabía dónde estaba un pedido sin preguntar."
+      titulo="Hoy las compras no tienen un sistema ni trazabilidad"
+      bajada="Se ejecutan de forma tradicional"
     >
       <div className="space-y-[3rem] px-[3.2rem] pt-[4rem]">
         {DATOS.map((d, i) => (
