@@ -2,17 +2,17 @@ import Card from "@/components/ui/Card";
 import StatusBadge from "@/components/StatusBadge";
 import { STATUS_LABELS } from "@/lib/constants";
 import { numClass } from "@/lib/ui";
-import { RECORRIDO } from "../_data/sics-demo";
+import { RECORRIDO, SIC_TRAZABILIDAD } from "../_data/sics-demo";
 
 // Maqueta del detalle de una SIC en celular: recorrido (app/(app)/sic/[id]/page.tsx).
 export default function Detalle() {
   return (
     <div className="space-y-4">
       <div>
-        <p className={`text-sm font-semibold text-slate-900 ${numClass}`}>SIC-GCIA-2026-0001</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Chapa de 2 1/2&quot;</h1>
+        <p className={`text-sm font-semibold text-slate-900 ${numClass}`}>{SIC_TRAZABILIDAD.code}</p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{SIC_TRAZABILIDAD.asunto}</h1>
         <div className="mt-2">
-          <StatusBadge status="orden_emitida" />
+          <StatusBadge status="cerrada" />
         </div>
       </div>
 

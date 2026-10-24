@@ -1,7 +1,7 @@
 import Aparece from "../_components/Aparece";
-import Celular from "../_components/Celular";
 import Hoja from "../_components/Hoja";
-import NuevaSic from "../_pantallas/NuevaSic";
+import Navegador from "../_components/Navegador";
+import { nuevaSic } from "../_data/capturas";
 
 const PUNTOS = [
   "El catálogo sugiere mientras escribís",
@@ -12,9 +12,12 @@ const PUNTOS = [
 export default function Hoja04Pedir({ total }: { total: number }) {
   return (
     <Hoja n={4} total={total} etiqueta="Pedir" titulo="Pedir es completar un formulario" bajada="Asunto, fecha y artículos. Listo.">
-      <ol className="absolute left-[3.2rem] top-[30rem] w-[20rem] space-y-[2.2rem]">
+      <Aparece retardo={150} className="absolute left-[3.2rem] top-[22.8rem] w-[43.2rem]">
+        <Navegador src={nuevaSic} alt="Formulario de Nueva SIC con un artículo y las sugerencias del catálogo" ancho={1346} alto={700} />
+      </Aparece>
+      <ol className="absolute left-[3.2rem] top-[50rem] w-[43.2rem] space-y-[1.4rem]">
         {PUNTOS.map((p, i) => (
-          <Aparece as="li" key={p} retardo={120 * i} className="flex gap-[1.2rem] text-[2rem] leading-snug text-slate-700">
+          <Aparece as="li" key={p} retardo={120 * i} className="flex items-center gap-[1.4rem] text-[2.1rem] leading-snug text-slate-700">
             <span className="flex h-[3rem] w-[3rem] shrink-0 items-center justify-center rounded-full bg-indigo-600 text-[1.9rem] font-semibold text-white">
               {i + 1}
             </span>
@@ -22,11 +25,6 @@ export default function Hoja04Pedir({ total }: { total: number }) {
           </Aparece>
         ))}
       </ol>
-      <Aparece retardo={250} className="absolute right-[2.2rem] top-[27rem]">
-        <Celular zoom={0.9} alto="48rem">
-          <NuevaSic />
-        </Celular>
-      </Aparece>
     </Hoja>
   );
 }

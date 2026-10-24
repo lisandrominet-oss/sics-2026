@@ -30,6 +30,15 @@ Vive en `app/presentacion/` y está **detrás del login** (el middleware no se t
 - No poner el valor real del tope de Gerencia sin confirmación de Lisandro.
 - Todo dato que aparezca en una hoja debe poder rastrearse a `docs/flujograma-sic-src/make_html.py` (`ROWS`), `lib/constants.ts` o la base.
 
+## Capturas reales de compu
+Las hojas 3, 4 y 8 llevan capturas reales de la app dentro de una ventana de navegador (`_components/Navegador.tsx`).
+- Se sacan con Claude in Chrome en una **pestaña nueva** (la pestaña de un Chrome en segundo plano no deja capturar) contra el dev server, con la sesión de Lisandro.
+- **Antes de capturar se tapan los datos sensibles en el navegador** (solo el DOM, no se toca la base): personas y correos se reemplazan por el rol o «Operativo», montos por `$ ••••••`, nombres de archivos de proveedores por nombres genéricos, miniaturas con blur. Después se verifica por texto que no queden nombres, correos ni montos (`document.body.innerText`).
+- Con `zoom` en `<html>` (0,88) entra más pantalla; hay que fijar la altura del `aside` a `757 / zoom` px para que el menú lateral llegue hasta abajo.
+- Para ver formularios llenos solo se escribe en los campos: **nunca enviar** (producción).
+- Las capturas recortadas van en `_img/*.jpg` (1360 px de ancho). Para actualizarlas: `node scripts/capturas-presentacion.js` regenera `_data/capturas.ts`, que las embebe en base64. No van en `public/`: las imágenes de `public/` son abiertas aunque la página pida login.
+- Ejemplo de trazabilidad completa: la SIC con más pasos (hoy SIC-COMP-2026-0001, 8 estados). Si cambia, actualizar también `RECORRIDO` en `_data/sics-demo.ts`.
+
 ## PDF
 La ruta pide login, así que el PDF lo genera Lisandro desde su Chrome: botón «Guardar PDF» (o Cmd+P, Guardar como PDF, sin márgenes ni encabezados).
 Verificar con `python3 -c "from pypdf import PdfReader; r=PdfReader('<archivo>'); print(len(r.pages), r.pages[0].mediabox)"`: debe dar **una página por hoja** y 595×842. Más páginas que hojas = una hoja se desborda.
