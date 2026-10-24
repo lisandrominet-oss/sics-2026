@@ -1,0 +1,56 @@
+/* Presentación de SICS: hojas A4 verticales.
+   Todo se mide en rem y el rem de la página escala con el ancho de la hoja (49,625 rem = 794 px = 210 mm),
+   así una hoja se ve igual de proporcionada en un celular, en la compu y en el PDF. */
+
+html.presentacion {
+  /* Ancho de hoja = min(ancho de pantalla - 16 px de margen, 820 px). 1 rem de referencia = 16 px a 794 px de ancho. */
+  font-size: calc(min(100vw - 16px, 820px) / 49.625);
+  scroll-snap-type: y proximity;
+  scroll-padding-top: 56px;
+  background: #e2e8f0;
+}
+html.presentacion body { background: #e2e8f0; }
+
+.pres-lista { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 68px 0 40px; }
+
+.hoja {
+  position: relative;
+  width: 49.625rem;
+  aspect-ratio: 210 / 297;
+  overflow: hidden;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05), 0 12px 24px -6px rgba(15, 23, 42, 0.12);
+  scroll-snap-align: start;
+}
+
+/* Entrada de cada bloque: nace invisible y aparece al entrar en pantalla (ver Aparece.tsx). */
+html.presentacion .aparece:not([data-visto]) { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.presentacion .aparece { opacity: 1 !important; animation: none !important; }
+  html.presentacion { scroll-snap-type: none; }
+}
+
+@page { size: A4 portrait; margin: 0; }
+
+@media print {
+  /* 1 rem = 210 mm / 49,625: la hoja mide exactamente 210 mm de ancho. */
+  html.presentacion { font-size: calc(210mm / 49.625); background: #fff; scroll-snap-type: none; }
+  html.presentacion body { background: #fff; }
+  .pres-no-imprimir { display: none !important; }
+  .pres-lista { display: block; padding: 0; gap: 0; }
+  .hoja {
+    width: 210mm;
+    height: 296.8mm;
+    aspect-ratio: auto;
+    border-radius: 0;
+    box-shadow: none;
+    break-after: page;
+    page-break-after: always;
+  }
+  .hoja:last-child { break-after: auto; page-break-after: auto; }
+  .hoja, .hoja * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html.presentacion .aparece { opacity: 1 !important; animation: none !important; transform: none !important; }
+}
