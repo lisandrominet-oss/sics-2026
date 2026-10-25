@@ -52,5 +52,7 @@ html.presentacion .aparece:not([data-visto]) { opacity: 0; }
   }
   .hoja:last-child { break-after: auto; page-break-after: auto; }
   .hoja, .hoja * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* Las sombras difuminadas salen en el PDF como bloques grises escalonados (el iPhone y el visor de Mac las dibujan así). */
+  .hoja *, .hoja *::before, .hoja *::after { box-shadow: none !important; text-shadow: none !important; }
   html.presentacion .aparece { opacity: 1 !important; animation: none !important; transform: none !important; }
 }
