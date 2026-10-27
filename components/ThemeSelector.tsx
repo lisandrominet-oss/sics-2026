@@ -36,7 +36,7 @@ export default function ThemeSelector() {
             className={`flex flex-col items-start gap-1 rounded-xl border px-4 py-3 text-left transition-colors ${
               active
                 ? "border-indigo-600 bg-indigo-50 text-indigo-900"
-                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                : "border-slate-200 bg-sheet text-slate-700 hover:bg-slate-50"
             }`}
           >
             <span className="flex items-center gap-2 text-sm font-semibold">

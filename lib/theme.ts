@@ -18,7 +18,7 @@ export function applyTheme(choice: ThemeChoice) {
   // Barra de estado del navegador móvil: sigue el tema de la app, no solo el del sistema (viewport en app/layout.tsx).
   document
     .querySelectorAll('meta[name="theme-color"]')
-    .forEach((m) => m.setAttribute("content", dark ? "#0b1220" : "#f8fafc"));
+    .forEach((m) => m.setAttribute("content", dark ? "#0d0e10" : "#e8ecf2"));
 }
 
 export function setStoredTheme(choice: ThemeChoice) {

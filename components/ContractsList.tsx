@@ -303,7 +303,7 @@ export default function ContractsList({
             {renewalAlerts.map((c) => {
               const days = daysUntil(noticeDeadline(c));
               return (
-                <li key={`ren-${c.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2">
+                <li key={`ren-${c.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-sheet px-3 py-2">
                   <Link href={`/contratos/${c.id}`} className="min-w-0 flex-1 text-slate-800 [overflow-wrap:anywhere] hover:underline">
                     {c.provider?.name ?? "Proveedor"} — fecha límite de renovación{" "}
                     {days < 0 ? `vencida hace ${diasTxt(-days)}` : `en ${diasTxt(days)}`}
@@ -315,7 +315,7 @@ export default function ContractsList({
               );
             })}
             {documentAlerts.map((d) => (
-              <li key={`doc-${d.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2">
+              <li key={`doc-${d.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-sheet px-3 py-2">
                 <Link href={d.contract_id ? `/contratos/${d.contract_id}` : "/contratos"} className="min-w-0 flex-1 text-slate-800 [overflow-wrap:anywhere] hover:underline">
                   {d.file_name} vence el {formatDateOnly(d.expires_at!)}
                 </Link>
@@ -327,7 +327,7 @@ export default function ContractsList({
             {differenceAlerts.map((inst) => {
               const contract = contracts.find((c) => c.id === inst.contract_id);
               return (
-                <li key={`dif-${inst.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2">
+                <li key={`dif-${inst.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-sheet px-3 py-2">
                   <Link href={`/contratos/${inst.contract_id}`} className="min-w-0 flex-1 text-slate-800 [overflow-wrap:anywhere] hover:underline">
                     {contract?.provider?.name ?? "Proveedor"} — cuota {formatDateOnly(inst.period_start)} con diferencia
                   </Link>
@@ -459,7 +459,7 @@ function ViewTab({ href, active, label, count }: { href: string; active: boolean
       }`}
     >
       {label}
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-500"}`}>
+      <span className={`rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${active ? "bg-ink text-on-ink" : "bg-slate-100 text-slate-500"}`}>
         {count}
       </span>
     </Link>

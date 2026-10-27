@@ -209,7 +209,7 @@ export default function SicActions({
           <select
             value={ccProviderId}
             onChange={(e) => setCcProviderId(e.target.value)}
-            className="max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            className="max-w-full rounded-lg border border-slate-300 bg-sheet px-3 py-2 text-sm"
           >
             <option value="">Proveedor…</option>
             {currentAccountProviders.map((p) => (
@@ -248,12 +248,12 @@ export default function SicActions({
           value={directAmount}
           onChange={(e) => setDirectAmount(e.target.value)}
           placeholder="Monto en ARS (obligatorio)"
-          className="w-56 max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="w-56 max-w-full rounded-lg border border-slate-300 bg-sheet px-3 py-2 text-sm"
         />
         <select
           value={directProviderId}
           onChange={(e) => setDirectProviderId(e.target.value)}
-          className="max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="max-w-full rounded-lg border border-slate-300 bg-sheet px-3 py-2 text-sm"
         >
           <option value="">Proveedor (opcional)</option>
           {allProviders.map((p) => (
@@ -1030,7 +1030,7 @@ function ObservacionEditor({
       </div>
 
       {confirming ? (
-        <div className="mt-4 rounded-lg border border-amber-300 bg-white p-4" role="alertdialog" aria-label="Confirmar cambios">
+        <div className="mt-4 rounded-lg border border-amber-300 bg-sheet p-4" role="alertdialog" aria-label="Confirmar cambios">
           <p className="text-sm font-semibold text-slate-900">
             {mode === "edicion" ? "¿Guardar los cambios?" : "¿Reenviar la SIC corregida?"}
           </p>
@@ -1150,7 +1150,7 @@ function ItemReviewPanel({
         {items.map((it, i) => {
           const d = decisions[it.id];
           return (
-            <div key={it.id} className="rounded-lg border border-slate-200 bg-white p-3">
+            <div key={it.id} className="rounded-lg border border-slate-200 bg-sheet p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm text-slate-800">
                   <span className="text-slate-400">{i + 1}.</span> {it.description}{" "}
@@ -1163,7 +1163,7 @@ function ItemReviewPanel({
                       type="button"
                       onClick={() => setDecisions({ ...decisions, [it.id]: k })}
                       className={`rounded-md border px-2.5 py-1 text-xs font-medium ${
-                        d === k ? DECISION_STYLES[k].active : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                        d === k ? DECISION_STYLES[k].active : "border-slate-300 bg-sheet text-slate-600 hover:bg-slate-50"
                       }`}
                     >
                       {DECISION_STYLES[k].label}

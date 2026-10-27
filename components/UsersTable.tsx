@@ -25,7 +25,7 @@ export default function UsersTable({
   currentUserId: string;
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-sheet">
       <table className="tabla-fija-1 w-full min-w-[720px] text-left text-sm">
         <thead className="bg-slate-50 text-xs text-slate-500">
           <tr>

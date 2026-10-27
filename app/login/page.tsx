@@ -51,18 +51,18 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <div className="flex min-h-dvh">
-      <div className="hidden w-1/2 flex-col justify-between bg-slate-900 p-12 lg:flex">
+      <div className="hidden w-1/2 flex-col justify-between bg-[#101a2b] p-12 lg:flex">
         <img src="/brand/logo-completo-negativo.svg" alt="Servicios Industriales" className="h-16 w-auto self-start" />
         <div className="max-w-md animate-enter [animation-delay:120ms]">
           <p className="text-balance text-3xl font-semibold leading-snug tracking-tight text-white">
             Toda la gestión de compras de Servicios Industriales, de punta a punta.
           </p>
-          <p className="mt-4 text-sm text-slate-400">
+          <p className="mt-4 text-sm text-[#a8b3c4]">
             Desde el pedido de cada área hasta la recepción de mercadería en pañol, con
             aprobaciones y trazabilidad en un solo lugar.
           </p>
         </div>
-        <p className="text-xs text-slate-500">Servicios Industriales</p>
+        <p className="text-xs text-[#8391a7]">Servicios Industriales</p>
       </div>
 
       <div className="flex flex-1 items-center justify-center bg-slate-50 px-4 py-12">

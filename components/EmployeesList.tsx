@@ -231,7 +231,7 @@ function ViewTab({ active, label, count, onClick }: { active: boolean; label: st
       }`}
     >
       {label}
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-500"}`}>
+      <span className={`rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${active ? "bg-ink text-on-ink" : "bg-slate-100 text-slate-500"}`}>
         {count}
       </span>
     </button>

@@ -73,7 +73,7 @@ export default function NavProgress() {
       style={{ opacity: visible ? 1 : 0, transition: "opacity 200ms ease-out" }}
     >
       <div
-        className="h-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.7)]"
+        className="h-full bg-brand"
         style={{ width: `${progress}%`, transition: "width 200ms ease-out" }}
       />
     </div>

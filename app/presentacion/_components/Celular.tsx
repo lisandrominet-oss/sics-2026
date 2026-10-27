@@ -38,7 +38,7 @@ export default function Celular({
         </div>
         {conBarraApp && (
           <div className="flex items-center justify-between bg-slate-900 pb-2 pl-2 pr-2 pt-1">
-            <span className="flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-fg">
+            <span className="flex h-11 w-11 items-center justify-center rounded-lg text-white">
               <IconMenu />
             </span>
             <img src="/brand/logo-completo-negativo.svg" alt="" className="h-9 w-auto" />

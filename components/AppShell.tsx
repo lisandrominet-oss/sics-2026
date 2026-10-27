@@ -8,6 +8,7 @@ import RoleSwitcher from "@/components/RoleSwitcher";
 import NotificationsBell from "@/components/NotificationsBell";
 import InactivityGuard from "@/components/InactivityGuard";
 import UserAvatar from "@/components/UserAvatar";
+import BrandLogoFull from "@/components/BrandLogoFull";
 import {
   IconBadge,
   IconBarChart,
@@ -44,10 +45,10 @@ function NavLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-base ${
+      className={`group flex h-9 items-center gap-2.5 rounded-md px-2.5 text-sm transition-colors duration-base ${
         active
-          ? "bg-white/10 text-white shadow-[inset_3px_0_0_0_theme(colors.sidebar.accent)]"
-          : "text-sidebar-muted hover:bg-white/5 hover:text-sidebar-strong"
+          ? "bg-slate-200 font-medium text-slate-900"
+          : "text-slate-500 hover:bg-slate-900/5 hover:text-slate-900"
       }`}
     >
       {icon}
@@ -121,13 +122,13 @@ export default function AppShell({
   }, [menuOpen]);
 
   return (
-    <div className="min-h-dvh bg-slate-50 lg:flex">
+    <div className="min-h-dvh bg-frame lg:flex">
       <InactivityGuard />
 
       {/* Barra superior: solo en móvil. */}
       <header
         ref={headerRef}
-        className="sticky top-0 z-30 flex items-center justify-between bg-slate-900 pb-2 pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pt-[calc(0.5rem+env(safe-area-inset-top))] lg:hidden dark:border-b dark:border-white/10"
+        className="sticky top-0 z-30 flex items-center justify-between bg-frame pb-1 pl-[max(0.25rem,env(safe-area-inset-left))] pr-[max(0.25rem,env(safe-area-inset-right))] pt-[calc(0.25rem+env(safe-area-inset-top))] lg:hidden"
       >
         <button
           ref={menuButtonRef}
@@ -136,12 +137,12 @@ export default function AppShell({
           aria-label="Abrir menú"
           aria-expanded={menuOpen}
           aria-controls="menu-lateral"
-          className="flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-fg hover:bg-white/5 hover:text-white"
+          className="flex h-11 w-11 items-center justify-center rounded-md text-slate-500 hover:bg-slate-900/5 hover:text-slate-900"
         >
           <IconMenu />
         </button>
         <Link href="/dashboard" aria-label="Servicios Industriales: ir al Tablero" className="flex h-11 items-center">
-          <img src="/brand/logo-completo-negativo.svg" alt="" className="h-9 w-auto" />
+          <img src="/brand/isotipo-color.svg" alt="" className="h-7 w-auto" />
         </Link>
         <NotificationsBell userId={userId} variant="bar" />
       </header>
@@ -150,7 +151,7 @@ export default function AppShell({
         aria-hidden="true"
         onClick={() => setMenuOpen(false)}
         className={cn(
-          "fixed inset-0 z-40 bg-slate-900/50 transition-opacity sm:backdrop-blur-sm lg:hidden",
+          "fixed inset-0 z-40 bg-scrim/50 transition-opacity lg:hidden",
           menuOpen ? "opacity-100 duration-base" : "pointer-events-none opacity-0 duration-fast"
         )}
       />
@@ -165,33 +166,27 @@ export default function AppShell({
           setMenuOpen(false);
         }}
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto overscroll-contain bg-slate-900 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pt-[calc(1.5rem+env(safe-area-inset-top))] shadow-pop transition-[transform,visibility] ease-out-expo",
+          "fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto overscroll-contain border-r border-slate-200 bg-sheet px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pl-[max(0.75rem,env(safe-area-inset-left))] pt-[calc(1rem+env(safe-area-inset-top))] shadow-pop transition-[transform,visibility] ease-out-expo",
           menuOpen ? "visible translate-x-0 duration-base" : "invisible -translate-x-full duration-fast",
-          "lg:visible lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:w-64 lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:self-start lg:px-4 lg:py-6 lg:shadow-none lg:transition-none dark:lg:border-r dark:lg:border-white/10"
+          "lg:visible lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:w-60 lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:self-start lg:border-r-0 lg:bg-frame lg:px-3 lg:pb-3 lg:pt-4 lg:shadow-none lg:transition-none"
         )}
       >
         <div className="flex items-start justify-between">
-          <Link href="/dashboard" className="block px-2" aria-label="Servicios Industriales: ir al Tablero">
-            <img src="/brand/logo-completo-negativo.svg" alt="" className="h-14 w-auto" />
+          <Link href="/dashboard" className="block px-1" aria-label="Servicios Industriales: ir al Tablero">
+            <BrandLogoFull className="h-11 w-auto" />
           </Link>
           <button
             type="button"
             onClick={() => setMenuOpen(false)}
             aria-label="Cerrar menú"
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-fg hover:bg-white/5 hover:text-white lg:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-md text-slate-500 hover:bg-slate-900/5 hover:text-slate-900 lg:hidden"
           >
             <IconX />
           </button>
         </div>
 
-        <div className="mt-6 hidden lg:block">
-          <NotificationsBell userId={userId} />
-        </div>
-
-        <nav className="mt-6 flex-1 space-y-1">
-          <p className="px-3 text-xs font-medium text-sidebar-subtle">
-            Principal
-          </p>
+        <nav className="mt-4 flex-1 space-y-0.5">
+          <p className="px-2.5 pb-1 text-xs text-slate-500">Principal</p>
           <NavLink href="/dashboard" label="Tablero" icon={<IconGrid />} />
           {CAN_CREATE_SIC.includes(role) && (
             <NavLink href="/sic/nueva" label="Nueva SIC" icon={<IconPlusCircle />} />
@@ -199,9 +194,7 @@ export default function AppShell({
 
           {(modules.includes("proveedores") || modules.includes("catalogo") || modules.includes("contratos")) && (
             <>
-              <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
-                Compras
-              </p>
+              <p className="!mt-5 px-2.5 pb-1 text-xs text-slate-500">Compras</p>
               {modules.includes("proveedores") && (
                 <NavLink href="/proveedores" label="Proveedores" icon={<IconTruck />} />
               )}
@@ -216,9 +209,7 @@ export default function AppShell({
 
           {(modules.includes("personal") || modules.includes("roster") || modules.includes("recursos-humanos") || modules.includes("logistica") || modules.includes("administracion")) && (
             <>
-              <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
-                Módulos
-              </p>
+              <p className="!mt-5 px-2.5 pb-1 text-xs text-slate-500">Módulos</p>
               {modules.includes("personal") && (
                 <NavLink href="/personal" label="Personal" icon={<IconUsers />} />
               )}
@@ -239,18 +230,14 @@ export default function AppShell({
 
           {role === "gerencia" && (
             <>
-              <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
-                Sistema
-              </p>
+              <p className="!mt-5 px-2.5 pb-1 text-xs text-slate-500">Sistema</p>
               <NavLink href="/usuarios" label="Usuarios" icon={<IconUsers />} />
             </>
           )}
 
           {role === "admin" && (
             <>
-              <p className="!mt-6 px-3 text-xs font-medium text-sidebar-subtle">
-                Sistema
-              </p>
+              <p className="!mt-5 px-2.5 pb-1 text-xs text-slate-500">Sistema</p>
               <NavLink href="/admin/usuarios" label="Usuarios" icon={<IconUsers />} />
               <NavLink href="/admin/plantas" label="Plantas" icon={<IconBuilding />} />
               <NavLink href="/admin/proyectos" label="Proyectos" icon={<IconFolder />} />
@@ -259,17 +246,17 @@ export default function AppShell({
           )}
         </nav>
 
-        <div className="mt-6 space-y-3 border-t border-white/10 pt-4">
+        <div className="mt-5 space-y-3 border-t border-slate-200 pt-3 lg:border-slate-300/70">
           {realRole === "admin" && <RoleSwitcher userId={userId} actingAsRole={actingAsRole} />}
           <Link
             href="/preferencias"
             title={fullName ? `${fullName}: Preferencias` : "Preferencias"}
-            className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/5"
+            className="flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-slate-900/5"
           >
             <UserAvatar userId={userId} fullName={fullName} />
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-white">{fullName ?? "Usuario"}</p>
-              <p className="truncate text-xs text-sidebar-muted">{ROLE_LABELS[role]}</p>
+              <p className="truncate text-sm font-medium text-slate-900">{fullName ?? "Usuario"}</p>
+              <p className="truncate text-xs text-slate-500">{ROLE_LABELS[role]}</p>
             </div>
           </Link>
           <div className="px-2">
@@ -278,8 +265,13 @@ export default function AppShell({
         </div>
       </aside>
 
-      <div ref={contentRef} className="min-w-0 flex-1">
-        <main className="pb-[max(2rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-8 sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] lg:px-10">
+      <div ref={contentRef} className="flex min-w-0 flex-1 flex-col">
+        {/* Barra superior de escritorio: sobre el marco, sin línea. Hoy solo lleva las notificaciones. */}
+        <div className="sticky top-0 z-20 hidden h-12 shrink-0 items-center justify-end bg-frame px-4 lg:flex">
+          <NotificationsBell userId={userId} variant="bar" />
+        </div>
+        {/* La hoja: en móvil ocupa el ancho con las esquinas de arriba redondeadas; en escritorio queda a 8 px del borde. */}
+        <main className="flex-1 rounded-t-2xl border-slate-200 bg-sheet pb-[max(2rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-6 sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] lg:mb-2 lg:mr-2 lg:rounded-2xl lg:border lg:px-8 lg:pt-7">
           {/* Con `key` por ruta el fade de entrada se repite al cambiar de pantalla (el shell ya no se remonta);
               al llegar la página real desde su `loading.tsx` la ruta es la misma y no vuelve a animar. */}
           <div key={pathname} className="animate-page-in">

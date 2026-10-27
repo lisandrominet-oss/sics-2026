@@ -69,14 +69,14 @@ export default function DashboardControls({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar por código, asunto o artículo…"
-          className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm"
+          className="w-full rounded-lg border border-slate-300 bg-sheet py-2 pl-9 pr-3 text-sm"
         />
       </div>
 
       <select
         value={sort}
         onChange={(e) => pushParams({ sort: e.target.value })}
-        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
+        className="rounded-lg border border-slate-300 bg-sheet px-3 py-2 text-sm text-slate-700"
       >
         {sortOptionsFor(role).map((opt) => (
           <option key={opt.value} value={opt.value}>

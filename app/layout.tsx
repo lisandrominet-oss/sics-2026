@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
-import "./dark-theme.css";
 import ThemeWatcher from "@/components/ThemeWatcher";
 import { Suspense } from "react";
 import AppToaster from "@/components/ui/AppToaster";
@@ -9,7 +8,7 @@ import NavProgress from "@/components/NavProgress";
 import ConfirmProvider from "@/components/ui/ConfirmProvider";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const plex = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: "Servicios Industriales",
@@ -21,8 +20,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b1220" },
+    { media: "(prefers-color-scheme: light)", color: "#e8ecf2" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d0e10" },
   ],
 };
 
@@ -32,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={inter.variable} suppressHydrationWarning>
+    <html lang="es" className={plex.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

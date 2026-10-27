@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { IconLogout } from "@/components/icons";
 
-export default function SignOutButton({ variant = "dark" }: { variant?: "dark" | "light" }) {
+export default function SignOutButton({ variant = "light" }: { variant?: "dark" | "light" }) {
   const router = useRouter();
 
   async function signOut() {
@@ -19,7 +19,7 @@ export default function SignOutButton({ variant = "dark" }: { variant?: "dark" |
       onClick={signOut}
       className={`flex items-center gap-2 text-sm font-medium ${
         variant === "dark"
-          ? "text-sidebar-muted hover:text-white"
+          ? "text-slate-500 hover:text-slate-900"
           : "text-slate-500 hover:text-slate-900"
       }`}
     >

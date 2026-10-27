@@ -31,7 +31,7 @@ export function StatCardsSkeleton({ count = 3 }: { count?: number }) {
   return (
     <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="rounded-xl border border-slate-200 bg-white p-6">
+        <div key={i} className="rounded-xl border border-slate-200 bg-sheet p-6">
           <Skeleton className="h-3 w-24" />
           <Skeleton className="mt-3 h-8 w-20" />
           <Skeleton className="mt-3 h-3 w-32" />
@@ -44,7 +44,7 @@ export function StatCardsSkeleton({ count = 3 }: { count?: number }) {
 /** Tarjeta con una grilla de datos (etiqueta + valor). */
 export function InfoCardSkeleton({ items = 6 }: { items?: number }) {
   return (
-    <div className="grid grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white p-5">
+    <div className="grid grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-sheet p-5">
       {Array.from({ length: items }).map((_, i) => (
         <div key={i} className="space-y-2">
           <Skeleton className="h-3 w-20" />

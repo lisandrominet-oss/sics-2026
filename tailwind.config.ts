@@ -5,6 +5,17 @@ const OUT_EXPO = "cubic-bezier(0.16, 1, 0.3, 1)";
 const DRAWER = "cubic-bezier(0.32, 0.72, 0, 1)"; // acordeones y paneles que se despliegan
 const SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
+// Colores por variables CSS (app/globals.css): el modo oscuro cambia las variables, no las clases.
+// La escala `slate` es la escala NEUTRA de la app (texto, bordes, fondos); no es un azul grisáceo suelto.
+const v = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
+const scale = (name: string, shades: number[]) => Object.fromEntries(shades.map((s) => [s, v(`${name}-${s}`)]));
+const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+// Puente del rediseño B: estos nombres de Tailwind ya no tienen matiz propio y se leen como neutros (la tinta es slate-900).
+// Se van reemplazando por tonos del sistema pantalla por pantalla; los alias se retiran al final.
+const NEUTRAL_ALIAS = Object.fromEntries(
+  Object.entries({ 50: 50, 100: 100, 200: 200, 300: 300, 400: 400, 500: 700, 600: 900, 700: 900, 800: 900, 900: 900 }).map(([k, n]) => [k, v(`slate-${n}`)])
+);
+
 const config: Config = {
   darkMode: "class",
   // `hover:` solo aplica en dispositivos con puntero: en táctil no queda el estado "pegado" tras tocar.
@@ -13,11 +24,27 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
-      // Menú lateral (siempre oscuro, no pasa por el parche de modo oscuro).
       colors: {
-        sidebar: { fg: "#cbd5e1", muted: "#94a3b8", subtle: "#7c8ba1", strong: "#f1f5f9", accent: "#818cf8" },
+        slate: scale("slate", [...SHADES, 950]),
+        red: scale("red", SHADES),
+        amber: scale("amber", SHADES),
+        emerald: scale("emerald", SHADES),
+        rose: scale("red", SHADES),
+        orange: scale("amber", SHADES),
+        indigo: NEUTRAL_ALIAS,
+        violet: NEUTRAL_ALIAS,
+        blue: NEUTRAL_ALIAS,
+        sky: NEUTRAL_ALIAS,
+        teal: NEUTRAL_ALIAS,
+        // Marco y hoja del rediseño B, tinta y color de marca.
+        frame: v("frame"),
+        sheet: v("sheet"),
+        ink: v("ink"),
+        "on-ink": v("on-ink"),
+        brand: v("brand"),
+        scrim: v("scrim"),
       },
       // Movimiento: curvas y duraciones compartidas para que toda la app se sienta igual.
       transitionTimingFunction: {
@@ -37,10 +64,11 @@ const config: Config = {
       transitionProperty: {
         colors: "color, background-color, border-color, text-decoration-color, fill, stroke, scale",
       },
+      // Sin sombras en reposo: soft y lift quedan en `none` hasta retirar sus 3 usos (Card elevated, login). Solo flota lo que flota.
       boxShadow: {
-        soft: "0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.06)",
-        lift: "0 2px 4px rgba(15, 23, 42, 0.05), 0 12px 24px -6px rgba(15, 23, 42, 0.12)",
-        pop: "0 8px 16px -4px rgba(15, 23, 42, 0.12), 0 24px 48px -12px rgba(15, 23, 42, 0.25)",
+        soft: "none",
+        lift: "none",
+        pop: "0 8px 24px -4px rgba(16, 26, 43, 0.18), 0 2px 6px rgba(16, 26, 43, 0.08)",
       },
       keyframes: {
         "fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },

@@ -257,7 +257,7 @@ export default function EmployeePicker({
               aria-multiselectable={multiple}
               // Evita que tocar la barra de scroll le saque el foco al campo (y cierre la lista).
               onMouseDown={(e) => e.preventDefault()}
-              className="absolute left-0 right-0 top-full z-20 mt-1 max-h-[12.5rem] animate-slide-down overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-white py-1 shadow-lift"
+              className="absolute left-0 right-0 top-full z-20 mt-1 max-h-[12.5rem] animate-slide-down overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-sheet py-1 shadow-lift"
             >
               {suggestions.map((o, i) => (
                 <li

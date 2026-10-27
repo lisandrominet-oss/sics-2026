@@ -54,7 +54,7 @@ export default function ProviderCategoryPicker({
               onClick={() => onToggle(c.id)}
               className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                 selected.includes(c.id)
-                  ? "border-indigo-600 bg-indigo-600 text-white"
+                  ? "border-ink bg-ink text-on-ink"
                   : "border-slate-300 text-slate-600 hover:bg-slate-50"
               }`}
             >

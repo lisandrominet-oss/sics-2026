@@ -2,9 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tokens del rediseño B ("Hoja enmarcada"). Triples RGB: Tailwind los usa como rgb(var(--x) / alfa).
+   Claro: marco azul grisáceo + hoja blanca, tinta marino. Oscuro: neutros reales (sin azul), el amarillo no cambia.
+   Los colores de marca (tinta y amarillo) son provisorios hasta tener el azul exacto de la indumentaria: se cambian acá. */
+:root {
+  --frame: 232 236 242;
+  --sheet: 255 255 255;
+  --ink: 16 26 43;
+  --on-ink: 255 255 255;
+  --brand: 245 196 0;
+  --scrim: 16 26 43;
+  --slate-50: 244 246 249;
+  --slate-100: 234 238 244;
+  --slate-200: 223 228 235;
+  --slate-300: 201 208 218;
+  --slate-400: 107 118 136;
+  --slate-500: 86 98 116;
+  --slate-600: 68 80 95;
+  --slate-700: 47 59 77;
+  --slate-800: 29 41 64;
+  --slate-900: 16 26 43;
+  --slate-950: 10 18 32;
+  /* Estados: los tonos 50-300 y 700-900 cambian en oscuro; 400-600 son los mismos (también sirven de fondo de botones). */
+  --red-50: 254 242 242; --red-100: 254 226 226; --red-200: 254 202 202; --red-300: 252 165 165;
+  --red-400: 248 113 113; --red-500: 239 68 68; --red-600: 220 38 38;
+  --red-700: 185 28 28; --red-800: 153 27 27; --red-900: 127 29 29;
+  --amber-50: 255 251 235; --amber-100: 254 243 199; --amber-200: 253 230 138; --amber-300: 252 211 77;
+  --amber-400: 251 191 36; --amber-500: 245 158 11; --amber-600: 217 119 6;
+  --amber-700: 180 83 9; --amber-800: 146 64 14; --amber-900: 120 53 15;
+  --emerald-50: 236 253 245; --emerald-100: 209 250 229; --emerald-200: 167 243 208; --emerald-300: 110 231 183;
+  --emerald-400: 52 211 153; --emerald-500: 16 185 129; --emerald-600: 5 150 105;
+  --emerald-700: 4 120 87; --emerald-800: 6 95 70; --emerald-900: 6 78 59;
+}
+.dark {
+  color-scheme: dark;
+  --frame: 13 14 16;
+  --sheet: 22 23 26;
+  --ink: 236 238 242;
+  --on-ink: 13 14 16;
+  --scrim: 0 0 0;
+  --slate-50: 29 31 35;
+  --slate-100: 35 38 43;
+  --slate-200: 42 45 51;
+  --slate-300: 59 62 70;
+  --slate-400: 134 139 151;
+  --slate-500: 155 159 171;
+  --slate-600: 180 184 194;
+  --slate-700: 207 210 218;
+  --slate-800: 226 228 234;
+  --slate-900: 236 238 242;
+  --slate-950: 246 247 249;
+  --red-50: 44 28 30; --red-100: 57 30 33; --red-200: 70 33 35; --red-300: 87 37 39;
+  --red-700: 252 165 165; --red-800: 254 202 202; --red-900: 254 226 226;
+  --amber-50: 44 37 25; --amber-100: 58 45 24; --amber-200: 71 53 23; --amber-300: 89 64 22;
+  --amber-700: 252 211 77; --amber-800: 253 230 138; --amber-900: 254 243 199;
+  --emerald-50: 21 39 36; --emerald-100: 21 49 42; --emerald-200: 21 59 49; --emerald-300: 20 72 57;
+  --emerald-700: 110 231 183; --emerald-800: 167 243 208; --emerald-900: 209 250 229;
+}
+/* Texto de estado (tonos 500-600): en oscuro se aclara solo cuando es texto; como fondo de botón conserva el color pleno. */
+.dark .text-red-500, .dark .text-red-600 { color: rgb(248 113 113); }
+.dark .text-amber-500, .dark .text-amber-600 { color: rgb(251 191 36); }
+.dark .text-emerald-600 { color: rgb(52 211 153); }
+
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: rgb(var(--frame));
+  color: rgb(var(--ink));
+}
+
+/* Campos: fondo de la hoja y texto en tinta, también en oscuro. Con :where no pisan a las utilidades de cada campo. */
+:where(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]) {
+  background-color: rgb(var(--sheet));
+  color: rgb(var(--ink));
+}
+:where(input, textarea)::placeholder {
+  color: rgb(var(--slate-400));
 }
 
 /* Táctil: sin destello gris al tocar, sin demora de doble toque y sin seleccionar el texto de los botones al mantener presionado. */
@@ -48,14 +119,11 @@ input[type="date"] {
   min-width: 0;
   max-width: 100%;
   height: 2.375rem;
-  background-color: #fff;
+  background-color: rgb(var(--sheet));
   text-align: left;
 }
 input[type="date"]::-webkit-date-and-time-value {
   text-align: left;
-}
-.dark input[type="date"] {
-  background-color: #0e1626;
 }
 
 /* Tablas con scroll horizontal en celular: la primera columna queda fija. Va con su propio tema oscuro porque
@@ -65,29 +133,16 @@ input[type="date"]::-webkit-date-and-time-value {
   position: sticky;
   left: 0;
   z-index: 1;
-  box-shadow: 1px 0 0 #e2e8f0;
+  box-shadow: 1px 0 0 rgb(var(--slate-200));
 }
 .tabla-fija-1 td:first-child {
-  background-color: #fff;
+  background-color: rgb(var(--sheet));
 }
 .tabla-fija-1 th:first-child {
-  background-color: #f8fafc;
-}
-.dark .tabla-fija-1 th:first-child,
-.dark .tabla-fija-1 td:first-child {
-  box-shadow: 1px 0 0 #2a364c;
+  background-color: rgb(var(--slate-50));
 }
 .tabla-fija-1 tr[data-inactiva] td:first-child {
-  background-color: #f9fafc;
-}
-.dark .tabla-fija-1 td:first-child {
-  background-color: #131c2f;
-}
-.dark .tabla-fija-1 tr[data-inactiva] td:first-child {
-  background-color: #0d1526;
-}
-.dark .tabla-fija-1 th:first-child {
-  background-color: #0b1220;
+  background-color: rgb(var(--slate-50));
 }
 
 /* Presión: una sola regla para todo lo que se toca (botones, y enlaces con la clase `press` como los de buttonClass).
@@ -113,82 +168,52 @@ input[type="date"]::-webkit-date-and-time-value {
   }
 }
 
-/* Contraste AA: el gris tenue (slate-400) sobre fondo claro no llega a 4,5:1; se oscurece solo en texto.
-   En superficies oscuras y en modo oscuro se conserva el original. */
-.text-slate-400 {
-  color: #64748b;
-}
-.bg-slate-900 .text-slate-400,
-.bg-slate-800 .text-slate-400 {
-  color: #94a3b8;
-}
-
 /* Campos de archivo: el botón nativo toma el estilo de los botones secundarios, con ícono de subida. Solo CSS. */
 input[type="file"] {
-  color: #64748b;
+  color: rgb(var(--slate-500));
   font-size: 0.8125rem;
 }
 input[type="file"]::file-selector-button {
   margin-right: 0.75rem;
   padding: 0.4rem 0.9rem 0.4rem 2.15rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 0.5rem;
-  background-color: #fff;
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%234f46e5%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%2015V4m0%200L8%208m4-4l4%204%27%2F%3E%3Cpath%20d%3D%27M4%2015v3a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2v-3%27%2F%3E%3C%2Fsvg%3E");
+  border: 1px solid rgb(var(--slate-300));
+  border-radius: 0.375rem;
+  background-color: rgb(var(--sheet));
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%23566274%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%2015V4m0%200L8%208m4-4l4%204%27%2F%3E%3Cpath%20d%3D%27M4%2015v3a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2v-3%27%2F%3E%3C%2Fsvg%3E");
   background-repeat: no-repeat;
   background-position: 0.7rem center;
   background-size: 1rem;
-  color: #334155;
+  color: rgb(var(--slate-800));
   font-family: inherit;
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-  transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  transition: background-color 150ms ease, border-color 150ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
   input[type="file"]:hover::file-selector-button {
-    border-color: #818cf8;
-    background-color: #eef2ff;
-    box-shadow: 0 2px 6px rgba(79, 70, 229, 0.15);
+    border-color: rgb(var(--slate-400));
+    background-color: rgb(var(--slate-50));
   }
 }
 input[type="file"]:disabled::file-selector-button {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.dark input[type="file"] {
-  color: #94a3b8;
-}
 .dark input[type="file"]::file-selector-button {
-  border-color: #3a475e;
-  background-color: #131c2f;
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%23a5b4fc%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%2015V4m0%200L8%208m4-4l4%204%27%2F%3E%3Cpath%20d%3D%27M4%2015v3a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2v-3%27%2F%3E%3C%2Fsvg%3E");
-  color: #e2e8f0;
-  box-shadow: none;
-}
-@media (hover: hover) and (pointer: fine) {
-  .dark input[type="file"]:hover::file-selector-button {
-    border-color: #6366f1;
-    background-color: #1f2b42;
-  }
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%239b9fab%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%2015V4m0%200L8%208m4-4l4%204%27%2F%3E%3Cpath%20d%3D%27M4%2015v3a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2v-3%27%2F%3E%3C%2Fsvg%3E");
 }
 
-/* Foco visible solo con teclado: anillo índigo coherente en toda la app. */
+/* Foco visible solo con teclado: anillo en tinta, coherente en toda la app. */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid #6366f1;
+  outline: 2px solid rgb(var(--ink));
   outline-offset: 2px;
 }
 
-/* Brillo de los skeletons de carga. */
+/* Brillo de los skeletons de carga: una banda plana que barre (sin degradé). */
 @layer utilities {
   .shimmer-bg {
-    background-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.55) 50%,
-      transparent 100%
-    );
+    background-color: rgb(var(--sheet) / 0.55);
   }
 }
 
@@ -215,10 +240,5 @@ input[type="file"]:disabled::file-selector-button {
 }
 
 .dark .shimmer-bg {
-  background-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.07) 50%,
-    transparent 100%
-  );
+  background-color: rgb(255 255 255 / 0.06);
 }

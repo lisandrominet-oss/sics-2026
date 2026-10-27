@@ -24,7 +24,7 @@ export function cardClass({
   elevated?: boolean;
   className?: string;
 } = {}) {
-  return cn("rounded-xl border border-slate-200 bg-white", PADDING[padding], elevated && "shadow-soft", className);
+  return cn("rounded-xl border border-slate-200 bg-sheet", PADDING[padding], elevated && "shadow-soft", className);
 }
 
 export default function Card({

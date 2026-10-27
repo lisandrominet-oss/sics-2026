@@ -19,7 +19,7 @@ export default function ModuleSections({ sections }: { sections: string[] }) {
             key={name}
             type="button"
             onClick={() => setSelected(name)}
-            className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-6 text-left transition-colors duration-fast ease-out-expo hover:border-indigo-200 hover:bg-indigo-50/40 press-soft"
+            className="flex items-center justify-between rounded-xl border border-slate-200 bg-sheet p-6 text-left transition-colors duration-fast ease-out-expo hover:border-indigo-200 hover:bg-indigo-50/40 press-soft"
           >
             <span className="text-sm font-semibold text-slate-900">{name}</span>
             <IconArrowRight className="h-4 w-4 text-slate-400" />
@@ -40,7 +40,7 @@ export default function ModuleSections({ sections }: { sections: string[] }) {
         <button
           type="button"
           onClick={() => setSelected(null)}
-          className="mt-6 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+          className="mt-6 rounded-lg bg-ink px-5 py-2 text-sm font-medium text-on-ink hover:bg-slate-800"
         >
           Cerrar
         </button>

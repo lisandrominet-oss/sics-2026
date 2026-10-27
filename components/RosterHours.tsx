@@ -284,12 +284,12 @@ export default function RosterHours({
       {rows.length === 0 ? (
         <EmptyState title="No hay personas asignadas en el período" description="Cuando haya asignaciones que toquen estas fechas, acá aparece el resumen." />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-sheet">
           <table className="min-w-full border-separate border-spacing-0 text-xs">
             <caption className="sr-only">Horas y días confirmados por persona en el período</caption>
             <thead>
               <tr className="text-slate-500">
-                <th scope="col" className="sticky left-0 z-10 min-w-[12rem] border-b border-slate-100 bg-white px-3 py-2 text-left font-medium">
+                <th scope="col" className="sticky left-0 z-10 min-w-[12rem] border-b border-slate-100 bg-sheet px-3 py-2 text-left font-medium">
                   Persona
                 </th>
                 {COLUMNS.map((c) => (
@@ -314,7 +314,7 @@ export default function RosterHours({
                 const missing = (costBy.get(r.employee_id) ?? []).reduce((n, c) => n + c.days_without_rate, 0);
                 return (
                   <tr key={r.employee_id} className="hover:bg-slate-50">
-                    <th scope="row" className="sticky left-0 z-10 max-w-[16rem] border-t border-slate-100 bg-white px-3 py-1.5 text-left font-normal">
+                    <th scope="row" className="sticky left-0 z-10 max-w-[16rem] border-t border-slate-100 bg-sheet px-3 py-1.5 text-left font-normal">
                       <p className="truncate text-xs font-medium text-slate-900">{employeeLabel(r)}</p>
                       <p className="truncate text-[10px] text-slate-400">{[r.legajo, r.crew_name].filter(Boolean).join(" · ")}</p>
                     </th>
@@ -342,7 +342,7 @@ export default function RosterHours({
             </tbody>
             <tfoot>
               <tr className="font-semibold text-slate-900">
-                <th scope="row" className="sticky left-0 z-10 border-t border-slate-200 bg-white px-3 py-2 text-left">
+                <th scope="row" className="sticky left-0 z-10 border-t border-slate-200 bg-sheet px-3 py-2 text-left">
                   Total ({rows.length})
                 </th>
                 {COLUMNS.map((c) => (

@@ -310,7 +310,7 @@ export default function RosterGrid({
                 aria-pressed={mode === m.key}
                 title={m.hint}
                 onClick={() => setMode(m.key)}
-                className={`px-3 py-2 ${mode === m.key ? "bg-slate-900 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}
+                className={`px-3 py-2 ${mode === m.key ? "bg-ink text-on-ink" : "bg-sheet text-slate-600 hover:bg-slate-50"}`}
               >
                 {m.label}
               </button>
@@ -366,12 +366,12 @@ export default function RosterGrid({
           }
         />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-sheet">
           <table className="border-separate border-spacing-0 text-xs">
             <caption className="sr-only">Calendario de rotaciones del sitio: una fila por persona y una columna por día</caption>
             <thead>
               <tr>
-                <th className="sticky left-0 z-20 min-w-[12rem] border-b border-slate-100 bg-white px-3 py-1 text-left font-medium text-slate-500" rowSpan={2}>
+                <th className="sticky left-0 z-20 min-w-[12rem] border-b border-slate-100 bg-sheet px-3 py-1 text-left font-medium text-slate-500" rowSpan={2}>
                   Persona
                 </th>
                 {months.map((m) => (
@@ -443,7 +443,7 @@ export default function RosterGrid({
             </tbody>
             <tfoot>
               <tr>
-                <th className="sticky left-0 z-10 border-t border-slate-200 bg-white px-3 py-1.5 text-left font-medium text-slate-600">Trabajando</th>
+                <th className="sticky left-0 z-10 border-t border-slate-200 bg-sheet px-3 py-1.5 text-left font-medium text-slate-600">Trabajando</th>
                 {totals.map((t, i) => (
                   <td key={range[i]} className="border-t border-slate-200 px-0.5 py-1.5 text-center font-semibold tabular-nums text-slate-800">
                     {t.working}
@@ -452,7 +452,7 @@ export default function RosterGrid({
                 <td colSpan={planMode ? 1 : 3} className="border-t border-slate-200" />
               </tr>
               <tr>
-                <th className="sticky left-0 z-10 bg-white px-3 py-1 text-left font-normal text-slate-500">En viaje (sube o baja)</th>
+                <th className="sticky left-0 z-10 bg-sheet px-3 py-1 text-left font-normal text-slate-500">En viaje (sube o baja)</th>
                 {totals.map((t, i) => (
                   <td key={range[i]} className="px-0.5 py-1 text-center tabular-nums text-slate-500">
                     {t.travelling || ""}
@@ -462,7 +462,7 @@ export default function RosterGrid({
               </tr>
               {required > 0 && (
                 <tr>
-                  <th className="sticky left-0 z-10 bg-white px-3 py-1 text-left font-normal text-slate-500" title="Suma de la dotación requerida de los puestos del sitio">
+                  <th className="sticky left-0 z-10 bg-sheet px-3 py-1 text-left font-normal text-slate-500" title="Suma de la dotación requerida de los puestos del sitio">
                     Cobertura (requiere {required})
                   </th>
                   {totals.map((t, i) => {
@@ -561,7 +561,7 @@ function SectionRows({
         const starts = a.valid_from > from ? `Empieza el ${formatSqlDate(a.valid_from)}` : null;
         return (
           <tr key={p.employeeId}>
-            <th scope="row" className="sticky left-0 z-10 max-w-[14rem] border-t border-slate-100 bg-white px-3 py-1 text-left font-normal">
+            <th scope="row" className="sticky left-0 z-10 max-w-[14rem] border-t border-slate-100 bg-sheet px-3 py-1 text-left font-normal">
               <button type="button" onClick={() => onPerson(p)} title="Cambiar puesto o cuadrilla" className="block max-w-full truncate text-left text-xs font-medium text-slate-900 hover:underline">
                 {p.label}
               </button>

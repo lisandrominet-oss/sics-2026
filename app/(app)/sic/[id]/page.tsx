@@ -416,7 +416,7 @@ export default async function SicDetailPage({
                     {!last && <span aria-hidden="true" className="absolute -bottom-1 left-[3px] top-3 w-px bg-slate-200" />}
                     <span
                       aria-hidden="true"
-                      className={`absolute left-0 top-1.5 h-2 w-2 rounded-full ${last ? "bg-indigo-600" : "bg-slate-400"}`}
+                      className={`absolute left-0 top-1.5 h-2 w-2 rounded-full ${last ? "bg-brand" : "bg-slate-400"}`}
                     />
                     <p className="font-medium text-slate-800">{STATUS_LABELS[ev.to_status]}</p>
                     <p className="text-xs text-slate-500">

@@ -243,7 +243,7 @@ function ListTab({ href, active, label, count }: { href: string; active: boolean
       }`}
     >
       {label}
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-500"}`}>
+      <span className={`rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${active ? "bg-ink text-on-ink" : "bg-slate-100 text-slate-500"}`}>
         {count}
       </span>
     </Link>
@@ -265,7 +265,7 @@ function FilterTab({
     <Link
       href={href}
       className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-colors duration-fast ease-out-expo press ${
-        active ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"
+        active ? "bg-ink text-on-ink" : "text-slate-500 hover:bg-slate-100"
       }`}
     >
       {label}

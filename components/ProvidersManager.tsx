@@ -93,7 +93,7 @@ export default function ProvidersManager({
             onClick={() => setActiveCategoryId(null)}
             className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
               activeCategoryId === null
-                ? "border-slate-900 bg-slate-900 text-white"
+                ? "border-ink bg-ink text-on-ink"
                 : "border-slate-300 text-slate-600 hover:bg-slate-50"
             }`}
           >
@@ -108,7 +108,7 @@ export default function ProvidersManager({
                 onClick={() => setActiveCategoryId(c.id)}
                 className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
                   activeCategoryId === c.id
-                    ? "border-slate-900 bg-slate-900 text-white"
+                    ? "border-ink bg-ink text-on-ink"
                     : "border-slate-300 text-slate-600 hover:bg-slate-50"
                 }`}
               >

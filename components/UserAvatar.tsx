@@ -118,7 +118,7 @@ export default function UserAvatar({
   }
   return (
     <div
-      className={`flex ${size} shrink-0 items-center justify-center rounded-full bg-slate-700 ${text} font-semibold text-white`}
+      className={`flex ${size} shrink-0 items-center justify-center rounded-full bg-slate-200 ${text} font-semibold text-slate-800`}
     >
       {initials(fullName)}
     </div>

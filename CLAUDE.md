@@ -15,7 +15,7 @@ Circuito de compras interno: SIC (Solicitud Interna de Compras) con roles emisor
 - Typecheck: `npx tsc --noEmit`. **Hoy hay ~83 errores previos** (mayormente `SicActions.tsx`, por tipos de Supabase nullables). Verificar que el cambio **no suma errores nuevos** comparando el conteo (`npx tsc --noEmit | grep -c "error TS"`).
 - Build: `npm run build`, pero ojo: `next.config.js` tiene `ignoreBuildErrors` y `ignoreDuringBuilds`, así que **el build no detecta errores de tipos ni de lint**. El typecheck de arriba es la verificación real.
 - **No hay tests ni config de ESLint** (`next lint` pediría configurarlo): no correrlo.
-- Modo oscuro: tras agregar clases de color nuevas, `node scripts/generar-modo-oscuro.js` regenera `app/dark-theme.css`.
+- Colores y modo oscuro: por variables CSS (`app/globals.css`, `:root` y `.dark`) mapeadas en `tailwind.config.ts`. La escala `slate` es la neutra de la app (se adapta sola al oscuro); `ink`/`on-ink`, `frame`, `sheet` y `brand` son los tokens del rediseño B. No hay parche generado: no usar colores crudos (hex) en componentes.
 - Flujograma: `bash docs/flujograma-sic-src/regenerar.sh` (debe imprimir `PROBLEMAS: 0`; genera el PDF con Chrome headless).
 
 ## Reglas del proyecto
@@ -35,5 +35,5 @@ Circuito de compras interno: SIC (Solicitud Interna de Compras) con roles emisor
 ## Interfaz
 - Movimiento con CSS nativo y los tokens de `tailwind.config.ts`; toasts con Sonner (`lib/notify.ts`); componentes de `components/ui/*`. Tailwind 3: no migrar a v4.
 - Sin Motion/GSAP ni librerías nuevas sin consultar a Lisandro, aunque una skill las sugiera.
-- Tras agregar clases de color, regenerar `app/dark-theme.css` (`node scripts/generar-modo-oscuro.js`).
+- Colores solo por tokens (ver arriba); no hay nada que regenerar al sumar clases de color.
 - Skills de interfaz instaladas (`emil-design-eng`, `mobile-native`, `ask-sonner`, y manuales `/review-animations`, `/improve-animations`, `/break-ui`, `/redesign-existing-projects`) **asesoran, no deciden**: no cambian el sistema de diseño ni instalan paquetes por su cuenta. Las auditorías se entregan como informe o plan y esperan aprobación.

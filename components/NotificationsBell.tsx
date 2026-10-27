@@ -17,7 +17,7 @@ type Notification = {
   updated_at: string;
 };
 
-// `sidebar`: fila con texto dentro del menú lateral. `bar`: solo el ícono, para la barra superior del celular.
+// `sidebar`: fila con texto (sin uso desde el rediseño B). `bar`: solo el ícono, en la barra superior (celular y escritorio).
 export default function NotificationsBell({
   userId,
   variant = "sidebar",
@@ -92,8 +92,8 @@ export default function NotificationsBell({
         aria-label={bar ? (count > 0 ? `Notificaciones: ${count} pendientes` : "Notificaciones") : undefined}
         className={
           bar
-            ? "flex h-11 w-11 items-center justify-center rounded-lg text-sidebar-fg transition-colors hover:bg-white/5 hover:text-white"
-            : "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-fg transition-colors hover:bg-white/5 hover:text-white"
+            ? "flex h-11 w-11 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-900/5 hover:text-slate-900 lg:h-9 lg:w-9"
+            : "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-900/5 hover:text-slate-900"
         }
       >
         <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
@@ -102,7 +102,7 @@ export default function NotificationsBell({
           {count > 0 && (
             <span
               key={count}
-              className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[1rem] animate-check-pop items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white"
+              className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[1rem] animate-check-pop items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-[#101a2b]"
             >
               {count > 9 ? "9+" : count}
             </span>
@@ -114,7 +114,7 @@ export default function NotificationsBell({
       {open && (
         <div
           id={panelId}
-          className={`absolute top-full z-50 mt-2 animate-slide-down overflow-hidden rounded-xl border border-slate-200 bg-white shadow-pop ${
+          className={`absolute top-full z-50 mt-2 animate-slide-down overflow-hidden rounded-lg border border-slate-200 bg-sheet shadow-pop ${
             bar ? "right-0 w-[min(22rem,calc(100vw-1.5rem))]" : "left-0 w-full"
           }`}
         >

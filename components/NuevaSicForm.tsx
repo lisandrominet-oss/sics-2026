@@ -173,7 +173,7 @@ export default function NuevaSicForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-sheet p-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-slate-700">Área</label>
