@@ -102,7 +102,7 @@ export default function Modal({
     <div
       ref={overlayRef}
       className={cn(
-        "fixed inset-0 z-50 flex justify-center sm:backdrop-blur-sm",
+        "fixed inset-0 z-50 flex justify-center",
         closing ? "pointer-events-none animate-fade-out" : "animate-fade-in",
         bare ? "items-center bg-scrim/70 p-4" : "items-end bg-scrim/50 sm:items-center sm:p-4"
       )}
@@ -128,7 +128,7 @@ export default function Modal({
             ? closing
               ? "animate-scale-out"
               : "animate-scale-in"
-            : "max-h-[90dvh] w-full overflow-y-auto overscroll-contain [overflow-wrap:anywhere] rounded-t-2xl border border-slate-200 bg-sheet p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-pop sm:max-w-md sm:rounded-2xl sm:pb-6",
+            : "max-h-[90dvh] w-full overflow-y-auto overscroll-contain [overflow-wrap:anywhere] rounded-t-2xl border border-slate-200 bg-sheet p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-pop sm:max-w-md sm:rounded-[12px] sm:pb-6",
           !bare && (closing ? "animate-sheet-out sm:animate-scale-out" : "animate-slide-up sm:animate-scale-in"),
           className
         )}

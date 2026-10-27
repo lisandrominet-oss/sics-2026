@@ -62,10 +62,10 @@ export default function FileDropzone({
           className={cn(
             "flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-dashed text-left transition-colors duration-fast ease-out-expo",
             compact ? "px-3 py-2" : "px-4 py-4",
-            "[&>*]:pointer-events-none focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-indigo-500",
+            "[&>*]:pointer-events-none focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-slate-900",
             isDragging
-              ? "border-indigo-300 bg-indigo-50 text-indigo-600"
-              : "border-slate-300 text-slate-500 hover:border-indigo-300 hover:bg-indigo-50/40",
+              ? "border-slate-900 bg-slate-100 text-slate-900"
+              : "border-slate-300 text-slate-500 hover:border-slate-500 hover:bg-slate-50",
             blocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
           )}
         >
@@ -126,7 +126,7 @@ export function DropOverlay({ text = "Soltá para agregar" }: { text?: string })
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-10 flex animate-fade-in items-center justify-center gap-2 rounded-[inherit] border border-dashed border-indigo-300 bg-indigo-50 text-sm font-medium text-indigo-600"
+      className="pointer-events-none absolute inset-0 z-10 flex animate-fade-in items-center justify-center gap-2 rounded-[inherit] border border-dashed border-slate-900 bg-slate-100 text-sm font-medium text-slate-900"
     >
       <IconUpload className="h-4 w-4" />
       {text}

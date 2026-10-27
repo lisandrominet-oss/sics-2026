@@ -89,7 +89,7 @@ function PromptForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      {description && <p className="mt-2 text-sm text-slate-600">{description}</p>}
+      {description && <p className="mt-2 text-sm text-slate-500">{description}</p>}
       <div className="mt-4 space-y-3">
         {fields.map((f) => (
           <Field key={f.name} label={f.label} hint={f.hint} error={errors[f.name]}>

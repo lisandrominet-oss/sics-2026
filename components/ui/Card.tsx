@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 type Props = Omit<HTMLAttributes<HTMLDivElement>, "title"> & {
   /** Relleno interior. `none` para tarjetas que contienen tablas o listas a ras del borde. */
   padding?: "none" | "md" | "lg";
-  /** Sombra suave (tarjetas destacadas, como los totales del Tablero). */
+  /** Borde reforzado (tarjetas destacadas, como los totales del Tablero). Sin sombra: solo flota lo que flota. */
   elevated?: boolean;
   /** Resalta borde y fondo al pasar el mouse (para tarjetas clicables). */
   interactive?: boolean;
@@ -24,7 +24,7 @@ export function cardClass({
   elevated?: boolean;
   className?: string;
 } = {}) {
-  return cn("rounded-xl border border-slate-200 bg-sheet", PADDING[padding], elevated && "shadow-soft", className);
+  return cn("rounded-xl border bg-sheet", elevated ? "border-slate-300" : "border-slate-200", PADDING[padding], className);
 }
 
 export default function Card({
@@ -46,7 +46,7 @@ export default function Card({
       )}
       {...rest}
     >
-      {title && <h2 className="text-balance text-sm font-semibold text-slate-900">{title}</h2>}
+      {title && <h2 className="text-balance text-base font-semibold text-slate-900">{title}</h2>}
       {title ? <div className="mt-3">{children}</div> : children}
     </div>
   );

@@ -5,7 +5,7 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={cn("relative overflow-hidden rounded-md bg-slate-200", className)}
+      className={cn("relative overflow-hidden rounded-md bg-slate-100", className)}
     >
       <div className="shimmer-bg absolute inset-0 animate-shimmer" />
     </div>

@@ -49,7 +49,7 @@ export default function ConfirmProvider({ children }: { children: ReactNode }) {
     <ConfirmContext.Provider value={confirm}>
       {children}
       <Modal open={options !== null} onClose={() => close(false)} title={shown?.title ?? ""}>
-        {shown?.description && <p className="mt-2 text-sm text-slate-600">{shown.description}</p>}
+        {shown?.description && <p className="mt-2 text-sm text-slate-500">{shown.description}</p>}
         <div className="mt-6 flex justify-end gap-2">
           <Button variant="secondary" onClick={() => close(false)}>
             {shown?.cancelLabel ?? "Cancelar"}

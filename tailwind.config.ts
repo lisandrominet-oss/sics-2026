@@ -23,6 +23,8 @@ const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      // Radios de B: md 4 (detalles), lg 6 (controles), xl 8 (tarjetas), 2xl 16 (hoja y menú). Antes: 6, 8, 12, 16.
+      borderRadius: { md: "4px", lg: "6px", xl: "8px", "2xl": "16px" },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },

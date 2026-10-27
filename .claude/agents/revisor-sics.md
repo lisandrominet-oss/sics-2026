@@ -15,5 +15,5 @@ Sos revisor de SICS (Next 14 + Supabase; lógica en RPC `SECURITY DEFINER`). Sol
    - Permisos por rol (admin, gerencia, compras, panol, area, operativo) y "Ver como": ¿la UI y la base coinciden? No alcanza con ocultar un botón.
    - Máquina de estados de la SIC: transiciones nuevas o cambiadas deben reflejarse en el flujograma (`docs/flujograma-sic-src/`); avisar si falta.
    - Migración nueva: archivo en `supabase/migrations/` con timestamp correcto, tipos regenerados si cambió el schema.
-   - Datos personales, correos reales o claves en archivos versionados; clases de color nuevas sin regenerar `app/dark-theme.css`.
+   - Datos personales, correos reales o claves en archivos versionados; colores crudos (hex) en componentes en vez de tokens (ver CLAUDE.md).
 4. Reportá solo huecos de correctitud, seguridad o requisitos incumplidos, priorizados (crítico / importante / menor) con `archivo:línea`. Nada de estilo ni sobre-ingeniería. Si no hay nada relevante, decilo y listá qué verificaste.

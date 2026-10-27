@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { avatarTone } from "@/components/ui/Avatar";
 
 const CACHE_PREFIX = "sc_avatar:";
 const URL_TTL_SECONDS = 3600;
@@ -112,13 +113,15 @@ export default function UserAvatar({
     return () => window.removeEventListener(AVATAR_EVENT, onChange);
   }, []);
 
+  const tone = avatarTone(fullName ?? userId);
   if (url && !failed) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={url} alt="" onError={() => setFailed(true)} className={`${size} shrink-0 rounded-full object-cover`} />;
   }
   return (
     <div
-      className={`flex ${size} shrink-0 items-center justify-center rounded-full bg-slate-200 ${text} font-semibold text-slate-800`}
+      style={tone.style}
+      className={`flex ${size} shrink-0 items-center justify-center rounded-full ${tone.className} ${text} font-semibold`}
     >
       {initials(fullName)}
     </div>

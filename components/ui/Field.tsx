@@ -21,7 +21,7 @@ export default function Field({
   const note = error ?? hint;
   return (
     <div className={className}>
-      <label htmlFor={id} className="block text-sm font-medium text-slate-700">
+      <label htmlFor={id} className="block text-sm font-medium text-slate-900">
         {label}
       </label>
       {children({ id, "aria-describedby": note ? noteId : undefined, "aria-invalid": error ? true : undefined })}

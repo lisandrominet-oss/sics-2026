@@ -31,10 +31,21 @@ export default function AppToaster() {
       theme={theme}
       position={mobile ? "top-center" : "bottom-right"}
       mobileOffset={{ top: "calc(env(safe-area-inset-top) + 64px)", left: 12, right: 12 }}
-      richColors
       closeButton
       visibleToasts={mobile ? 3 : 4}
-      toastOptions={{ classNames: { toast: "font-sans" } }}
+      // Avisos en tinta (como la maqueta B); los de error y advertencia llevan su propio fondo fijo para que se distingan en claro y oscuro.
+      toastOptions={{
+        classNames: {
+          toast: "font-sans !rounded-lg !border-0 !shadow-pop",
+          default: "!bg-ink !text-on-ink",
+          success: "!bg-ink !text-on-ink",
+          info: "!bg-ink !text-on-ink",
+          error: "!bg-[#7f1d1d] !text-white",
+          warning: "!bg-[#92400e] !text-white",
+          title: "!text-inherit",
+          description: "!text-inherit !opacity-75",
+        },
+      }}
     />
   );
 }

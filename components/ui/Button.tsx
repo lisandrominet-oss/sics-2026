@@ -8,19 +8,21 @@ export type ButtonSize = "sm" | "md" | "lg";
 // Sin sombra: la estética (sombras, bordes) se decide en un solo lugar más adelante. La presión al tocar (clase `press`) está en globals.css.
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-ink text-on-ink hover:bg-slate-800",
-  secondary: "border border-slate-300 bg-sheet text-slate-700 hover:bg-slate-50 hover:border-slate-400",
-  danger: "bg-red-600 text-white hover:bg-red-500",
-  "danger-outline": "border border-red-200 bg-sheet text-red-600 hover:bg-red-50",
-  warning: "bg-amber-600 text-white hover:bg-amber-500",
+  secondary: "border border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300",
+  // Rojo y ámbar suaves: el color dice "ojo" sin gritar; la acción principal sigue siendo la de tinta.
+  danger: "bg-red-100 text-red-800 hover:bg-red-200",
+  "danger-outline": "border border-red-200 bg-sheet text-red-700 hover:bg-red-50",
+  warning: "bg-amber-100 text-amber-900 hover:bg-amber-200",
   ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-  link: "text-indigo-600 hover:underline",
+  link: "text-slate-900 underline underline-offset-2 hover:no-underline",
   "link-danger": "text-red-600 hover:underline",
 };
 
 const SIZES: Record<ButtonSize, string> = {
-  sm: "rounded-md px-3 py-1 text-xs",
-  md: "rounded-lg px-4 py-2 text-sm",
-  lg: "rounded-lg px-5 py-2.5 text-sm",
+  // 44 px de alto en celular (dedo), 28/32/40 desde sm. `min-h` y no `h`: un texto largo puede envolver sin desbordar.
+  sm: "min-h-9 rounded-lg px-3 py-1 text-[13px] sm:min-h-7",
+  md: "min-h-11 rounded-lg px-4 py-1.5 text-sm sm:min-h-8",
+  lg: "min-h-11 rounded-lg px-5 py-2 text-sm sm:min-h-10",
 };
 
 // Los botones de texto (link) no llevan relleno: solo el tamaño de letra.
