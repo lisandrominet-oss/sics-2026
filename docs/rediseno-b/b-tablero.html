@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SICS · B · Tablero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="b.css">
+<script src="comun.js"></script><script src="b.js"></script>
+</head>
+<body>
+<script>
+const cerr = (s) => s.estado === "cerrada";
+const urg = (s) => s.mia && (new Date(s.necesaria) - new Date("2026-10-27")) / 86400000 <= 2;
+function fila(s){
+  return `<div class="fila${s.mia?" mia":""}">
+    <a class="cubre" href="b-detalle.html" aria-label="Abrir ${s.code}: ${s.asunto}"></a>
+    <span class="cod">${s.code}</span>
+    <span class="asu">${s.asunto}<small>${s.sector}</small></span>
+    <span class="quien">${avatar(s.pidio)}${s.pidio}</span>
+    <span class="rec">${tira(s.etapa, cerr(s))}${ESTADOS[s.estado]}</span>
+    <span class="cuando">${fmtFecha(s.necesaria)}<small class="${urg(s)?"ya":""}">${faltan(s.necesaria)}</small></span>
+    <span class="acc">${s.mia ? `<a class="btn pri chico" href="b-detalle.html">Revisar</a>` : `<span class="go">${ico("flecha",16)}</span>`}</span>
+  </div>`;
+}
+const otras = SICS.filter((s) => !s.mia);
+const hoja = B.shell("tablero", "Tablero");
+hoja.innerHTML = `
+  <div class="mig">
+    <div class="t"><span class="padre">Mantenimiento</span><span class="padre" aria-hidden="true">/</span><h1>Tablero</h1><span class="chipx">Jefe de área</span></div>
+    <a class="btn pri" href="b-nueva.html">${ico("nueva",16)}Nueva SIC</a>
+  </div>
+  <div class="aviso-caja"><i class="am"></i><p><b>${MIAS.length} solicitudes esperan tu firma.</b> La ${MIAS[0].code} se necesita ${faltan(MIAS[0].necesaria)}.</p><a class="btn pri chico" href="b-detalle.html">Revisar la primera</a></div>
+  <nav class="tabs" aria-label="Solicitudes">
+    <a href="#" aria-current="page">SIC activas<span>${SICS.length}</span></a>
+    <a href="#">Historial de SIC<span>${CERRADAS}</span></a>
+  </nav>
+  <div class="tool">
+    <div class="l"><label class="campo">${ico("buscar",16)}<input type="search" placeholder="Buscar" aria-label="Filtrar solicitudes"></label><button class="sel" type="button">Mi área</button></div>
+    <span class="r">${SICS.length} de ${TOTAL} solicitudes</span>
+  </div>
+  <div role="table" aria-label="SIC activas">
+    <div class="fila cab" role="row"><span>Código</span><span>Asunto</span><span>La pidió</span><span>Dónde está</span><span>Se necesita</span><span></span></div>
+    <div class="subgr">Esperan tu firma</div>
+    ${MIAS.map(fila).join("")}
+    <div class="subgr">En curso</div>
+    ${otras.map(fila).join("")}
+  </div>
+  <p class="fin">Las ${CERRADAS} solicitudes cerradas están en el historial.</p>`;
+</script>
+</body>
+</html>

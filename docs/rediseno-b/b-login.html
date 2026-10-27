@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SICS · B · Ingreso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="b.css">
+<script src="comun.js"></script><script src="b.js"></script>
+</head>
+<body>
+<script>
+const motivo = new URLSearchParams(location.search).get("motivo") === "inactividad";
+document.body.insertAdjacentHTML("afterbegin", `
+  <main class="login"><div class="lg">
+    <section class="izq" aria-label="Servicios Industriales">
+      <a class="logo" href="#" aria-label="Servicios Industriales"><img class="pos" src="img/logo-completo-color.svg" alt=""><img class="neg" src="img/logo-completo-negativo.svg" alt=""></a>
+      <div>
+        <h2>Toda la gestión de compras de Servicios Industriales, de punta a punta.</h2>
+        <p>Desde el pedido de cada área hasta la recepción de mercadería en pañol, con aprobaciones y trazabilidad en un solo lugar.</p>
+      </div>
+      <div class="frag" data-ui aria-hidden="true">
+        <div class="r1"><b>SIC-MANT-2026-0403</b><span>necesaria mañana</span></div>
+        <div class="r2">Mangueras hidráulicas de 3/4 pulgada, 6 unidades</div>
+        <div class="pasos"><div class="ok"><i class="barra"></i><span>Emisor</span></div><div class="ok"><i class="barra"></i><span>Jefe</span></div><div class="ok"><i class="barra"></i><span>Compras</span></div><div class="ok"><i class="barra"></i><span>Gerencia</span></div><div class="ahora"><i class="barra"></i><span>Pañol</span></div></div>
+      </div>
+    </section>
+    <section class="der">
+      <h1>Bienvenido</h1>
+      <p>Ingresá con tu cuenta de Google corporativa para continuar.</p>
+      ${motivo ? `<div class="error-caja" role="alert">${ico("alerta",18)}<div><b>Se cerró tu sesión.</b><p>Pasaron 30 minutos sin actividad. Volvé a ingresar.</p></div></div>` : ""}
+      <button class="btn gg" type="button" onclick="this.textContent='Redirigiendo…'"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.2 5.5-4.7 7.2l7.5 5.8c4.4-4.1 7-10.1 7-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.9-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Ingresar con Google</button>
+    </section>
+  </div></main>`);
+</script>
+</body>
+</html>

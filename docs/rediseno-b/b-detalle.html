@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SICS · B · Detalle de SIC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="b.css">
+<script src="comun.js"></script><script src="b.js"></script>
+</head>
+<body>
+<script>
+/* Detalle de la SIC-MANT-2026-0415 vista por el Jefe de área (sin montos: no los ve).
+   Datos: 30 + 20 = 50 unidades, igual que el asunto. Recorrido: Emisor (hecho) · Jefe (ahora) · Compras, Gerencia, Pañol (faltan). */
+const pasos = [
+  ["Emisor", "Martín Acosta", "26 oct 16:42", "ok"],
+  ["Jefe de área", "Tu turno", "", "ahora"],
+  ["Compras", "Después", "", "falta"],
+  ["Gerencia", "Si corresponde", "", "falta"],
+  ["Pañol", "Recepción", "", "falta"],
+];
+const items = [
+  { d: "Disco de corte 115 x 1,0 mm, acero inoxidable", e: "Para amoladora angular de 4 1/2 pulgadas. Se acepta marca equivalente.", c: 30, link: true },
+  { d: "Disco de corte 115 x 1,6 mm, acero al carbono", e: "", c: 20, cert: true },
+];
+console.assert(items.reduce((a, i) => a + i.c, 0) === 50, "los artículos suman las 50 unidades del asunto");
+const hoja = B.shell("tablero", "", "", "b-tablero.html");
+hoja.innerHTML = `
+  <div class="mig">
+    <div class="t"><a class="padre" href="b-tablero.html" aria-label="Volver al Tablero">Tablero</a><span class="padre" aria-hidden="true">/</span><h1>Discos de corte 115 mm, 50 unidades</h1></div>
+  </div>
+  <p class="meta">SIC-MANT-2026-0415 · Mantenimiento (MANT) · Pedida por Martín Acosta · Proyecto Parada de planta noviembre</p>
+  <div class="paso-linea" role="list" aria-label="Recorrido de la SIC">
+    ${pasos.map(([n, s, f, k]) => `<div class="paso ${k}" role="listitem"><i class="barra"></i><b>${n}</b><span>${s}${f ? " · " + f : ""}</span></div>`).join("")}
+  </div>
+  <p class="estado-m meta">Ahora: Jefe de área, tu turno.</p>
+  <div class="cols">
+    <div>
+      <dl class="hechos">
+        <div><dt>Necesaria para</dt><dd>${fmtFecha("2026-10-29")}<small class="ya">pasado mañana</small></dd></div>
+        <div><dt>Proyecto</dt><dd>Parada de planta<small>noviembre</small></dd></div>
+        <div><dt>Orden de compra</dt><dd class="vacio">Sin emitir</dd></div>
+      </dl>
+      <section class="bloque" aria-labelledby="h-art">
+        <h2 id="h-art">Artículos solicitados<span>${items.length} artículos · 50 unidades</span></h2>
+        <ol class="arts">
+          ${items.map((it, i) => `<li class="art"><span class="nro">${i + 1}</span><div><b>${it.d}</b>${it.e ? `<p>${it.e}</p>` : ""}
+            <div class="rel">${it.link ? `<a class="link" href="#">Link de referencia</a><a class="link" href="#">Ver archivo</a>` : ""}${it.cert ? `<span class="pill warn">Certificado de calidad pendiente</span>` : ""}</div></div>
+            <span class="cant">× ${it.c}</span></li>`).join("")}
+        </ol>
+      </section>
+      <section class="bloque" aria-labelledby="h-arc">
+        <h2 id="h-arc">Archivos de la SIC</h2>
+        <div class="archivo">${ico("doc",20)}<div><b>discos-que-usamos.jpg</b><small>Referencia</small></div><a class="link" href="#">Ver</a></div>
+      </section>
+    </div>
+    <aside class="lat">
+      <section class="panel decide" aria-labelledby="h-dec">
+        <h2 id="h-dec">Tu decisión</h2>
+        <div class="est"><span class="pill warn"><i class="pt"></i>Pendiente aprobación del jefe</span></div>
+        <p class="nota">Esta SIC requiere tu aprobación para avanzar.</p>
+        <textarea id="nota" rows="2" placeholder="Comentario: obligatorio si pedís corrección o rechazás" aria-label="Comentario"></textarea>
+        <div class="acciones">
+          <button class="btn pri" type="button" id="ap">Aprobar</button>
+          <button class="btn sec" type="button" id="co" disabled>Pedir corrección</button>
+          <button class="btn peligro" type="button" id="re" disabled>Rechazar</button>
+        </div>
+        <p class="ayuda">Al aprobar, la SIC pasa a Compras. Rechazar es definitivo; para que la corrijan, usá «Pedir corrección».</p>
+      </section>
+      <section class="panel" aria-labelledby="h-rec">
+        <h2 id="h-rec">Recorrido de la SIC</h2>
+        <ol class="hist">
+          <li class="ult"><b>Pendiente aprobación del jefe</b><span>Sistema · 26/10/2026 16:42</span></li>
+          <li><b>Enviada</b><span>Martín Acosta · 26/10/2026 16:42</span></li>
+        </ol>
+      </section>
+      <section class="panel" aria-labelledby="h-dat">
+        <h2 id="h-dat">Datos</h2>
+        <dl class="datos"><dt>Solicitante</dt><dd>Martín Acosta</dd><dt>Área</dt><dd>Taller</dd><dt>Creada</dt><dd>26/10/2026 16:42</dd><dt>Actualizada</dt><dd>26/10/2026 16:42</dd></dl>
+      </section>
+    </aside>
+  </div>`;
+const nota = document.getElementById("nota"), co = document.getElementById("co"), re = document.getElementById("re");
+nota.addEventListener("input", () => { co.disabled = re.disabled = !nota.value.trim(); });
+document.getElementById("ap").addEventListener("click", () => B.toast("SIC aprobada. Pasa a Compras."));
+co.addEventListener("click", () => B.toast("Pedido de corrección enviado."));
+re.addEventListener("click", () => B.toast("SIC rechazada."));
+</script>
+</body>
+</html>

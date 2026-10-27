@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SICS · B · Estados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="b.css">
+<script src="comun.js"></script><script src="b.js"></script>
+</head>
+<body>
+<script>
+/* Estados que hoy resuelven EmptyState, Skeleton, ConfirmProvider y Sonner. Solo cambia cómo se ven. */
+const hoja = B.shell("tablero", "", "", "b-tablero.html");
+const sk = (n) => Array.from({length:n}, () => `<div class="fila"><span><i class="sk" style="height:12px;width:150px;margin-bottom:8px"></i><i class="sk" style="height:10px;width:62%"></i></span><i class="sk" style="height:10px;width:90px"></i></div>`).join("");
+hoja.innerHTML = `
+  <div class="mig"><div class="t"><h1>Estados</h1></div></div>
+  <p class="meta">Vacío, carga, error, aviso y confirmación, con el mismo sistema.</p>
+  <div class="est-grid">
+    <section><h2>Vacío</h2>
+      <div class="vacio-caja"><b>No hay solicitudes para mostrar</b><p>Cuando haya solicitudes que coincidan con este filtro, van a aparecer acá.</p><a class="btn pri" style="margin-top:12px" href="b-nueva.html">Crear una SIC</a></div></section>
+    <section><h2>Cargando</h2><div aria-busy="true" aria-label="Cargando solicitudes">${sk(4)}</div></section>
+    <section><h2>Error</h2>
+      <div class="error-caja" role="alert">${ico("alerta",18)}<div><b>No se pudo exportar</b><p>No se pudo generar el Excel. Revisá la conexión y probá de nuevo.</p></div></div>
+      <div style="margin-top:16px;display:flex;gap:8px"><button class="btn sec" type="button">Reintentar</button></div></section>
+    <section><h2>Confirmación y aviso</h2>
+      <div class="dialogo" role="dialog" aria-labelledby="dt"><h3 id="dt">¿Enviar la solicitud?</h3><p>Repuestos para la bomba de lodos · 2 artículos · necesaria para el 05/11/2026. Revisá que esté todo bien. Mientras Compras no la tome, vas a poder editarla o anularla.</p>
+        <div class="acciones"><button class="btn sec" type="button">Revisar</button><button class="btn pri" type="button" onclick="B.toast('SIC enviada. Pasa a revisión.')">Enviar</button></div></div></section>
+  </div>`;
+</script>
+</body>
+</html>

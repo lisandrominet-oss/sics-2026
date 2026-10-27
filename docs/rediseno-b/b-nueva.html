@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SICS · B · Nueva SIC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="b.css">
+<script src="comun.js"></script><script src="b.js"></script>
+</head>
+<body>
+<script>
+/* Nueva SIC (Jefe de área: el Área viene fija). Mismos campos que NuevaSicForm + ItemsEditor.
+   El panel de la derecha solo explica el camino y resume lo cargado; no agrega campos. */
+const hoja = B.shell("nueva", "", "", "b-tablero.html");
+const item = (n, d, c, e, tot) => `<div class="item" role="group" aria-label="Artículo ${n}">
+  <div class="cab"><b>Artículo ${n}</b><button class="btn peligro chico" type="button">Quitar</button></div>
+  <div class="g3">
+    <div class="fld"><label for="a${n}">Artículo</label><input class="in" id="a${n}" value="${d}" placeholder="Ej: Rodamiento 6205-2RS"></div>
+    <div class="fld"><label for="c${n}">Cantidad</label><input class="in" id="c${n}" type="number" value="${c}" min="0.01" step="0.01"></div>
+  </div>
+  <div class="fld fila2"><label for="e${n}">Especificaciones técnicas<small>(opcional)</small></label><textarea id="e${n}" rows="2">${e}</textarea></div>
+  <div class="g2 fila2">
+    <div class="fld"><label for="l${n}">Link de referencia<small>(opcional)</small></label><input class="in" id="l${n}" placeholder="https://..."></div>
+    <div class="fld"><label>Archivo de referencia<small>(opcional)</small></label><span class="drop" tabindex="0" role="button">${ico("clip",16)}Elegir o soltar un archivo</span></div>
+  </div>
+  <label class="chk"><input type="checkbox"${tot ? " checked" : ""}>Requiere certificado de calidad</label>
+</div>`;
+hoja.innerHTML = `
+  <div class="mig"><div class="t"><a class="padre" href="b-tablero.html">Tablero</a><span class="padre" aria-hidden="true">/</span><h1>Nueva SIC</h1></div></div>
+  <div class="form-cols">
+    <form class="form" onsubmit="event.preventDefault();B.toast('SIC enviada. Pasa a revisión.')">
+      <div class="g2">
+        <div class="fld"><label>Área</label><div class="fijo">Mantenimiento (MANT)</div></div>
+        <div class="fld"><label for="pr">Proyecto</label><select id="pr"><option>Seleccionar…</option><option>Taller</option><option selected>Parada de planta noviembre</option><option>Mantenimiento general</option></select></div>
+      </div>
+      <div class="fld"><label for="as">Asunto o razón de la compra</label><input class="in" id="as" value="Repuestos para la bomba de lodos" placeholder="Ej: Repuestos para torno CNC"></div>
+      <div class="fld"><label for="fe">Fecha límite</label><input class="in" id="fe" type="date" value="2026-11-05" style="max-width:220px"></div>
+      <div class="fld"><label>Artículos solicitados</label>
+        ${item(1, "Rodamiento 6205-2RS", "4", "Con doble sello de goma.", false)}
+        ${item(2, "Retén 35 x 52 x 7", "4", "", true)}
+        <button class="btn sec" type="button" style="margin-top:12px">${ico("nueva",16)}Agregar artículo (2/50)</button>
+      </div>
+      <div class="similar" role="note"><b>Puede que ya exista un pedido parecido en tu área.</b>
+        <p><a href="b-detalle.html">SIC-MANT-2026-0418</a> (Pendiente aprobación del jefe): Rodamientos 6205 y retenes para bomba de lodos.</p>
+        <p>Es solo un aviso: podés enviar la solicitud igual.</p></div>
+      <div class="barra-envio"><p>Al enviar, la solicitud queda registrada y pasa a revisión.</p><button class="btn pri grande" type="submit">Enviar solicitud</button></div>
+    </form>
+    <aside class="resumen" aria-label="El recorrido de una SIC">
+      <section class="panel"><h2>El recorrido de una SIC</h2>
+        <ol class="sig">
+          <li class="ahora"><i></i><div><b>Jefe de área</b><span>Aprueba o pide corrección</span></div></li>
+          <li><i></i><div><b>Compras</b><span>Cotiza y valida</span></div></li>
+          <li><i></i><div><b>Gerencia</b><span>Aprueba según el tope</span></div></li>
+          <li><i></i><div><b>Pañol</b><span>Recibe la mercadería</span></div></li>
+        </ol>
+      </section>
+    </aside>
+  </div>`;
+</script>
+</body>
+</html>
