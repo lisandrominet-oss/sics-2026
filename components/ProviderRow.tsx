@@ -204,9 +204,13 @@ export default function ProviderRow({
             type="button"
             onClick={toggleFavorite}
             title={provider.favorite ? "Quitar de favoritos" : "Marcar como favorito"}
-            className={`shrink-0 text-lg ${provider.favorite ? "text-amber-500" : "text-slate-300"}`}
+            aria-label="Favorito"
+            aria-pressed={provider.favorite}
+            className={`-m-1.5 shrink-0 p-1.5 ${provider.favorite ? "text-amber-500" : "text-slate-400"}`}
           >
-            ★
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill={provider.favorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.75} strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8L3.5 9.7l5.9-.9z" />
+            </svg>
           </button>
           <button type="button" onClick={() => setExpanded((v) => !v)} className="min-w-0 flex-1 text-left">
             <p className="truncate text-sm font-semibold text-slate-900">
@@ -220,7 +224,7 @@ export default function ProviderRow({
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           {provider.has_current_account && (
-            <span className="rounded-full bg-violet-100 px-2.5 py-1 text-xs font-semibold text-violet-700">
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
               Cuenta corriente
             </span>
           )}

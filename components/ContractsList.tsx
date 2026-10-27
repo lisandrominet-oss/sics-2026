@@ -454,12 +454,12 @@ function ViewTab({ href, active, label, count }: { href: string; active: boolean
       href={href}
       aria-current={active ? "page" : undefined}
       scroll={false}
-      className={`-mb-px flex items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition-colors duration-fast ease-out-expo ${
-        active ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"
+      className={`-mb-px flex items-center gap-2 border-b-2 pb-3 text-sm transition-colors duration-fast ease-out-expo ${
+        active ? "border-ink font-medium text-slate-900" : "border-transparent text-slate-500 hover:text-slate-900"
       }`}
     >
       {label}
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${active ? "bg-ink text-on-ink" : "bg-slate-100 text-slate-500"}`}>
+      <span className="font-normal tabular-nums text-slate-500">
         {count}
       </span>
     </Link>

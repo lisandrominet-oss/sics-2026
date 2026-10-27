@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Button, { buttonClass } from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
+import { IconArrowLeft, IconArrowRight, IconCheck, IconChevronDown } from "@/components/icons";
 import Modal from "@/components/ui/Modal";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 import AssignmentEditForm from "@/components/AssignmentEditForm";
@@ -102,6 +103,8 @@ export default function RosterGrid({
   const [editing, setEditing] = useState<Person | null>(null);
   const [lastEditing, setLastEditing] = useState<Person | null>(null);
   const [confirming, setConfirming] = useState(false);
+  // La leyenda ocupa mucho en celular: ahí arranca plegada (desde sm siempre se ve, por CSS, sin importar este estado).
+  const [legendOpen, setLegendOpen] = useState(false);
   const shownTarget = target ?? lastTarget;
   const shownEditing = editing ?? lastEditing;
 
@@ -268,7 +271,7 @@ export default function RosterGrid({
             value={siteId}
             onChange={(e) => go({ sitio: e.target.value })}
             aria-label="Sitio"
-            className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto"
+            className="min-h-11 min-w-0 max-w-full flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm sm:min-h-8 sm:w-auto sm:flex-none"
           >
             {sites.map((s) => (
               <option key={s.id} value={s.id}>
@@ -281,7 +284,7 @@ export default function RosterGrid({
             value={days}
             onChange={(e) => go({ dias: Number(e.target.value) })}
             aria-label="Período"
-            className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto"
+            className="min-h-11 min-w-0 max-w-full flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm sm:min-h-8 sm:w-auto sm:flex-none"
           >
             {[14, 28, 42, 56].map((n) => (
               <option key={n} value={n}>
@@ -289,20 +292,20 @@ export default function RosterGrid({
               </option>
             ))}
           </select>
-          <div className="flex items-center gap-1">
-            <Link href={hrefFor(addDays(from, -days))} className={buttonClass({ variant: "secondary", size: "sm" })} aria-label="Período anterior">
-              ←
+          <div className="flex w-full items-center gap-1.5 sm:w-auto">
+            <Link href={hrefFor(addDays(from, -days))} className={buttonClass({ variant: "secondary", size: "sm", className: "w-11 px-0 sm:w-8" })} aria-label="Período anterior">
+              <IconArrowLeft className="h-5 w-5" />
             </Link>
-            <Link href={`/roster?sitio=${siteId}&dias=${days}`} className={buttonClass({ variant: "secondary", size: "sm" })}>
+            <Link href={`/roster?sitio=${siteId}&dias=${days}`} className={buttonClass({ variant: "secondary", size: "sm", className: "flex-1 sm:flex-none" })}>
               Hoy
             </Link>
-            <Link href={hrefFor(addDays(from, days))} className={buttonClass({ variant: "secondary", size: "sm" })} aria-label="Período siguiente">
-              →
+            <Link href={hrefFor(addDays(from, days))} className={buttonClass({ variant: "secondary", size: "sm", className: "w-11 px-0 sm:w-8" })} aria-label="Período siguiente">
+              <IconArrowRight className="h-5 w-5" />
             </Link>
           </div>
         </div>
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-          <div role="group" aria-label="Vista del calendario" className="flex overflow-hidden rounded-lg border border-slate-300 text-sm">
+          <div role="group" aria-label="Vista del calendario" className="flex w-full overflow-hidden rounded-lg border border-slate-300 text-sm sm:w-auto">
             {MODES.map((m) => (
               <button
                 key={m.key}
@@ -310,7 +313,7 @@ export default function RosterGrid({
                 aria-pressed={mode === m.key}
                 title={m.hint}
                 onClick={() => setMode(m.key)}
-                className={`px-3 py-2 ${mode === m.key ? "bg-ink text-on-ink" : "bg-sheet text-slate-600 hover:bg-slate-50"}`}
+                className={`min-h-11 flex-1 px-3.5 sm:min-h-8 sm:flex-none ${mode === m.key ? "bg-ink font-medium text-on-ink" : "bg-sheet text-slate-600 hover:bg-slate-50"}`}
               >
                 {m.label}
               </button>
@@ -322,9 +325,9 @@ export default function RosterGrid({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar persona"
             aria-label="Buscar persona"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-48"
+            className="min-h-11 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm sm:min-h-8 sm:w-48"
           />
-          <select value={groupBy} onChange={(e) => setGroupBy(e.target.value as GroupBy)} aria-label="Agrupar por" className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <select value={groupBy} onChange={(e) => setGroupBy(e.target.value as GroupBy)} aria-label="Agrupar por" className="min-h-11 rounded-lg border border-slate-300 px-3 py-1.5 text-sm sm:min-h-8">
             <option value="cuadrilla">Agrupar por cuadrilla</option>
             <option value="puesto">Agrupar por puesto</option>
             <option value="ninguno">Sin agrupar</option>
@@ -332,7 +335,19 @@ export default function RosterGrid({
         </div>
       </div>
 
-      <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-600" aria-label="Referencias">
+      <button
+        type="button"
+        onClick={() => setLegendOpen((v) => !v)}
+        aria-expanded={legendOpen}
+        aria-controls="roster-referencias"
+        className="flex items-center gap-1.5 text-sm font-medium text-slate-900 sm:hidden"
+      >
+        Referencias
+        <span className={`text-slate-500 transition-transform duration-fast ${legendOpen ? "rotate-180" : ""}`}>
+          <IconChevronDown className="h-4 w-4" />
+        </span>
+      </button>
+      <ul id="roster-referencias" className={`flex-wrap gap-x-4 gap-y-1.5 text-[13px] text-slate-600 sm:flex ${legendOpen ? "flex" : "hidden"}`} aria-label="Referencias">
         {LEGEND.map((l) => {
           const st = cellStyle(l.state, l.shift);
           return (
@@ -345,7 +360,7 @@ export default function RosterGrid({
       </ul>
 
       {!planMode && pending > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-4 py-3 text-sm text-slate-900">
           <p>
             Hay <strong>{pending}</strong> {pending === 1 ? "día de este período que ya pasó y no está confirmado" : "días de este período que ya pasaron y no están confirmados"} (se {pending === 1 ? "ve atenuado" : "ven atenuados"}).
           </p>
@@ -360,7 +375,7 @@ export default function RosterGrid({
           title="No hay personas asignadas a este sitio en el período"
           description="Asigná personas con su régimen y fecha de inicio del ciclo para que aparezcan en el calendario."
           action={
-            <Link href="/roster/asignaciones" className="text-sm font-medium text-indigo-600 hover:underline">
+            <Link href="/roster/asignaciones" className="text-sm font-medium text-slate-900 underline underline-offset-2 hover:no-underline">
               Ir a Asignaciones
             </Link>
           }
@@ -393,17 +408,23 @@ export default function RosterGrid({
                       title={holiday ? `${longDate(d)} · Feriado: ${holiday}` : longDate(d)}
                       className={`min-w-[2rem] border-b border-slate-100 px-0.5 py-1 text-center font-normal tabular-nums ${
                         d === today
-                          ? "bg-indigo-100 font-semibold text-indigo-800"
+                          ? "font-semibold text-slate-900"
                           : holiday
-                            ? "bg-rose-50 font-semibold text-rose-700"
+                            ? "bg-red-50 font-semibold text-red-700"
                             : isWeekend(d)
                               ? "bg-slate-50 text-slate-500"
                               : "text-slate-500"
                       }`}
                     >
                       <div className="text-[10px] leading-none">{weekdayLetter(d)}</div>
-                      <div className="leading-tight">{dayOfMonth(d)}</div>
-                      {holiday && <div aria-hidden="true" className="mx-auto mt-0.5 h-1 w-1 rounded-full bg-rose-500" />}
+                      <div className="leading-tight">
+                        {d === today ? (
+                          <span className="mx-auto mt-0.5 inline-grid h-5 min-w-[1.375rem] place-items-center rounded-full bg-ink px-1 text-on-ink">{dayOfMonth(d)}</span>
+                        ) : (
+                          dayOfMonth(d)
+                        )}
+                      </div>
+                      {holiday && <div aria-hidden="true" className="mx-auto mt-0.5 h-1 w-1 rounded-full bg-red-500" />}
                     </th>
                   );
                 })}
@@ -468,8 +489,8 @@ export default function RosterGrid({
                   {totals.map((t, i) => {
                     const gap = required - t.allWorking;
                     return (
-                      <td key={range[i]} className={`px-0.5 py-1 text-center text-[10px] tabular-nums ${gap > 0 ? "font-semibold text-red-600" : "text-slate-400"}`} title={gap > 0 ? `Faltan ${gap}` : gap < 0 ? `Sobran ${-gap}` : "Dotación completa"}>
-                        {gap > 0 ? `-${gap}` : gap < 0 ? `+${-gap}` : "✓"}
+                      <td key={range[i]} className={`px-0.5 py-1 text-center text-[11px] tabular-nums ${gap > 0 ? "font-semibold text-red-600" : "text-slate-500"}`} title={gap > 0 ? `Faltan ${gap}` : gap < 0 ? `Sobran ${-gap}` : "Dotación completa"} aria-label={gap > 0 ? `Faltan ${gap}` : gap < 0 ? `Sobran ${-gap}` : "Dotación completa"}>
+                        {gap > 0 ? `−${gap}` : gap < 0 ? `+${-gap}` : <IconCheck className="mx-auto h-3 w-3" />}
                       </td>
                     );
                   })}
@@ -602,13 +623,13 @@ function SectionRows({
                 .filter(Boolean)
                 .join(" · ");
               return (
-                <td key={d} className={`border-t border-slate-100 p-0 ${d === today ? "outline outline-1 -outline-offset-1 outline-indigo-400" : ""}`}>
+                <td key={d} className={`border-t border-slate-100 p-0 ${d === today ? "outline outline-[1.5px] -outline-offset-[1.5px] outline-ink" : ""}`}>
                   <button
                     type="button"
                     onClick={() => onCell(p, d)}
                     title={`${longDate(d)}: ${detail}`}
                     aria-label={`${p.label}, ${longDate(d)}: ${detail}`}
-                    className={`flex h-7 w-full items-center justify-center text-[11px] font-semibold ${st.className} hover:brightness-95 ${isPending ? "opacity-50" : ""} ${dim ? "opacity-20" : ""} ${isDiff ? "ring-2 ring-inset ring-orange-500" : ""}`}
+                    className={`flex h-7 w-full items-center justify-center text-[11px] font-semibold ${st.className} hover:brightness-95 ${isPending ? "opacity-50" : ""} ${dim ? "opacity-20" : ""} ${isDiff ? "ring-2 ring-inset ring-amber-600" : ""}`}
                   >
                     {st.code}
                     {cell.extended && state === "trabajo" && <span aria-hidden="true">*</span>}

@@ -176,7 +176,7 @@ function DayTab({ person, day, today, cell, onDone }: { person: PanelPerson; day
               {cell.confirmed ? describeState(cell.state, cell.shift) : day > today ? "todavía no pasó" : "sin confirmar"}
               {cell.confirmed && cell.differs ? " · difiere del plan" : ""}
             </p>
-            {cell.is_holiday && <p className="text-rose-700">Feriado: {cell.holiday_name}</p>}
+            {cell.is_holiday && <p className="text-red-700">Feriado: {cell.holiday_name}</p>}
           </>
         ) : (
           <p>Ese día la persona no tiene una asignación vigente.</p>

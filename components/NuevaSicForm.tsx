@@ -281,7 +281,7 @@ export default function NuevaSicForm({
 
       {error && <p role="alert" className="animate-shake text-sm text-red-600 [overflow-wrap:anywhere]">{error}</p>}
       {createdId && (
-        <Link href={`/sic/${createdId}`} className="inline-block text-sm font-medium text-indigo-600 underline">
+        <Link href={`/sic/${createdId}`} className="inline-block text-sm font-medium text-slate-900 underline">
           Ir a la SIC creada
         </Link>
       )}

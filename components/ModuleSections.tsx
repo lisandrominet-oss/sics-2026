@@ -19,7 +19,7 @@ export default function ModuleSections({ sections }: { sections: string[] }) {
             key={name}
             type="button"
             onClick={() => setSelected(name)}
-            className="flex items-center justify-between rounded-xl border border-slate-200 bg-sheet p-6 text-left transition-colors duration-fast ease-out-expo hover:border-indigo-200 hover:bg-indigo-50/40 press-soft"
+            className="flex items-center justify-between rounded-xl border border-slate-200 bg-sheet p-6 text-left transition-colors duration-fast ease-out-expo hover:border-slate-300 hover:bg-slate-50 press-soft"
           >
             <span className="text-sm font-semibold text-slate-900">{name}</span>
             <IconArrowRight className="h-4 w-4 text-slate-400" />
@@ -34,9 +34,6 @@ export default function ModuleSections({ sections }: { sections: string[] }) {
         className="text-center sm:max-w-sm sm:p-8"
       >
         <p className={`${eyebrowClass} mt-2`}>{selected ?? lastSelected.current}</p>
-        <p className="mt-4 text-5xl" aria-hidden="true">
-          😊
-        </p>
         <button
           type="button"
           onClick={() => setSelected(null)}

@@ -125,14 +125,14 @@ export default function ContractDetail({
         </div>
       )}
 
-      <Card className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+      <div className="mt-5 grid grid-cols-2 gap-4 border-y border-slate-200 py-4 text-sm sm:grid-cols-4 [&_p:last-child]:text-base [&_p:last-child]:font-medium [&_p:last-child]:text-slate-900">
         <InfoItem label="Inicio" value={formatDateOnly(contract.start_date)} />
         <InfoItem label="Vencimiento" value={formatDateOnly(contract.end_date)} />
         <InfoItem label="Cuotas" value={`${paid}/${installments.length} pagadas`} />
         <InfoItem label="Responsable" value={contract.owner?.full_name ?? "-"} />
-      </Card>
+      </div>
 
-      <div className="mt-6 flex gap-2 overflow-x-auto border-b border-slate-200 text-sm">
+      <div className="mt-6 flex gap-6 overflow-x-auto border-b border-slate-200 text-sm">
         {(
           [
             ["datos", "Datos"],
@@ -145,8 +145,9 @@ export default function ContractDetail({
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`shrink-0 whitespace-nowrap border-b-2 px-3 py-2 font-medium ${
-              tab === key ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-800"
+            aria-current={tab === key ? "true" : undefined}
+            className={`-mb-px shrink-0 whitespace-nowrap border-b-2 pb-3 pt-2 transition-colors duration-fast ease-out-expo ${
+              tab === key ? "border-ink font-medium text-slate-900" : "border-transparent text-slate-500 hover:text-slate-900"
             }`}
           >
             {label}
@@ -154,7 +155,7 @@ export default function ContractDetail({
         ))}
       </div>
 
-      <div className="mt-4">
+      <div className="mt-6">
         {tab === "datos" && <DatosTab contract={contract} onDone={refresh} onError={setError} />}
         {tab === "items" && (
           <ItemsTab contractId={contract.id} items={items} rates={rates} usage={usage} installments={installments} onDone={refresh} onError={setError} />
@@ -1085,17 +1086,23 @@ function CuotasTab({
 
   return (
     <div className="space-y-4">
-      <Card title="Cuotas">
+      <section aria-labelledby="titulo-cuotas">
+        <h2 id="titulo-cuotas" className="mb-3 text-base font-semibold text-slate-900">
+          Cuotas
+        </h2>
         <div className="overflow-x-auto">
-          <div className="grid min-w-[980px] grid-cols-[1.2fr_110px_130px_130px_130px_175px_minmax(76px,1fr)_40px] items-center gap-x-3 text-sm tabular-nums">
-            <div className={`${eyebrowClass} pb-2`}>Período</div>
-            <div className={`${eyebrowClass} pb-2`}>Canon (USD)</div>
-            <div className={`${eyebrowClass} pb-2`}>Facturado (ARS)</div>
-            <div className={`${eyebrowClass} pb-2`}>Pagado (ARS)</div>
-            <div className={`${eyebrowClass} pb-2`}>Diferencia pago</div>
-            <div className={`${eyebrowClass} pb-2`}>Estado</div>
-            <div className="pb-2"></div>
-            <div className="pb-2"></div>
+          {/* Pantallas anchas: tabla de 8 columnas. Celular y tablet: cada cuota es un bloque de dos columnas con sus rótulos. */}
+          <div className="grid grid-cols-2 items-center gap-x-3 text-sm tabular-nums xl:grid-cols-[1.2fr_110px_130px_130px_130px_175px_minmax(76px,1fr)_40px]">
+            <div className="contents max-xl:hidden">
+              <div className={`${eyebrowClass} border-b border-slate-200 pb-2 pl-[15px]`}>Período</div>
+              <div className={`${eyebrowClass} border-b border-slate-200 pb-2`}>Canon (USD)</div>
+              <div className={`${eyebrowClass} border-b border-slate-200 pb-2`}>Facturado (ARS)</div>
+              <div className={`${eyebrowClass} border-b border-slate-200 pb-2`}>Pagado (ARS)</div>
+              <div className={`${eyebrowClass} border-b border-slate-200 pb-2`}>Diferencia pago</div>
+              <div className={`${eyebrowClass} border-b border-slate-200 pb-2`}>Estado</div>
+              <div className="border-b border-slate-200 pb-2"></div>
+              <div className="border-b border-slate-200 pb-2"></div>
+            </div>
 
             {installments.map((inst) => {
               const lines = linesFor(inst.period_start);
@@ -1108,38 +1115,38 @@ function CuotasTab({
               const isPaymentOpen = paymentFormFor === inst.id;
               return (
                 <Fragment key={inst.id}>
-                  <div className="border-b border-slate-100 py-2 pr-3 text-slate-700">
-                    <span className="block whitespace-nowrap">{formatDateOnly(inst.period_start)}</span>
-                    <span className="block whitespace-nowrap text-xs text-slate-400">→ {formatDateOnly(inst.period_end)}</span>
+                  <div className={`border-slate-100 py-2 pr-3 text-slate-900 max-xl:col-span-2 max-xl:mt-4 max-xl:border-t max-xl:border-slate-200 max-xl:pt-4 xl:border-b border-l-[3px] pl-3 ${inst.status === "pendiente_de_factura" ? "border-l-brand max-xl:border-l-brand" : "border-l-transparent max-xl:border-l-transparent"}`}>
+                    <span className="block whitespace-nowrap font-medium">{formatDateOnly(inst.period_start)}</span>
+                    <span className="block whitespace-nowrap text-xs text-slate-500">→ {formatDateOnly(inst.period_end)}</span>
                   </div>
-                  <div className="border-b border-slate-100 py-2 pr-3 text-slate-600">
+                  <div data-l="Canon (USD)" className="xl:border-b xl:border-slate-100 xl:py-2 xl:pr-3 max-xl:py-1.5 max-xl:before:block max-xl:before:text-[13px] max-xl:before:text-slate-500 max-xl:before:content-[attr(data-l)] text-slate-700">
                     {formatUsd(expectedByPeriod[inst.period_start] ?? 0)}
                   </div>
-                  <div className="border-b border-slate-100 py-2 pr-3 text-slate-600">
+                  <div data-l="Facturado (ARS)" className="xl:border-b xl:border-slate-100 xl:py-2 xl:pr-3 max-xl:py-1.5 max-xl:before:block max-xl:before:text-[13px] max-xl:before:text-slate-500 max-xl:before:content-[attr(data-l)] text-slate-700">
                     {lines.length > 0 ? formatArs(invoicedArs) : "-"}
                   </div>
-                  <div className="border-b border-slate-100 py-2 pr-3 text-slate-600">
+                  <div data-l="Pagado (ARS)" className="xl:border-b xl:border-slate-100 xl:py-2 xl:pr-3 max-xl:py-1.5 max-xl:before:block max-xl:before:text-[13px] max-xl:before:text-slate-500 max-xl:before:content-[attr(data-l)] text-slate-700">
                     {payLines.length > 0 ? formatArs(paidArs) : "-"}
                   </div>
-                  <div className="border-b border-slate-100 py-2 pr-3">
+                  <div data-l="Diferencia pago" className="xl:border-b xl:border-slate-100 xl:py-2 xl:pr-3 max-xl:py-1.5 max-xl:before:block max-xl:before:text-[13px] max-xl:before:text-slate-500 max-xl:before:content-[attr(data-l)]">
                     {payLines.length > 0 && Math.abs(paymentDiff) > 1 ? (
-                      <span className="font-medium text-amber-700">{formatArs(paymentDiff)}</span>
+                      <span className="font-medium text-amber-800">{formatArs(paymentDiff)}</span>
                     ) : (
-                      <span className="text-slate-400">-</span>
+                      <span className="text-slate-500">-</span>
                     )}
                   </div>
-                  <div className="border-b border-slate-100 py-2 pr-3">
+                  <div data-l="Estado" className="xl:border-b xl:border-slate-100 xl:py-2 xl:pr-3 max-xl:py-1.5 max-xl:before:block max-xl:before:text-[13px] max-xl:before:text-slate-500 max-xl:before:content-[attr(data-l)] max-xl:col-span-2">
                     <Badge tone={CONTRACT_INSTALLMENT_STATUS_TONES[inst.status]}>
                       {CONTRACT_INSTALLMENT_STATUS_LABELS[inst.status]}
                     </Badge>
                   </div>
-                  <div className="border-b border-slate-100 py-2 pr-3">
+                  <div className="py-2 pr-3 xl:border-b xl:border-slate-100">
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => { setPaymentFormFor(null); setDetailFor(null); setInvoiceFormFor((v) => (v === inst.id ? null : inst.id)); }}
                         title={isInvoiceOpen ? "Cancelar" : "Subir factura"}
                         aria-label={isInvoiceOpen ? "Cancelar" : "Subir factura"}
-                        className={`rounded-md border p-1.5 ${isInvoiceOpen ? "border-indigo-300 bg-indigo-50 text-indigo-600" : "border-slate-300 text-slate-600 hover:bg-slate-50"}`}
+                        className={`inline-flex h-11 w-11 items-center justify-center rounded-md border xl:h-8 xl:w-8 ${isInvoiceOpen ? "border-ink bg-slate-100 text-slate-900" : "border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-900"}`}
                       >
                         <IconFileText className="h-4 w-4" />
                       </button>
@@ -1147,7 +1154,7 @@ function CuotasTab({
                         onClick={() => { setInvoiceFormFor(null); setDetailFor(null); setPaymentFormFor((v) => (v === inst.id ? null : inst.id)); }}
                         title={isPaymentOpen ? "Cancelar" : "Subir recibo"}
                         aria-label={isPaymentOpen ? "Cancelar" : "Subir recibo"}
-                        className={`rounded-md border p-1.5 ${isPaymentOpen ? "border-indigo-300 bg-indigo-50 text-indigo-600" : "border-slate-300 text-slate-600 hover:bg-slate-50"}`}
+                        className={`inline-flex h-11 w-11 items-center justify-center rounded-md border xl:h-8 xl:w-8 ${isPaymentOpen ? "border-ink bg-slate-100 text-slate-900" : "border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-900"}`}
                       >
                         <IconReceipt className="h-4 w-4" />
                       </button>
@@ -1158,12 +1165,12 @@ function CuotasTab({
                       )}
                     </div>
                   </div>
-                  <div className="border-b border-slate-100 py-2 pr-1 text-right">
+                  <div className="py-2 pr-1 text-right xl:border-b xl:border-slate-100">
                     <button
                       onClick={() => { setInvoiceFormFor(null); setPaymentFormFor(null); setDetailFor((v) => (v === inst.id ? null : inst.id)); }}
                       aria-label={isDetailOpen ? "Ocultar detalle de la cuota" : "Ver detalle de la cuota"}
                       aria-expanded={isDetailOpen}
-                      className="rounded-md border border-slate-300 p-1.5 text-slate-600 hover:bg-slate-50"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-md border xl:h-8 xl:w-8 border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-900"
                     >
                       <IconChevronDown
                         className={`h-4 w-4 transition-transform ease-drawer ${isDetailOpen ? "rotate-180 duration-open" : "duration-close"}`}
@@ -1209,7 +1216,7 @@ function CuotasTab({
             })}
           </div>
         </div>
-      </Card>
+      </section>
 
       <PromptDialog
         open={voidFor !== null}

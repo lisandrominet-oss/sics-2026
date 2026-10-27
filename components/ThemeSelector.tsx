@@ -35,7 +35,7 @@ export default function ThemeSelector() {
             onClick={() => choose(o.value)}
             className={`flex flex-col items-start gap-1 rounded-xl border px-4 py-3 text-left transition-colors ${
               active
-                ? "border-indigo-600 bg-indigo-50 text-indigo-900"
+                ? "border-ink bg-slate-100 text-slate-900"
                 : "border-slate-200 bg-sheet text-slate-700 hover:bg-slate-50"
             }`}
           >

@@ -102,7 +102,7 @@ export default function NotificationsBell({
           {count > 0 && (
             <span
               key={count}
-              className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[1rem] animate-check-pop items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-[#101a2b]"
+              className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[1rem] animate-check-pop items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-on-brand"
             >
               {count > 9 ? "9+" : count}
             </span>
@@ -153,7 +153,7 @@ export default function NotificationsBell({
               >
                 <p className="text-sm font-semibold text-slate-900">{item.code}</p>
                 <p className="truncate text-xs text-slate-500">{item.subject}</p>
-                <p className="mt-1 text-xs font-medium text-indigo-600">
+                <p className="mt-1 text-xs font-medium text-slate-600">
                   {STATUS_LABELS[item.status]}
                 </p>
               </Link>
@@ -162,7 +162,7 @@ export default function NotificationsBell({
           <Link
             href="/dashboard?filter=mia"
             onClick={() => setOpen(false)}
-            className="block bg-slate-50 px-4 py-2.5 text-center text-xs font-semibold text-indigo-600 hover:bg-slate-100"
+            className="block bg-slate-50 px-4 py-2.5 text-center text-xs font-semibold text-slate-900 underline underline-offset-2 hover:bg-slate-100"
           >
             Ver todas
           </Link>

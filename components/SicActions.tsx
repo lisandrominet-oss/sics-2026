@@ -486,7 +486,7 @@ export default function SicActions({
             type="checkbox"
             checked={poIsService}
             onChange={(e) => setPoIsService(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600"
+            className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-slate-900"
           />
           <span>
             Es un servicio

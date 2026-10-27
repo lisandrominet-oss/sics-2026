@@ -123,7 +123,7 @@ export default async function ContratoDetailPage({ params }: { params: { id: str
     <div className="mx-auto max-w-5xl">
       <Link
         href="/contratos"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900"
       >
         <IconArrowLeft />
         Volver a Contratos

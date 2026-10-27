@@ -99,39 +99,40 @@ export const EXCEPTION_KIND_LABELS: Record<ExceptionKind, string> = {
 
 export const POSITION_SHIFT_LABELS: Record<string, string> = { dia: "Día", noche: "Noche", cualquiera: "Cualquiera" };
 
-// Código corto de la celda y clases de color (las de color ya están cubiertas por el modo oscuro).
+// Código corto de la celda y clases de color (todo por tokens: el modo oscuro sale solo).
+// Sistema de B: la tinta marca el trabajo (día en tono suave, noche en tinta), el amarillo de la marca marca el viaje y las
+// demoras, el rojo solo lo que falta o falla. Las ausencias se distinguen por la forma (borde, trazo punteado), no por un color nuevo.
 export function cellStyle(state: string, shift: string | null): { code: string; className: string } {
   switch (state) {
     case "trabajo":
       return shift === "noche"
-        ? { code: "N", className: "bg-indigo-200 text-indigo-900" }
-        : { code: "D", className: "bg-emerald-200 text-emerald-900" };
+        ? { code: "N", className: "border border-transparent bg-slate-800 text-white dark:bg-slate-300 dark:text-slate-900" }
+        : { code: "D", className: "border border-transparent bg-slate-200 text-slate-900" };
     case "franco":
-      return { code: "F", className: "bg-slate-100 text-slate-400" };
+      return { code: "F", className: "border border-transparent font-normal text-slate-400" };
     case "viaje_subida":
-      return { code: "↑", className: "bg-amber-200 text-amber-900" };
     case "viaje_bajada":
-      return { code: "↓", className: "bg-amber-100 text-amber-800" };
+      return { code: state === "viaje_subida" ? "↑" : "↓", className: "border border-transparent bg-brand/40 text-slate-900" };
     case "vacaciones":
-      return { code: "V", className: "bg-sky-200 text-sky-900" };
+      return { code: "V", className: "border border-slate-400 bg-sheet text-slate-900" };
     case "licencia":
-      return { code: "L", className: "bg-violet-200 text-violet-900" };
+      return { code: "L", className: "border border-slate-300 bg-slate-100 text-slate-900" };
     case "enfermedad":
-      return { code: "E", className: "bg-red-200 text-red-900" };
+      return { code: "E", className: "border border-red-300 bg-red-100 text-red-800" };
     case "ausencia":
-      return { code: "A", className: "bg-red-100 text-red-800" };
+      return { code: "A", className: "border border-transparent bg-red-50 text-red-700" };
     case "bajada_anticipada":
-      return { code: "B!", className: "bg-orange-200 text-orange-900" };
+      return { code: "B!", className: "border border-ink bg-brand text-on-brand" };
     case "subida_demorada":
-      return { code: "S!", className: "bg-orange-100 text-orange-800" };
+      return { code: "S!", className: "border border-ink bg-brand text-on-brand" };
     case "capacitacion":
-      return { code: "C", className: "bg-teal-200 text-teal-900" };
+      return { code: "C", className: "border border-dashed border-slate-400 text-slate-900" };
     case "suspension":
-      return { code: "Su", className: "bg-rose-200 text-rose-900" };
+      return { code: "Su", className: "border border-red-500 bg-red-50 text-red-800" };
     case "accidente_art":
-      return { code: "AR", className: "bg-rose-100 text-rose-800" };
+      return { code: "AR", className: "border border-transparent bg-red-600 text-white" };
     default:
-      return { code: "?", className: "bg-slate-100 text-slate-500" };
+      return { code: "?", className: "border border-transparent bg-slate-100 text-slate-500" };
   }
 }
 

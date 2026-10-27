@@ -46,6 +46,7 @@ const config: Config = {
         ink: v("ink"),
         "on-ink": v("on-ink"),
         brand: v("brand"),
+        "on-brand": v("on-brand"),
         scrim: v("scrim"),
       },
       // Movimiento: curvas y duraciones compartidas para que toda la app se sienta igual.

@@ -187,8 +187,8 @@ export default function EmployeePicker({
               key={o.id}
               className={
                 multiple
-                  ? "flex animate-scale-in items-center gap-1 rounded-full bg-indigo-50 py-1 pl-3 pr-1 text-sm text-slate-800"
-                  : "flex animate-scale-in items-center gap-2 rounded-lg border border-slate-300 bg-indigo-50 px-3 py-2 text-sm text-slate-800"
+                  ? "flex animate-scale-in items-center gap-1 rounded-full bg-slate-100 py-1 pl-3 pr-1 text-sm text-slate-800"
+                  : "flex animate-scale-in items-center gap-2 rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-800"
               }
             >
               <span className="min-w-0 flex-1 truncate">

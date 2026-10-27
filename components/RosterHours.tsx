@@ -1,5 +1,6 @@
 "use client";
 
+import { IconAlertTriangle } from "@/components/icons";
 import { useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -332,7 +333,7 @@ export default function RosterHours({
                       {priced.length > 0 ? priced.map((c) => <div key={c.currency}>{formatMoney(c.cost, c.currency)}</div>) : <span className="text-slate-300">-</span>}
                       {missing > 0 && (
                         <span role="img" aria-label={`${missing} ${missing === 1 ? "día" : "días"} sin precio por hora`} className="ml-1 text-amber-600" title={`${missing} ${missing === 1 ? "día" : "días"} sin precio por hora`}>
-                          ⚠
+                          <IconAlertTriangle className="inline h-3.5 w-3.5" />
                         </span>
                       )}
                     </td>
