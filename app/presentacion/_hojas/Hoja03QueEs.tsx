@@ -26,7 +26,7 @@ export default function Hoja03QueEs({ total }: { total: number }) {
       </Aparece>
       <Aparece retardo={400} className="absolute right-[2.2rem] top-[56.5rem]">
         <Celular zoom={0.8} alto="40rem">
-          <Tablero conTarjetas={false} />
+          <Tablero conAviso={false} />
         </Celular>
       </Aparece>
       <p className="absolute left-[3.2rem] top-[60.5rem] w-[22rem] text-[2.1rem] font-medium leading-snug text-slate-500">

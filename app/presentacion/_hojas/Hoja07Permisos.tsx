@@ -21,7 +21,7 @@ export default function Hoja07Permisos({ total }: { total: number }) {
             retardo={80 * i}
             className="flex gap-[1.8rem] rounded-[1.2rem] border border-slate-200 px-[2rem] py-[1.3rem]"
           >
-            <span className="flex h-[3.6rem] w-[3.6rem] shrink-0 items-center justify-center rounded-[0.9rem] bg-indigo-50 text-[2rem] font-semibold text-indigo-600">
+            <span className="flex h-[3.6rem] w-[3.6rem] shrink-0 items-center justify-center rounded-[0.9rem] bg-slate-100 text-[2rem] font-semibold text-slate-900">
               {i + 1}
             </span>
             <div>

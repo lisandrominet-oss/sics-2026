@@ -10,11 +10,6 @@ const SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 const v = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
 const scale = (name: string, shades: number[]) => Object.fromEntries(shades.map((s) => [s, v(`${name}-${s}`)]));
 const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
-// Puente del rediseño B: estos nombres de Tailwind ya no tienen matiz propio y se leen como neutros (la tinta es slate-900).
-// Se van reemplazando por tonos del sistema pantalla por pantalla; los alias se retiran al final.
-const NEUTRAL_ALIAS = Object.fromEntries(
-  Object.entries({ 50: 50, 100: 100, 200: 200, 300: 300, 400: 400, 500: 700, 600: 900, 700: 900, 800: 900, 900: 900 }).map(([k, n]) => [k, v(`slate-${n}`)])
-);
 
 const config: Config = {
   darkMode: "class",
@@ -33,13 +28,6 @@ const config: Config = {
         red: scale("red", SHADES),
         amber: scale("amber", SHADES),
         emerald: scale("emerald", SHADES),
-        rose: scale("red", SHADES),
-        orange: scale("amber", SHADES),
-        indigo: NEUTRAL_ALIAS,
-        violet: NEUTRAL_ALIAS,
-        blue: NEUTRAL_ALIAS,
-        sky: NEUTRAL_ALIAS,
-        teal: NEUTRAL_ALIAS,
         // Marco y hoja del rediseño B, tinta y color de marca.
         frame: v("frame"),
         sheet: v("sheet"),

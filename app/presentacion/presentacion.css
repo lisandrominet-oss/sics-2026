@@ -7,9 +7,9 @@ html.presentacion {
   font-size: calc(min(100vw - 16px, 820px) / 49.625);
   scroll-snap-type: y proximity;
   scroll-padding-top: 56px;
-  background: #e2e8f0;
+  background: rgb(var(--frame));
 }
-html.presentacion body { background: #e2e8f0; }
+html.presentacion body { background: rgb(var(--frame)); }
 
 .pres-lista { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 68px 0 40px; }
 
@@ -18,10 +18,10 @@ html.presentacion body { background: #e2e8f0; }
   width: 49.625rem;
   aspect-ratio: 210 / 297;
   overflow: hidden;
-  background: #fff;
-  color: #0f172a;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05), 0 12px 24px -6px rgba(15, 23, 42, 0.12);
+  background: rgb(var(--sheet));
+  color: rgb(var(--slate-900));
+  border: 1px solid rgb(var(--slate-200));
+  border-radius: 8px;
   scroll-snap-align: start;
 }
 
@@ -37,16 +37,16 @@ html.presentacion .aparece:not([data-visto]) { opacity: 0; }
 
 @media print {
   /* 1 rem = 210 mm / 49,625: la hoja mide exactamente 210 mm de ancho. */
-  html.presentacion { font-size: calc(210mm / 49.625); background: #fff; scroll-snap-type: none; }
-  html.presentacion body { background: #fff; }
+  html.presentacion { font-size: calc(210mm / 49.625); background: rgb(var(--sheet)); scroll-snap-type: none; }
+  html.presentacion body { background: rgb(var(--sheet)); }
   .pres-no-imprimir { display: none !important; }
   .pres-lista { display: block; padding: 0; gap: 0; }
   .hoja {
     width: 210mm;
     height: 296.8mm;
     aspect-ratio: auto;
+    border: 0;
     border-radius: 0;
-    box-shadow: none;
     break-after: page;
     page-break-after: always;
   }

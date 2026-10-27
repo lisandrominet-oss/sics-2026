@@ -12,11 +12,11 @@ const ROLES: { carril: Carril; texto: string }[] = [
   { carril: "admin", texto: "Configura el sistema" },
 ];
 
-// Mismos tonos que los Badge de tipo de compra de la app (components/SicsList.tsx).
+// Los tres tipos de compra van en neutro, como los Badge de tipo de la app (components/ui/Badge.tsx).
 const TIPOS = [
   { clases: "bg-slate-100 text-slate-700", nombre: "Normal", texto: "Con cotización" },
-  { clases: "bg-sky-100 text-sky-700", nombre: "Directa", texto: "Sin cotización" },
-  { clases: "bg-violet-100 text-violet-700", nombre: "Cta. cte.", texto: "Proveedor habilitado" },
+  { clases: "bg-slate-100 text-slate-700", nombre: "Directa", texto: "Sin cotización" },
+  { clases: "bg-slate-100 text-slate-700", nombre: "Cta. cte.", texto: "Proveedor habilitado" },
 ];
 
 export default function Hoja06Roles({ total }: { total: number }) {

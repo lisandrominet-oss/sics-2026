@@ -21,8 +21,8 @@ export default function Hoja02Problema({ total }: { total: number }) {
       <div className="space-y-[3rem] px-[3.2rem] pt-[4rem]">
         {DATOS.map((d, i) => (
           <Aparece key={d.cifra} retardo={120 * i}>
-            <div className="border-l-[0.6rem] border-indigo-600 pl-[2.4rem]">
-              <p className="text-[6.2rem] font-semibold leading-none tracking-tight text-indigo-600">{d.cifra}</p>
+            <div className="border-l-[0.6rem] border-brand pl-[2.4rem]">
+              <p className="text-[6.2rem] font-semibold leading-none tracking-tight text-slate-900">{d.cifra}</p>
               <p className="mt-[0.8rem] text-[2.4rem] leading-snug text-slate-700">{d.texto}</p>
             </div>
           </Aparece>

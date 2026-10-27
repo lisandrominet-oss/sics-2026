@@ -1,95 +1,79 @@
 import Badge from "@/components/ui/Badge";
-import Card from "@/components/ui/Card";
 import { buttonClass } from "@/components/ui/Button";
-import StatusBadge from "@/components/StatusBadge";
-import { IconArrowRight, IconPlusCircle } from "@/components/icons";
-import { eyebrowClass, numClass } from "@/lib/ui";
+import PageHeader from "@/components/ui/PageHeader";
+import { RecorridoTira } from "@/components/ui/Recorrido";
+import { IconPlusCircle } from "@/components/icons";
+import { STATUS_LABELS } from "@/lib/constants";
+import { numClass } from "@/lib/ui";
 import { SICS_ACTIVAS, TABLERO } from "../_data/sics-demo";
 
-// Maqueta del Tablero en celular, con los mismos componentes y clases que la pantalla real (app/(app)/dashboard).
-export default function Tablero({ conTarjetas = true }: { conTarjetas?: boolean }) {
+// Maqueta del Tablero en celular, con los mismos componentes y clases que la pantalla real (app/(app)/dashboard):
+// encabezado, aviso de lo que espera tu acción, pestañas y filas con el recorrido.
+export default function Tablero({ conAviso = true }: { conAviso?: boolean }) {
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Tablero</h1>
-        <span className={buttonClass()}>
-          <IconPlusCircle className="h-4 w-4" />
-          Nueva SIC
-        </span>
-      </div>
+      <PageHeader
+        title="Tablero"
+        description={`${TABLERO.totales} solicitudes en total · ${TABLERO.cerradas} cerradas`}
+        actions={
+          <span className={buttonClass()}>
+            <IconPlusCircle className="h-4 w-4" />
+            Nueva SIC
+          </span>
+        }
+      />
 
-      {conTarjetas && (
-        <div className="mt-4 grid grid-cols-1 gap-3">
-          <Stat label="SICs totales" valor={TABLERO.totales} pie="Vista general" />
-          <Stat label="Pendientes de mi acción" valor={TABLERO.pendientes} pie="Requieren revisión" acento />
-          <Stat label="Cerradas" valor={TABLERO.cerradas} pie="Historial completo" />
+      {conAviso && (
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-slate-50 px-4 py-3">
+          <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full border border-ink/40 bg-brand" />
+          <p className={`min-w-0 flex-1 text-sm font-semibold ${numClass}`}>{TABLERO.pendientes} solicitudes esperan tu acción.</p>
+          <span className="rounded-lg bg-ink px-3 py-1 text-xs font-medium text-on-ink">Ver pendientes</span>
         </div>
       )}
 
-      <div className="mt-5 flex flex-wrap gap-2 text-sm">
-        <span className="rounded-full bg-slate-900 px-3.5 py-1.5 font-medium text-white">Todas</span>
-        <span className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium text-slate-500">
-          Pendientes de mi acción
-          <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+      <div className="mt-5 flex gap-6 border-b border-slate-200">
+        <span className="-mb-px flex items-center gap-2 border-b-2 border-ink pb-3 text-sm font-medium text-slate-900">
+          SIC activas
+          <span className="font-normal tabular-nums text-slate-500">{TABLERO.activas}</span>
+        </span>
+        <span className="-mb-px flex items-center gap-2 border-b-2 border-transparent pb-3 text-sm text-slate-500">
+          Historial de SIC
+          <span className="font-normal tabular-nums text-slate-500">{TABLERO.historial}</span>
         </span>
       </div>
 
-      <Card padding="none" className="mt-3 overflow-hidden">
-        <div className="border-b border-slate-100 px-6 pt-5">
-          <p className={eyebrowClass}>Actividad</p>
-          <div className="-mb-px mt-2 flex gap-6">
-            <span className="flex items-center gap-2 border-b-2 border-slate-900 pb-3 text-sm font-semibold text-slate-900">
-              SIC activas
-              <span className="rounded-full bg-slate-900 px-2 py-0.5 text-xs font-medium tabular-nums text-white">{TABLERO.activas}</span>
-            </span>
-            <span className="flex items-center gap-2 border-b-2 border-transparent pb-3 text-sm font-semibold text-slate-500">
-              Historial
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium tabular-nums text-slate-500">{TABLERO.historial}</span>
-            </span>
-          </div>
-        </div>
-        <ul className="divide-y divide-slate-100">
-          {SICS_ACTIVAS.map((sic) => (
-            <li key={sic.code} className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-xs font-semibold text-indigo-600">
-                  {sic.prefix}
-                </div>
-                <div className="min-w-0">
-                  <p className={`truncate text-sm font-semibold text-slate-900 ${numClass}`}>
-                    {sic.code}
-                    {sic.tipo === "cuenta_corriente" && (
-                      <Badge tone="violet" size="sm" className="ml-2">
-                        Cta. cte.
-                      </Badge>
-                    )}
-                  </p>
-                  <p className="text-xs text-slate-500">{sic.asunto}</p>
-                  <p className="truncate text-xs text-slate-400">{sic.area}</p>
-                  <p className={`text-xs text-slate-500 ${numClass}`}>Necesaria: {sic.necesaria}</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <StatusBadge status={sic.estado} />
-                <span className="flex items-center gap-1 text-sm font-medium text-indigo-600">
-                  Ver
-                  <IconArrowRight />
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </Card>
-    </div>
-  );
-}
+      <div className="mt-4 flex flex-wrap gap-1.5 text-sm">
+        <span className="flex min-h-8 items-center rounded-lg border border-slate-300 bg-slate-100 px-3 font-medium text-slate-900">Todas</span>
+        <span className="flex min-h-8 items-center gap-1.5 rounded-lg border border-transparent px-3 font-medium text-slate-500">
+          Pendientes de mi acción
+          <span className="h-1.5 w-1.5 rounded-full border border-ink/40 bg-brand" />
+        </span>
+      </div>
 
-function Stat({ label, valor, pie, acento }: { label: string; valor: number; pie: string; acento?: boolean }) {
-  return (
-    <Card padding="lg">
-      <p className={eyebrowClass}>{label}</p>
-      <p className={`mt-2 text-3xl font-semibold tracking-tight ${numClass} ${acento ? "text-indigo-600" : "text-slate-900"}`}>{valor}</p>
-      <p className="mt-1 text-xs text-slate-500">{pie}</p>
-    </Card>
+      <ul className="mt-3">
+        {SICS_ACTIVAS.map((sic) => (
+          <li key={sic.code} className="relative border-b border-slate-100 px-1 py-3.5 before:absolute before:inset-y-0 before:-left-1 before:w-[3px] before:bg-brand before:content-['']">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className={`flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-slate-900 ${numClass}`}>
+                {sic.code}
+                {sic.tipo === "cuenta_corriente" && (
+                  <Badge tone="violet" size="sm">
+                    Cta. cte.
+                  </Badge>
+                )}
+              </p>
+            </div>
+            <p className="mt-1 text-sm text-slate-800">{sic.asunto}</p>
+            <p className="mt-0.5 truncate text-xs text-slate-500">{sic.area}</p>
+            <p className={`text-xs text-slate-500 ${numClass}`}>Necesaria: {sic.necesaria}</p>
+            <p className="mt-2 text-xs font-medium text-slate-900">Espera tu acción</p>
+            <span className="mt-2 flex items-center gap-2.5">
+              <RecorridoTira status={sic.estado} />
+              <span className="truncate text-xs text-slate-500">{STATUS_LABELS[sic.estado]}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

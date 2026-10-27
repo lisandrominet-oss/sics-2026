@@ -34,7 +34,7 @@ export default function Hoja10Cierre({ total }: { total: number }) {
           <ul className="mt-[1.2rem] space-y-[1.3rem]">
             {PROXIMO.map((t) => (
               <li key={t} className="flex items-center gap-[1.4rem] text-[2.2rem] font-medium text-slate-800">
-                <span className="flex h-[3.2rem] w-[3.2rem] shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[2rem] font-semibold text-indigo-700">
+                <span className="flex h-[3.2rem] w-[3.2rem] shrink-0 items-center justify-center rounded-full bg-slate-100 text-[2rem] font-semibold text-slate-700">
                   →
                 </span>
                 {t}
@@ -43,7 +43,7 @@ export default function Hoja10Cierre({ total }: { total: number }) {
           </ul>
         </Aparece>
       </div>
-      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center bg-slate-900 px-[3.2rem] py-[2.6rem] text-center">
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center bg-ink px-[3.2rem] py-[2.6rem] text-center">
         <img src="/brand/logo-completo-negativo.svg" alt="Servicios Industriales" className="h-[4.4rem] w-auto" />
         <p className="mt-[1rem] text-[1.9rem] text-slate-300">SICS 2026 · Sistema de compras</p>
       </div>

@@ -2,14 +2,14 @@ import { cn } from "@/lib/cn";
 
 export type Carril = "emisor" | "jefe" | "compras" | "gerencia" | "panol" | "admin";
 
-// Un color por carril del circuito (mismos tonos que los Badge de la app).
+// Un tono por carril del circuito, solo con la paleta de B: neutros, tinta y los dos tonos con color propio (ok y aviso).
 export const CARRIL: Record<Carril, { label: string; clases: string }> = {
   emisor: { label: "Emisor", clases: "bg-slate-100 text-slate-700" },
-  jefe: { label: "Jefe de área", clases: "bg-violet-100 text-violet-700" },
-  compras: { label: "Compras", clases: "bg-emerald-100 text-emerald-700" },
-  gerencia: { label: "Gerencia", clases: "bg-amber-100 text-amber-700" },
-  panol: { label: "Pañol", clases: "bg-sky-100 text-sky-700" },
-  admin: { label: "Administrador", clases: "bg-indigo-100 text-indigo-700" },
+  jefe: { label: "Jefe de área", clases: "bg-slate-200 text-slate-900" },
+  compras: { label: "Compras", clases: "bg-emerald-100 text-emerald-800" },
+  gerencia: { label: "Gerencia", clases: "bg-amber-100 text-amber-900" },
+  panol: { label: "Pañol", clases: "bg-sheet text-slate-700 ring-1 ring-inset ring-slate-300" },
+  admin: { label: "Administrador", clases: "bg-ink text-on-ink" },
 };
 
 export function Rol({ carril, etiqueta, className }: { carril: Carril; etiqueta?: string; className?: string }) {

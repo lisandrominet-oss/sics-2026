@@ -50,7 +50,7 @@ export default function BarraSuperior({ total }: { total: number }) {
         </div>
       </div>
       <div className="h-[3px] bg-white/10" aria-hidden="true">
-        <div className="h-full origin-left bg-indigo-400" style={{ transform: `scaleX(${avance})` }} />
+        <div className="h-full origin-left bg-brand" style={{ transform: `scaleX(${avance})` }} />
       </div>
     </header>
   );

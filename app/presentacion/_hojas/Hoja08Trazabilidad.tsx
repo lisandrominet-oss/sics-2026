@@ -24,7 +24,7 @@ export default function Hoja08Trazabilidad({ total }: { total: number }) {
             as="li"
             key={p}
             retardo={100 * i}
-            className="border-l-[0.5rem] border-indigo-600 pl-[1.4rem] text-[2rem] font-medium leading-snug text-slate-800"
+            className="border-l-[0.5rem] border-brand pl-[1.4rem] text-[2rem] font-medium leading-snug text-slate-800"
           >
             {p}
           </Aparece>
