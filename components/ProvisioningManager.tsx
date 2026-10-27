@@ -28,8 +28,8 @@ export default function ProvisioningManager({
 
   return (
     <Card padding="none">
-      <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-6 py-5">
+        <div className="min-w-[14rem] flex-1">
           <p className={eyebrowClass}>Accesos</p>
           <h2 className="text-base font-semibold text-slate-900">
             Usuarios habilitados (todavía sin iniciar sesión)

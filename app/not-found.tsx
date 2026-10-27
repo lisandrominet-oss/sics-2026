@@ -5,7 +5,7 @@ import { eyebrowClass } from "@/lib/ui";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
+    <div className="flex min-h-dvh items-center justify-center bg-frame pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
       <div className="w-full max-w-md rounded-xl border border-slate-200 bg-sheet p-8 text-center">
         <p className={eyebrowClass}>Error 404</p>
         <h1 className="mt-2 text-balance text-xl font-semibold tracking-tight text-slate-900">No encontramos esta página</h1>

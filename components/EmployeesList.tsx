@@ -20,7 +20,7 @@ import {
   type EmployeeStatus,
   type EmployeeWithPlant,
 } from "@/lib/employees";
-import { inputClass } from "@/lib/ui";
+import { inputClass, filterClass } from "@/lib/ui";
 
 type Plant = { id: string; name: string; prefix: string };
 type View = "activos" | "bajas";
@@ -141,7 +141,7 @@ export default function EmployeesList({ employees, plants }: { employees: Employ
             value={plantFilter}
             onChange={(e) => { setPlantFilter(e.target.value); resetLimit(); }}
             aria-label="Filtrar por área"
-            className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:max-w-xs"
+            className={`w-full max-w-full ${filterClass} sm:w-auto sm:max-w-xs`}
           >
             <option value="">Todas las áreas</option>
             <option value="none">Sin área</option>
@@ -156,7 +156,7 @@ export default function EmployeesList({ employees, plants }: { employees: Employ
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value as "" | "activo" | "licencia"); resetLimit(); }}
               aria-label="Filtrar por estado"
-              className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:max-w-xs"
+              className={`w-full max-w-full ${filterClass} sm:w-auto sm:max-w-xs`}
             >
               <option value="">Activos y en licencia</option>
               <option value="activo">Solo activos</option>

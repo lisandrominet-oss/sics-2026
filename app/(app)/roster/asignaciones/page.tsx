@@ -28,14 +28,14 @@ export default async function RosterAsignacionesPage({ searchParams }: { searchP
   for (const r of [sites, patterns, positions, crews]) if (r.error) throw new Error(r.error.message);
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-[96rem]">
       <PageHeader
         eyebrow="Módulos"
         title="Roster"
         description="Quién rota en cada sitio, con qué régimen, desde qué fecha de inicio del ciclo y en qué turno."
       />
       <RosterTabs active="asignaciones" />
-      <div className="mt-6">
+      <div className="mt-6 max-w-5xl">
         <AssignmentsManager
           sites={sites.data ?? []}
           patterns={patterns.data ?? []}

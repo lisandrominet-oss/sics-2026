@@ -1,6 +1,6 @@
 "use client";
 
-import { inputClass, labelClass } from "@/lib/ui";
+import { inputClass, labelClass, filterClass } from "@/lib/ui";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -86,7 +86,8 @@ export default function ProvidersManager({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por nombre, contacto o mail…"
-            className="w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            aria-label="Buscar proveedores"
+            className={`w-full sm:w-64 ${filterClass}`}
           />
           <button
             type="button"
@@ -390,7 +391,7 @@ function CategoriesManager({
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="Nueva categoría"
-          className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={`w-full max-w-xs ${filterClass}`}
         />
         <Button type="submit" loading={loading} className="shrink-0">
           Agregar

@@ -37,10 +37,10 @@ export default async function RosterConfiguracionPage({ searchParams }: { search
   if (!payRules.data || !rules.data) throw new Error("Faltan las reglas de pago del roster");
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-[96rem]">
       <PageHeader eyebrow="Módulos" title="Roster" description="Sitios, regímenes de rotación, puestos, cuadrillas, feriados, reglas de pago y precios por hora." />
       <RosterTabs active="configuracion" />
-      <div className="mt-6">
+      <div className="mt-6 max-w-4xl">
         <RosterConfig
           sites={sites.data ?? []}
           patterns={patterns.data ?? []}
@@ -48,7 +48,7 @@ export default async function RosterConfiguracionPage({ searchParams }: { search
           crews={crews.data ?? []}
         />
       </div>
-      <div className="mt-6">
+      <div className="mt-6 max-w-4xl">
         <RosterPayConfig
           sites={sites.data ?? []}
           holidays={holidays.data ?? []}

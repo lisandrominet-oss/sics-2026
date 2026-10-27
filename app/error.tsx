@@ -16,10 +16,10 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
+    <div className="flex min-h-dvh items-center justify-center bg-frame pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
       <div
         role="alert"
-        className="w-full max-w-lg animate-scale-in rounded-xl border border-red-200 bg-sheet p-6 text-center shadow-soft"
+        className="w-full max-w-lg animate-scale-in rounded-xl border border-red-200 bg-sheet p-6 text-center"
       >
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500">
           <IconAlertTriangle />

@@ -4,7 +4,7 @@ import Card from "@/components/ui/Card";
 
 export default function PendientePage() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
+    <div className="flex min-h-dvh items-center justify-center bg-frame pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
       <Card padding="none" elevated className="w-full max-w-md p-8 text-center">
         <div className="flex justify-center">
           <BrandLogoFull className="h-14 w-auto" />

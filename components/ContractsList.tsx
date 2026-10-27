@@ -26,7 +26,7 @@ import {
 } from "@/lib/contracts";
 import { IconChevronDown } from "@/components/icons";
 import type { Database } from "@/lib/database.types";
-import { eyebrowClass } from "@/lib/ui";
+import { eyebrowClass, filterClass } from "@/lib/ui";
 
 type Contract = Database["public"]["Tables"]["contracts"]["Row"] & {
   provider: { name: string } | null;
@@ -352,7 +352,7 @@ export default function ContractsList({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as ContractDisplayStatus | "")}
-              className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:max-w-xs"
+              className={`w-full max-w-full ${filterClass} sm:w-auto sm:max-w-xs`}
             >
               <option value="">Todos los estados</option>
               {statusOptions.map((s) => (
@@ -365,7 +365,7 @@ export default function ContractsList({
           <select
             value={providerFilter}
             onChange={(e) => setProviderFilter(e.target.value)}
-            className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:max-w-xs"
+            className={`w-full max-w-full ${filterClass} sm:w-auto sm:max-w-xs`}
           >
             <option value="">Todos los proveedores</option>
             {providers.map((p) => (
@@ -377,7 +377,7 @@ export default function ContractsList({
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as ContractItemType | "")}
-            className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:max-w-xs"
+            className={`w-full max-w-full ${filterClass} sm:w-auto sm:max-w-xs`}
           >
             <option value="">Todos los equipos</option>
             {(Object.keys(CONTRACT_ITEM_TYPE_LABELS) as ContractItemType[]).map((t) => (

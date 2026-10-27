@@ -14,7 +14,7 @@ import AssignmentEditForm from "@/components/AssignmentEditForm";
 import PromptDialog from "@/components/ui/PromptDialog";
 import { notify } from "@/lib/notify";
 import { formatSqlDate } from "@/lib/constants";
-import { inputClass, labelClass } from "@/lib/ui";
+import { inputClass, labelClass, filterClass } from "@/lib/ui";
 import {
   SHIFT_LABELS,
   employeeLabel,
@@ -112,13 +112,13 @@ export default function AssignmentsManager({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar persona, puesto o cuadrilla"
             aria-label="Buscar asignaciones"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-72"
+            className={`w-full ${filterClass} sm:w-72`}
           />
           <select
             value={siteFilter}
             onChange={(e) => setSiteFilter(e.target.value)}
             aria-label="Filtrar por sitio"
-            className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto"
+            className={`w-full max-w-full ${filterClass} sm:w-auto`}
           >
             <option value="">Todos los sitios</option>
             {sites.map((s) => (
@@ -175,7 +175,7 @@ export default function AssignmentsManager({
                       {formatSqlDate(a.valid_from)} → {a.valid_to ? formatSqlDate(a.valid_to) : "sin fin"}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-3 sm:gap-y-1">
                     {left ? (
                       <Badge tone="muted">Empleado de baja</Badge>
                     ) : ended ? (

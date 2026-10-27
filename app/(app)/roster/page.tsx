@@ -39,7 +39,7 @@ export default async function RosterPage({ searchParams }: { searchParams: { sit
   const site = (sites ?? []).find((s) => s.id === searchParams.sitio) ?? (sites ?? []).find((s) => s.active) ?? (sites ?? [])[0];
   if (!site) {
     return (
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-[96rem]">
         {header}
         <div className="mt-6">
           <EmptyState

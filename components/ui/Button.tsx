@@ -26,10 +26,11 @@ const SIZES: Record<ButtonSize, string> = {
 };
 
 // Los botones de texto (link) no llevan relleno: solo el tamaño de letra.
+// En celular el área táctil sube a ~44 px con relleno vertical compensado por margen negativo, así el texto no cambia de lugar.
 const LINK_SIZES: Record<ButtonSize, string> = {
-  sm: "text-xs",
-  md: "text-sm",
-  lg: "text-sm",
+  sm: "text-xs max-sm:-my-3.5 max-sm:py-3.5",
+  md: "text-sm max-sm:-my-3 max-sm:py-3",
+  lg: "text-sm max-sm:-my-3 max-sm:py-3",
 };
 
 /** Clases de un botón del sistema, para estilar un <Link> o <a> como botón. */
