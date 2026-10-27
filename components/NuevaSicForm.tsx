@@ -173,10 +173,10 @@ export default function NuevaSicForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-sheet p-6">
+    <form onSubmit={handleSubmit} className="max-w-2xl space-y-5">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-slate-700">Área</label>
+          <label className="block text-sm font-medium text-slate-900">Área</label>
           {plantEditable ? (
             <select
               value={plantId}
@@ -191,13 +191,13 @@ export default function NuevaSicForm({
               ))}
             </select>
           ) : (
-            <p className="mt-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+            <p className="mt-1 flex min-h-11 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-700 sm:min-h-9">
               {selectedPlantName ? `${selectedPlantName.name} (${selectedPlantName.prefix})` : "-"}
             </p>
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700">Seleccionar proyecto</label>
+          <label className="block text-sm font-medium text-slate-900">Seleccionar proyecto</label>
           <select
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
@@ -217,21 +217,21 @@ export default function NuevaSicForm({
 
       {canPickPlant && (
         <div>
-          <label className="block text-sm font-medium text-slate-700">Solicita:</label>
+          <label className="block text-sm font-medium text-slate-900">Solicita:</label>
           <input
             value={onBehalfOf}
             onChange={(e) => setOnBehalfOf(e.target.value)}
             placeholder="Ej: Martín Vargas (no tiene acceso a su mail)"
             className={inputClass}
           />
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-500">
             Completalo solo si estás cargando esta SIC por un área que no puede ingresar con su propio mail.
           </p>
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-slate-700">Asunto / razón de la compra</label>
+        <label className="block text-sm font-medium text-slate-900">Asunto / razón de la compra</label>
         <input
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
@@ -242,7 +242,7 @@ export default function NuevaSicForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700">Fecha límite</label>
+        <label className="block text-sm font-medium text-slate-900">Fecha límite</label>
         <input
           type="date"
           value={neededByDate}
@@ -253,7 +253,7 @@ export default function NuevaSicForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700">Artículos solicitados</label>
+        <label className="block text-sm font-medium text-slate-900">Artículos solicitados</label>
         <div className="mt-2">
           <ItemsEditor items={items} onChange={setItems} catalog={catalog} />
         </div>
@@ -286,9 +286,12 @@ export default function NuevaSicForm({
         </Link>
       )}
 
-      <Button type="submit" size="lg" loading={loading} disabled={!!createdId} className="w-full">
-        {loading ? "Enviando…" : "Enviar solicitud"}
-      </Button>
+      {/* Barra de envío: queda fija abajo mientras se completa el formulario (también en celular, con la zona segura). */}
+      <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-200 bg-sheet px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex lg:justify-end lg:px-0 lg:pb-3">
+        <Button type="submit" size="lg" loading={loading} disabled={!!createdId} className="w-full lg:w-auto lg:min-w-[12rem]">
+          {loading ? "Enviando…" : "Enviar solicitud"}
+        </Button>
+      </div>
     </form>
   );
 }

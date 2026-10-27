@@ -6,12 +6,10 @@ import { getCurrentProfile } from "@/lib/auth";
 import PageHeader from "@/components/ui/PageHeader";
 import DashboardControls from "@/components/DashboardControls";
 import SicsList, { type SicRow } from "@/components/SicsList";
-import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { Skeleton } from "@/components/ui/Skeleton";
-import Card from "@/components/ui/Card";
 import { buttonClass } from "@/components/ui/Button";
 import { IconPlusCircle } from "@/components/icons";
-import { eyebrowClass, numClass } from "@/lib/ui";
+import { numClass } from "@/lib/ui";
 import { CAN_CREATE_SIC, CAN_SEE_AMOUNTS, HISTORY_STATUSES, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
 import { hasModule } from "@/lib/modules";
 import { PENDING_STATUSES_BY_ROLE, applyPendingFilter, getPendingSicsCount } from "@/lib/pendingSics";
@@ -117,10 +115,13 @@ export default async function DashboardPage({
   };
   const vista = showHistory ? "historial" : undefined;
 
+  const pendingLabel = pendingCount === 1 ? "solicitud espera" : "solicitudes esperan";
+
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
         title="Tablero"
+        description={`${totalCount ?? 0} ${totalCount === 1 ? "solicitud" : "solicitudes"} en total · ${closedCount ?? 0} ${closedCount === 1 ? "cerrada" : "cerradas"}`}
         actions={
           CAN_CREATE_SIC.includes(role) && (
             <Link href="/sic/nueva" className={buttonClass()}>
@@ -131,13 +132,39 @@ export default async function DashboardPage({
         }
       />
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="SICs totales" value={totalCount ?? 0} caption="Vista general" />
-        <StatCard label="Pendientes de mi acción" value={pendingCount} caption="Requieren revisión" accent />
-        <StatCard label="Cerradas" value={closedCount ?? 0} caption="Historial completo" />
-      </div>
+      {/* Lo primero que se lee: cuántas esperan una acción tuya (el mismo conteo de "Pendientes de mi acción"). */}
+      {pendingCount > 0 && (
+        <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-slate-50 px-4 py-3">
+          <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full border border-ink/40 bg-brand dark:border-brand" />
+          <p className={`min-w-0 flex-1 text-sm ${numClass}`}>
+            <span className="font-semibold">
+              {pendingCount} {pendingLabel} tu acción.
+            </span>
+          </p>
+          {!showPending && (
+            <Link href={dashHref({ filter: "mia" })} className={buttonClass({ size: "sm" })}>
+              Ver pendientes
+            </Link>
+          )}
+        </div>
+      )}
 
-      <div className="mt-8 flex flex-wrap gap-2 text-sm">
+      <nav aria-label="Solicitudes" className="mt-6 flex gap-6 overflow-x-auto border-b border-slate-200">
+        <ListTab
+          href={dashHref({ filter: showMine ? "mias" : searchParams.filter, keep: true })}
+          active={!showHistory}
+          label="SIC activas"
+          count={activeCount}
+        />
+        <ListTab
+          href={dashHref({ vista: "historial", filter: showMine ? "mias" : undefined, keep: true })}
+          active={showHistory}
+          label="Historial de SIC"
+          count={historyCount ?? 0}
+        />
+      </nav>
+
+      <div className="mt-4 flex flex-wrap gap-1.5 text-sm">
         <FilterTab
           href={dashHref({ vista })}
           active={!showPending && !showPendingCerts && !showMine}
@@ -164,7 +191,7 @@ export default async function DashboardPage({
 
       <Suspense
         fallback={
-          <div className="mt-4 flex flex-wrap items-center gap-3" aria-hidden="true">
+          <div className="mt-3 flex flex-wrap items-center gap-2" aria-hidden="true">
             <Skeleton className="h-10 min-w-[16rem] flex-1 rounded-lg" />
             <Skeleton className="h-10 w-52 rounded-lg" />
             <Skeleton className="h-10 w-36 rounded-lg" />
@@ -176,59 +203,18 @@ export default async function DashboardPage({
 
       {error && <p role="alert" className="animate-shake mt-4 text-sm text-red-600">{error.message}</p>}
 
-      <Card padding="none" className="mt-4 overflow-hidden">
-        <div className="border-b border-slate-100 px-6 pt-5">
-          <p className={eyebrowClass}>Actividad</p>
-          <nav aria-label="Solicitudes" className="-mb-px mt-2 flex gap-6">
-            <ListTab
-              href={dashHref({ filter: showMine ? "mias" : searchParams.filter, keep: true })}
-              active={!showHistory}
-              label="SIC activas"
-              count={activeCount}
-            />
-            <ListTab
-              href={dashHref({ vista: "historial", filter: showMine ? "mias" : undefined, keep: true })}
-              active={showHistory}
-              label="Historial de SIC"
-              count={historyCount ?? 0}
-            />
-    </nav>
-        </div>
+      <div className="mt-4">
         {searchQuery && (
-          <p className="border-b border-slate-100 bg-slate-50 px-6 py-2 text-xs text-slate-500">
-            Buscando en SIC activas e historial.
-          </p>
+          <p className="border-b border-slate-200 py-2 text-[13px] text-slate-500">Buscando en SIC activas e historial.</p>
         )}
         <SicsList sics={(sics ?? []) as unknown as SicRow[]} role={role} />
         {(sics?.length ?? 0) >= LIST_LIMIT && (
-          <p className="border-t border-slate-100 px-6 py-3 text-sm text-slate-500">
+          <p className="border-t border-slate-200 py-3 text-sm text-slate-500">
             Mostrando las primeras {LIST_LIMIT} solicitudes de esta vista. Para encontrar otras, afiná con el buscador o los filtros.
           </p>
         )}
-      </Card>
+      </div>
     </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  caption,
-  accent,
-}: {
-  label: string;
-  value: number;
-  caption: string;
-  accent?: boolean;
-}) {
-  return (
-    <Card padding="lg">
-      <p className={eyebrowClass}>{label}</p>
-      <p className={`mt-2 text-3xl font-semibold tracking-tight ${numClass} ${accent ? "text-indigo-600" : "text-slate-900"}`}>
-        <AnimatedNumber value={value} />
-      </p>
-      <p className="mt-1 text-xs text-slate-500">{caption}</p>
-    </Card>
   );
 }
 
@@ -238,14 +224,12 @@ function ListTab({ href, active, label, count }: { href: string; active: boolean
       href={href}
       aria-current={active ? "page" : undefined}
       scroll={false}
-      className={`flex items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition-colors duration-fast ease-out-expo ${
-        active ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"
+      className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 pb-3 text-sm transition-colors duration-fast ease-out-expo ${
+        active ? "border-ink font-medium text-slate-900" : "border-transparent text-slate-500 hover:text-slate-900"
       }`}
     >
       {label}
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${active ? "bg-ink text-on-ink" : "bg-slate-100 text-slate-500"}`}>
-        {count}
-      </span>
+      <span className={`font-normal tabular-nums text-slate-500`}>{count}</span>
     </Link>
   );
 }
@@ -264,12 +248,15 @@ function FilterTab({
   return (
     <Link
       href={href}
-      className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-medium transition-colors duration-fast ease-out-expo press ${
-        active ? "bg-ink text-on-ink" : "text-slate-500 hover:bg-slate-100"
+      aria-current={active ? "page" : undefined}
+      className={`press relative flex min-h-9 items-center gap-1.5 rounded-lg border px-3 py-1 font-medium transition-colors duration-fast ease-out-expo sm:min-h-8 ${
+        active
+          ? "border-slate-300 bg-slate-100 text-slate-900"
+          : "border-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-900"
       }`}
     >
       {label}
-      {dot && <span className="h-1.5 w-1.5 animate-soft-pulse rounded-full bg-red-500" />}
+      {dot && <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full border border-ink/40 bg-brand dark:border-brand" />}
     </Link>
   );
 }

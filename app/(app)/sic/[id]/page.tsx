@@ -19,7 +19,6 @@ import {
   formatDate,
   formatSqlDate,
   type SicFileType,
-  type SicStatus,
 } from "@/lib/constants";
 import type { SicExportRow } from "@/lib/exportSics";
 import Badge from "@/components/ui/Badge";
@@ -28,19 +27,12 @@ import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
 import { cn } from "@/lib/cn";
 import { eyebrowClass, numClass } from "@/lib/ui";
+import { NO_DEADLINE_STATUSES, deadlineText } from "@/lib/plazo";
+import { RecorridoPasos, textoRecorrido } from "@/components/ui/Recorrido";
+import { recorridoDe } from "@/lib/recorrido";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-// Con la SIC ya resuelta (o rechazada) la fecha necesaria deja de correr: no se muestra la cuenta de días.
-const NO_DEADLINE_STATUSES: SicStatus[] = ["rechazada_jefe", "rechazada_compras", "rechazada_gerencia", "recibida", "cerrada", "anulada"];
-
-function deadlineText(days: number) {
-  if (days === 0) return "Es hoy";
-  if (days === 1) return "Falta 1 día";
-  if (days > 1) return `Faltan ${days} días`;
-  return days === -1 ? "Vencida hace 1 día" : `Vencida hace ${-days} días`;
-}
 
 export default async function SicDetailPage({
   params,
@@ -136,6 +128,11 @@ export default async function SicDetailPage({
   const daysLeft = sic.needed_by_date && !NO_DEADLINE_STATUSES.includes(sic.status) ? daysUntilSqlDate(sic.needed_by_date) : null;
   const sicFiles = filesWithUrls.filter((f) => !f.item_id);
 
+  // Rótulos del recorrido: quién la emitió, y "Tu turno" si la decisión de este tramo es del usuario. Solo datos ya cargados.
+  const tramoActual = recorridoDe(sic.status);
+  const detalleRecorrido: Partial<Record<number, string>> = { 0: requesterName };
+  if (needsMyApproval && !tramoActual.fin) detalleRecorrido[tramoActual.tramo] = "Tu turno";
+
   const canExport = (role === "compras" || role === "admin") && COMPRAS_EXPORTABLE_STATUSES.includes(sic.status);
   const exportRows: SicExportRow[] = activeItems.map((it) => ({
     codigo: sic.code,
@@ -154,7 +151,7 @@ export default async function SicDetailPage({
     <div className={cn("mx-auto", stacked ? "max-w-3xl" : "max-w-6xl")}>
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900"
       >
         <IconArrowLeft />
         Volver al tablero
@@ -175,8 +172,16 @@ export default async function SicDetailPage({
         }
       />
 
+      <div className="mt-6">
+        <RecorridoPasos status={sic.status} detalle={detalleRecorrido} />
+        <p className="mt-3 text-sm text-slate-600 sm:hidden">
+          {textoRecorrido(sic.status)}
+          {needsMyApproval && !tramoActual.fin ? " · Tu turno" : ""}
+        </p>
+      </div>
+
       {(parentSic || (children ?? []).length > 0) && (
-        <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
+        <div className="mt-4 rounded-lg bg-slate-100 p-4 text-sm text-slate-800">
           {parentSic && (
             <p>
               Desprendida de{" "}
@@ -206,7 +211,7 @@ export default async function SicDetailPage({
 
       {/* Dos columnas en escritorio (contenido a la izquierda; estado, acciones y recorrido a la derecha).
           En celular se apila con el estado y las acciones primero. */}
-      <div className={cn("mt-6 grid grid-cols-1 items-start gap-4", !stacked && "lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-x-6")}>
+      <div className={cn("mt-6 grid grid-cols-1 items-start gap-4", !stacked && "lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-x-8")}>
         <div className={cn("space-y-4 [&>*:empty]:hidden", !stacked && "lg:col-start-2 lg:row-start-1")}>
           <Card>
             <StatusBadge status={sic.status} />
@@ -268,12 +273,12 @@ export default async function SicDetailPage({
           />
         </div>
 
-        <div className={cn("space-y-4", !stacked && "lg:col-start-1 lg:row-span-2 lg:row-start-1")}>
-          <Card className="flex flex-wrap gap-x-10 gap-y-5">
+        <div className={cn("space-y-8", !stacked && "lg:col-start-1 lg:row-span-2 lg:row-start-1")}>
+          <div className="flex flex-wrap gap-x-10 gap-y-5 border-b border-slate-200 pb-5">
             {showAmount && (
               <div>
                 <p className={eyebrowClass}>Monto final</p>
-                <p className={`${numClass} mt-0.5 text-3xl font-semibold tracking-tight text-slate-900`}>
+                <p className={`${numClass} mt-0.5 text-2xl font-medium tracking-tight text-slate-900`}>
                   {formatAmount(finalAmount, sic.currency)}
                 </p>
               </div>
@@ -310,17 +315,17 @@ export default async function SicDetailPage({
                 {sic.po_number ?? "Sin emitir"}
               </p>
             </div>
-          </Card>
+          </div>
 
-          <Card padding="none" className="overflow-hidden text-sm">
-            <div className="flex items-baseline justify-between gap-3 border-b border-slate-200 px-5 py-4">
-              <h2 className="font-semibold text-slate-900">Artículos solicitados</h2>
+          <section className="text-sm">
+            <div className="flex items-baseline justify-between gap-3 pb-3">
+              <h2 className="text-base font-semibold text-slate-900">Artículos solicitados</h2>
               <span className="text-xs text-slate-500">
                 {(items ?? []).length} {(items ?? []).length === 1 ? "artículo" : "artículos"}
                 {rejectedCount > 0 && ` · ${rejectedCount} ${rejectedCount === 1 ? "rechazado" : "rechazados"}`}
               </span>
             </div>
-            <ul className="divide-y divide-slate-200">
+            <ul className="divide-y divide-slate-100 border-t border-slate-200">
               {(items ?? []).map((item, i) => {
                 const itemFile = filesWithUrls.find((f) => f.item_id === item.id && f.file_type === "referencia");
                 const itemCertFiles = filesWithUrls.filter(
@@ -328,8 +333,8 @@ export default async function SicDetailPage({
                 );
                 const rejected = item.review_status === "rechazado";
                 return (
-                  <li key={item.id} className={`flex items-start gap-3 px-5 py-4 ${rejected ? "bg-red-50" : ""}`}>
-                    <span className={`${numClass} mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-500`}>
+                  <li key={item.id} className={`-mx-2 flex items-start gap-3 rounded-md px-2 py-4 ${rejected ? "bg-red-50" : ""}`}>
+                    <span className={`${numClass} mt-0.5 w-5 shrink-0 text-[13px] text-slate-500`}>
                       {i + 1}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -380,10 +385,10 @@ export default async function SicDetailPage({
                 );
               })}
             </ul>
-          </Card>
+          </section>
 
-          <Card className="text-sm">
-            <h2 className="font-semibold text-slate-900">Archivos de la SIC</h2>
+          <section className="text-sm">
+            <h2 className="text-base font-semibold text-slate-900">Archivos de la SIC</h2>
             {sicFiles.length === 0 ? (
               <EmptyState size="sm" className="mt-2" title="Todavía no hay archivos adjuntos." />
             ) : (
@@ -402,12 +407,12 @@ export default async function SicDetailPage({
                 ))}
               </ul>
             )}
-          </Card>
+          </section>
         </div>
 
         <div className={cn("space-y-4", !stacked && "lg:col-start-2 lg:row-start-2")}>
           <Card className="text-sm">
-            <h2 className="font-semibold text-slate-900">Recorrido de la SIC</h2>
+            <h2 className="text-base font-semibold text-slate-900">Recorrido de la SIC</h2>
             <ol className="mt-3">
               {events?.map((ev, i) => {
                 const last = i === events.length - 1;
@@ -416,7 +421,7 @@ export default async function SicDetailPage({
                     {!last && <span aria-hidden="true" className="absolute -bottom-1 left-[3px] top-3 w-px bg-slate-200" />}
                     <span
                       aria-hidden="true"
-                      className={`absolute left-0 top-1.5 h-2 w-2 rounded-full ${last ? "bg-brand" : "bg-slate-400"}`}
+                      className={`absolute left-0 top-1.5 h-2 w-2 rounded-full ${last ? "bg-brand ring-1 ring-ink/40 dark:ring-brand" : "bg-slate-300"}`}
                     />
                     <p className="font-medium text-slate-800">{STATUS_LABELS[ev.to_status]}</p>
                     <p className="text-xs text-slate-500">
@@ -431,7 +436,7 @@ export default async function SicDetailPage({
           </Card>
 
           <Card className="text-sm">
-            <h2 className="font-semibold text-slate-900">Datos</h2>
+            <h2 className="text-base font-semibold text-slate-900">Datos</h2>
             <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2">
               <dt className="text-slate-500">Solicitante</dt>
               <dd className="text-right text-slate-800 [overflow-wrap:anywhere]">{requesterName}</dd>

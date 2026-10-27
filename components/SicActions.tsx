@@ -3,6 +3,7 @@
 import { inputClass, eyebrowClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import { IconCheck } from "@/components/icons";
 import { useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -1272,7 +1273,7 @@ function MultiFileRow({
         <ul className="mt-2 space-y-1">
           {files.map((f) => (
             <li key={f.id} className="flex items-center justify-between gap-3 text-sm">
-              <span className="min-w-0 text-emerald-600 [overflow-wrap:anywhere]">✓ {f.file_name}</span>
+              <span className="flex min-w-0 items-center gap-1.5 text-emerald-600 [overflow-wrap:anywhere]"><IconCheck className="h-3.5 w-3.5 shrink-0" />{f.file_name}</span>
               <span className="shrink-0">
                 <Button variant="link-danger" size="sm" onClick={() => onDelete(f)}>
                   Eliminar
@@ -1315,8 +1316,9 @@ function FileRow({
       <span className="text-slate-700">
         {label}{" "}
         {file && (
-          <span className="ml-1 text-emerald-600">
-            ✓ {file.file_name}{" "}
+          <span className="ml-1 inline-flex flex-wrap items-center gap-1 text-emerald-600">
+            <IconCheck className="h-3.5 w-3.5 shrink-0" />
+            {file.file_name}{" "}
             <Button variant="link-danger" size="sm" onClick={() => onDelete(file)} className="ml-1">
               Eliminar
             </Button>

@@ -62,21 +62,21 @@ export default function DashboardControls({
   }, [query]);
 
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-3">
+    <div className="mt-3 flex flex-wrap items-center gap-2">
       <div className="relative min-w-[min(16rem,100%)] flex-1">
         <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar por código, asunto o artículo…"
-          className="w-full rounded-lg border border-slate-300 bg-sheet py-2 pl-9 pr-3 text-sm"
+          className="min-h-11 w-full rounded-lg border border-slate-300 bg-sheet py-1.5 pl-9 pr-3 text-sm sm:min-h-8"
         />
       </div>
 
       <select
         value={sort}
         onChange={(e) => pushParams({ sort: e.target.value })}
-        className="rounded-lg border border-slate-300 bg-sheet px-3 py-2 text-sm text-slate-700"
+        className="min-h-11 rounded-lg border border-slate-300 bg-sheet px-3 py-1.5 text-sm text-slate-700 sm:min-h-8"
       >
         {sortOptionsFor(role).map((opt) => (
           <option key={opt.value} value={opt.value}>

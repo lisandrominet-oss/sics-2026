@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { inputClass, eyebrowClass } from "@/lib/ui";
+import { inputClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
 import ArticleCombobox from "@/components/ui/ArticleCombobox";
 import FileDropzone from "@/components/ui/FileDropzone";
@@ -67,7 +67,7 @@ export default function ItemsEditor({
       {items.map((item, index) => (
         <div key={keysRef.current[index]} className="rounded-lg border border-slate-200 p-4">
           <div className="flex items-center justify-between">
-            <span className={eyebrowClass}>
+            <span className="text-sm font-medium text-slate-900">
               Artículo {index + 1}
             </span>
             {items.length > 1 && (
@@ -78,14 +78,14 @@ export default function ItemsEditor({
           </div>
 
           {item.reviewNote && (
-            <p className="mt-2 rounded-md bg-amber-100 px-3 py-2 text-xs text-amber-800 [overflow-wrap:anywhere]">
+            <p className="mt-2 rounded-md bg-amber-100 px-3 py-2 text-xs text-amber-900 [overflow-wrap:anywhere]">
               <span className="font-semibold">Observación:</span> {item.reviewNote}
             </p>
           )}
 
           <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-slate-700">Artículo</label>
+              <label className="block text-sm font-medium text-slate-900">Artículo</label>
               <ArticleCombobox
                 value={item.description}
                 onChange={(description) => updateItem(index, { description })}
@@ -95,7 +95,7 @@ export default function ItemsEditor({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700">Cantidad</label>
+              <label className="block text-sm font-medium text-slate-900">Cantidad</label>
               <input
                 type="number"
                 step="0.01"
@@ -109,7 +109,7 @@ export default function ItemsEditor({
           </div>
 
           <div className="mt-3">
-            <label className="block text-xs font-medium text-slate-700">
+            <label className="block text-sm font-medium text-slate-900">
               Especificaciones técnicas (opcional)
             </label>
             <textarea
@@ -122,7 +122,7 @@ export default function ItemsEditor({
 
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-medium text-slate-700">
+              <label className="block text-sm font-medium text-slate-900">
                 Link de referencia (opcional)
               </label>
               <input
@@ -133,7 +133,7 @@ export default function ItemsEditor({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700">
+              <label className="block text-sm font-medium text-slate-900">
                 Archivo de referencia (opcional)
               </label>
               <FileDropzone
@@ -146,9 +146,10 @@ export default function ItemsEditor({
             </div>
           </div>
 
-          <label className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-700">
+          <label className="mt-3 flex items-center gap-2 text-sm font-medium text-slate-900">
             <input
               type="checkbox"
+              className="h-4 w-4 accent-slate-900"
               checked={item.requiresQualityCert}
               onChange={(e) => updateItem(index, { requiresQualityCert: e.target.checked })}
             />
