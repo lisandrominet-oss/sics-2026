@@ -127,8 +127,7 @@ input[type="date"]::-webkit-date-and-time-value {
   text-align: left;
 }
 
-/* Tablas con scroll horizontal en celular: la primera columna queda fija. Va con su propio tema oscuro porque
-   el generador del modo oscuro solo conoce clases de color de Tailwind. */
+/* Tablas con scroll horizontal en celular: la primera columna queda fija (colores por variables: sigue el tema solo). */
 .tabla-fija-1 th:first-child,
 .tabla-fija-1 td:first-child {
   position: sticky;

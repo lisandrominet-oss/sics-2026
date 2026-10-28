@@ -33,7 +33,12 @@ Circuito de compras interno: SIC (Solicitud Interna de Compras) con roles emisor
 4. Devolución con `/confirmar`.
 
 ## Interfaz
+- Identidad "Hoja enmarcada" (rediseño B): marco tintado (`frame`) con la hoja blanca (`sheet`) encajada, tinta (`ink`) para lo principal y amarillo de marca (`brand`) solo para "esto espera tu acción" y el tramo actual del recorrido. Tipografía IBM Plex Sans (`next/font`). La maqueta de referencia está en `docs/rediseno-b/` y el cierre en `docs/rediseno-b/INFORME-CIERRE.md`.
+- La página scrollea como documento: menú y barra superior son `sticky`, no hay paneles con scroll interno.
 - Movimiento con CSS nativo y los tokens de `tailwind.config.ts`; toasts con Sonner (`lib/notify.ts`); componentes de `components/ui/*`. Tailwind 3: no migrar a v4.
 - Sin Motion/GSAP ni librerías nuevas sin consultar a Lisandro, aunque una skill las sugiera.
-- Colores solo por tokens (ver arriba); no hay nada que regenerar al sumar clases de color.
+- Colores solo por tokens (ver arriba): `slate` (neutros), `red`/`amber`/`emerald` (solo estados) y `ink`, `on-ink`, `frame`, `sheet`, `brand`, `on-brand`, `scrim`. No hay otras paletas: no usar índigo, violeta, celeste ni hex en componentes. La única excepción documentada son los dos fondos de los toasts de error y aviso (`components/ui/AppToaster.tsx`). Sin sombras en reposo: solo `shadow-pop` en lo que flota.
+- Táctil: 44 px de alto en celular para controles (`inputClass`, `filterClass`, `Button`); los botones de texto (`variant="link"`) ya suman el área con relleno compensado.
+- Chequeo de estilo (skill `design-taste-frontend`, vive en `~/.agents`, no en el repo): `node ~/.agents/skills/design-taste-frontend/scripts/lint.mjs --app components app` debe dar 0 FAIL. No es ESLint: `next lint` sigue sin usarse.
+- `/presentacion` (skill `presentacion-a4`): las capturas de `_img/` llevan los datos tapados y se regeneran con `node scripts/capturas-presentacion.js`. Las pestañas de Chrome deben medir 1360 px para capturar la versión de compu.
 - Skills de interfaz instaladas (`emil-design-eng`, `mobile-native`, `ask-sonner`, y manuales `/review-animations`, `/improve-animations`, `/break-ui`, `/redesign-existing-projects`) **asesoran, no deciden**: no cambian el sistema de diseño ni instalan paquetes por su cuenta. Las auditorías se entregan como informe o plan y esperan aprobación.
