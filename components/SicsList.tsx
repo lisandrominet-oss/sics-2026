@@ -17,7 +17,6 @@ import { downloadSicsXlsx, type SicExportRow } from "@/lib/exportSics";
 import {
   CAN_CREATE_SIC,
   CAN_SEE_AMOUNTS,
-  COMPRAS_EXPORTABLE_STATUSES,
   STATUS_LABELS,
   daysUntilSqlDate,
   formatAmount,
@@ -79,6 +78,7 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
         .from("sic_items")
         .select("sic_id, description, quantity, specs")
         .in("sic_id", ids)
+        .eq("review_status", "activo")
         .order("position", { ascending: true });
 
       if (itemsError) {
@@ -150,7 +150,7 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
         )}
         <ul>
           {sics.map((sic, index) => {
-            const exportable = canExport && COMPRAS_EXPORTABLE_STATUSES.includes(sic.status);
+            const exportable = canExport;
             const pending = needsMyAction(role, sic.status);
             const days = sic.needed_by_date && !NO_DEADLINE_STATUSES.includes(sic.status) ? daysUntilSqlDate(sic.needed_by_date) : null;
             const urgent = days !== null && (days < 0 || (pending && days <= 2));

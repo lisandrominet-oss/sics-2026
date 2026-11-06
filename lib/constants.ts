@@ -71,8 +71,6 @@ export const HISTORY_STATUSES: SicStatus[] = [
   "rechazada_gerencia",
 ];
 
-export const COMPRAS_EXPORTABLE_STATUSES: SicStatus[] = ["enviada", "en_observacion", "cotizando"];
-
 // Pañol es solo recepción: los pedidos los emite el operativo de taller.
 export const CAN_CREATE_SIC: UserRole[] = ["operativo", "area", "gerencia", "compras", "admin"];
 

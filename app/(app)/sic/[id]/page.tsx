@@ -9,7 +9,6 @@ import ExportSicButton from "@/components/ExportSicButton";
 import { IconArrowLeft, IconFileText } from "@/components/icons";
 import {
   CAN_SEE_AMOUNTS,
-  COMPRAS_EXPORTABLE_STATUSES,
   FILE_TYPE_LABELS,
   REQUESTER_EDITABLE_STATUSES,
   STATUS_LABELS,
@@ -133,7 +132,7 @@ export default async function SicDetailPage({
   const detalleRecorrido: Partial<Record<number, string>> = { 0: requesterName };
   if (needsMyApproval && !tramoActual.fin) detalleRecorrido[tramoActual.tramo] = "Tu turno";
 
-  const canExport = (role === "compras" || role === "admin") && COMPRAS_EXPORTABLE_STATUSES.includes(sic.status);
+  const canExport = role === "compras" || role === "admin";
   const exportRows: SicExportRow[] = activeItems.map((it) => ({
     codigo: sic.code,
     asunto: sic.subject,
