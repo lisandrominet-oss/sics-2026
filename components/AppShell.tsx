@@ -19,6 +19,7 @@ import {
   IconMenu,
   IconPackage,
   IconPlusCircle,
+  IconReceipt,
   IconSettings,
   IconTruck,
   IconUsers,
@@ -207,7 +208,7 @@ export default function AppShell({
             </>
           )}
 
-          {(modules.includes("personal") || modules.includes("roster") || modules.includes("recursos-humanos") || modules.includes("logistica") || modules.includes("administracion")) && (
+          {(modules.includes("personal") || modules.includes("roster") || modules.includes("remitos") || modules.includes("recursos-humanos") || modules.includes("logistica") || modules.includes("administracion")) && (
             <>
               <p className="!mt-5 px-2.5 pb-1 text-xs text-slate-500">Módulos</p>
               {modules.includes("personal") && (
@@ -215,6 +216,9 @@ export default function AppShell({
               )}
               {modules.includes("roster") && (
                 <NavLink href="/roster" label="Roster" icon={<IconCalendar />} />
+              )}
+              {modules.includes("remitos") && (
+                <NavLink href="/remitos" label="Remitos" icon={<IconReceipt />} />
               )}
               {modules.includes("recursos-humanos") && (
                 <NavLink href="/modulos/recursos-humanos" label="Recursos Humanos" icon={<IconBadge />} />
