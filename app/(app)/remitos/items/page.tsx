@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import PageHeader from "@/components/ui/PageHeader";
 import RemitosTabs from "@/components/RemitosTabs";
 import RemitoItemsManager from "@/components/RemitoItemsManager";
@@ -9,6 +10,7 @@ export const revalidate = 0;
 
 export default async function RemitoItemsPage() {
   const { supabase, role } = await requireRemitos();
+  if (role === "panol_proyecto") redirect("/remitos/recepcion");
   const { data, error } = await supabase
     .from("remito_items")
     .select("id, code, description, rubric, unit, category, stock, quality_status, quality_by_name, quality_at, active")

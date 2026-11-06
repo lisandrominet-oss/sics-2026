@@ -4,7 +4,7 @@ import type { BadgeTone } from "@/components/ui/Badge";
 // Módulo "Remitos y Despachos". Los tipos de las tablas remito_* viven acá a mano hasta que se
 // regenere lib/database.types.ts (al pasar el módulo a producción).
 
-export type RemitoRole = "admin" | "administracion" | "logistica" | "calidad" | "obra_sitio" | "obra_calidad";
+export type RemitoRole = "admin" | "administracion" | "logistica" | "calidad" | "panol_proyecto";
 export type RemitoCategory = "permanente" | "retornable" | "consumible";
 export type RemitoKind = "permanente" | "retornable" | "mixto";
 export type RemitoStatus = "borrador" | "confirmado" | "anulado";
@@ -65,6 +65,32 @@ export type RemitoLine = {
   official_no: string | null;
   notes: string | null;
   returned_qty: number;
+  received_qty: number | null;
+  received_note: string | null;
+};
+
+export type RemitoReception = {
+  dispatch_id: string;
+  status: "aceptado" | "con_diferencias";
+  received_by_name: string | null;
+  received_at: string;
+  note: string | null;
+};
+
+// Una fila de remito_site_stock(): lo que hay en obra de un ítem.
+export type SiteStockRow = {
+  item_id: string;
+  code: string;
+  description: string;
+  rubric: string | null;
+  unit: string;
+  category: RemitoCategory;
+  sent: number;
+  pending: number;
+  received: number;
+  missing: number;
+  out_qty: number;
+  in_site: number;
 };
 
 export type RemitoFile = {
@@ -87,10 +113,9 @@ export type RemitoEvent = {
 export const REMITO_ROLE_LABELS: Record<RemitoRole, string> = {
   admin: "Administrador",
   administracion: "Administración",
-  logistica: "Logística",
+  logistica: "Logística (pañol de taller)",
   calidad: "Calidad",
-  obra_sitio: "Obra · Sitio",
-  obra_calidad: "Obra · Calidad",
+  panol_proyecto: "Pañol de proyecto",
 };
 
 export const CATEGORY_LABELS: Record<RemitoCategory, string> = {
@@ -161,6 +186,18 @@ export const EVENT_LABELS: Record<string, string> = {
   anulado: "Despacho anulado",
   remito_oficial: "N° de remito oficial",
   clasificacion: "Clasificación corregida",
+  recepcion_aceptado: "Recibido en obra, completo",
+  recepcion_con_diferencias: "Recibido en obra con diferencias",
+  egreso_emitido: "Egreso emitido",
+  egreso_recibido: "Egreso recibido en el taller",
+  egreso_recibido_con_diferencias: "Egreso recibido con diferencias",
+  egreso_anulado: "Egreso anulado",
+  rol_asignado: "Rol del módulo asignado",
+};
+
+export const RECEPTION_LABELS: Record<RemitoReception["status"], string> = {
+  aceptado: "Recibido completo",
+  con_diferencias: "Recibido con diferencias",
 };
 
 // Qué puede hacer cada rol del módulo (la base lo vuelve a verificar en cada RPC).
@@ -170,6 +207,8 @@ export const CAN = {
   armarDespachos: (r: RemitoRole | null) => r === "admin" || r === "logistica",
   aprobarCalidad: (r: RemitoRole | null) => r === "admin" || r === "calidad",
   corregirClasificacion: (r: RemitoRole | null) => r === "admin",
+  recibir: (r: RemitoRole | null) => r === "admin" || r === "panol_proyecto",
+  gestionarUsuarios: (r: RemitoRole | null) => r === "admin",
 };
 
 // Los tipos generados todavía no incluyen las tablas remito_*; se usa el cliente sin tipos de esquema.
@@ -218,7 +257,21 @@ export function normItem(row: Record<string, unknown>): RemitoItem {
   return { ...(row as unknown as RemitoItem), stock: Number(row.stock ?? 0) };
 }
 export function normLine(row: Record<string, unknown>): RemitoLine {
-  return { ...(row as unknown as RemitoLine), qty: Number(row.qty ?? 0), returned_qty: Number(row.returned_qty ?? 0) };
+  return {
+    ...(row as unknown as RemitoLine),
+    qty: Number(row.qty ?? 0),
+    returned_qty: Number(row.returned_qty ?? 0),
+    received_qty: row.received_qty === null || row.received_qty === undefined ? null : Number(row.received_qty),
+  };
+}
+export function normSite(row: Record<string, unknown>): SiteStockRow {
+  const n = (k: string) => Number(row[k] ?? 0);
+  return { ...(row as unknown as SiteStockRow), sent: n("sent"), pending: n("pending"), received: n("received"), missing: n("missing"), out_qty: n("out_qty"), in_site: n("in_site") };
+}
+
+// Días enteros entre una fecha ISO y hoy.
+export function daysSince(iso: string): number {
+  return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
 }
 
 export const REMITO_BUCKET = "remito-files";

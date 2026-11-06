@@ -9,11 +9,12 @@ import { buttonClass } from "@/components/ui/Button";
 import RemitosTabs from "@/components/RemitosTabs";
 import RemitoDispatchEditor, { type EditorFile, type EditorLine } from "@/components/RemitoDispatchEditor";
 import RemitoDetailActions from "@/components/RemitoDetailActions";
+import RemitoReceiveForm from "@/components/RemitoReceiveForm";
 import { numClass } from "@/lib/ui";
 import {
   CAN, CATEGORY_LABELS, EVENT_LABELS, FILE_KIND_LABELS, KIND_LABELS, REMITO_BUCKET, STATUS_LABELS, STATUS_TONES,
-  fmtDate, fmtDateTime, fmtQty, normItem, normLine,
-  type RemitoDispatch, type RemitoEvent, type RemitoFile, type RemitoItem, type RemitoLine, type RemitoProject,
+  RECEPTION_LABELS, fmtDate, fmtDateTime, fmtQty, normItem, normLine,
+  type RemitoDispatch, type RemitoEvent, type RemitoFile, type RemitoItem, type RemitoLine, type RemitoProject, type RemitoReception,
 } from "@/lib/remitos";
 import { requireRemitos } from "@/lib/remitosServer";
 
@@ -32,12 +33,14 @@ export default async function RemitoDetailPage({ params }: { params: { id: strin
   if (!dRow) notFound();
   const dispatch = dRow as RemitoDispatch;
 
-  const [{ data: lineRows }, { data: fileRows }, { data: eventRows }, { data: projectRows }] = await Promise.all([
+  const [{ data: lineRows }, { data: fileRows }, { data: eventRows }, { data: projectRows }, { data: receptionRow }] = await Promise.all([
     supabase.from("remito_dispatch_lines").select("*").eq("dispatch_id", dispatch.id).order("line_no"),
     supabase.from("remito_files").select("*").eq("dispatch_id", dispatch.id).order("created_at"),
     supabase.from("remito_events").select("id, event_type, actor_name, note, data, created_at").eq("entity", "dispatch").eq("entity_id", dispatch.id).order("created_at", { ascending: false }),
     supabase.from("remito_projects").select("id, code, name, active"),
+    supabase.from("remito_receptions").select("dispatch_id, status, received_by_name, received_at, note").eq("dispatch_id", dispatch.id).maybeSingle(),
   ]);
+  const reception = (receptionRow ?? null) as RemitoReception | null;
   const lines = (lineRows ?? []).map(normLine) as RemitoLine[];
   const files = (fileRows ?? []) as RemitoFile[];
   const events = (eventRows ?? []) as RemitoEvent[];
@@ -129,6 +132,25 @@ export default async function RemitoDetailPage({ params }: { params: { id: strin
           <div className="mt-4"><RemitoDetailActions dispatch={dispatch} role={role} /></div>
         </Card>
 
+        {dispatch.status === "confirmado" && !reception && CAN.recibir(role) && (
+          <RemitoReceiveForm
+            dispatchId={dispatch.id}
+            lines={lines.map((l) => ({ id: l.id, code: itemById.get(l.item_id)?.code ?? "?", description: itemById.get(l.item_id)?.description ?? "—", unit: itemById.get(l.item_id)?.unit ?? "un", qty: l.qty }))}
+          />
+        )}
+        {dispatch.status === "confirmado" && !reception && !CAN.recibir(role) && (
+          <Card title="Recepción en obra"><p className="text-sm text-slate-600">Todavía no fue recibido por el pañol del proyecto.</p></Card>
+        )}
+        {reception && (
+          <Card title="Recepción en obra">
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge tone={reception.status === "aceptado" ? "success" : "warning"} dot>{RECEPTION_LABELS[reception.status]}</Badge>
+              <span className={`text-sm text-slate-600 ${numClass}`}>{reception.received_by_name ?? "—"} · {fmtDateTime(reception.received_at)}</span>
+            </div>
+            {reception.note && <p className="mt-2 text-sm text-slate-700">{reception.note}</p>}
+          </Card>
+        )}
+
         <Card title="Detalle de carga">
           <div className="-mx-5 overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm">
@@ -137,6 +159,7 @@ export default async function RemitoDetailPage({ params }: { params: { id: strin
                 <th className="px-4 py-2 font-medium">Código</th>
                 <th className="px-4 py-2 font-medium">Descripción</th>
                 <th className="px-4 py-2 text-right font-medium">Cant.</th>
+                {reception && <th className="px-4 py-2 text-right font-medium">Recibido</th>}
                 <th className="px-4 py-2 font-medium">Condición</th>
                 <th className="px-4 py-2 font-medium">Devolución est.</th>
                 <th className="px-4 py-2 font-medium">Remito oficial</th>
@@ -151,6 +174,12 @@ export default async function RemitoDetailPage({ params }: { params: { id: strin
                     <td className={`px-4 py-2 font-medium text-slate-900 ${numClass}`}>{it?.code ?? "?"}</td>
                     <td className="px-4 py-2 text-slate-700">{it?.description ?? "—"}</td>
                     <td className={`px-4 py-2 text-right text-slate-700 ${numClass}`}>{fmtQty(l.qty)} {it?.unit}</td>
+                    {reception && (
+                      <td className={`px-4 py-2 text-right ${numClass} ${l.received_qty !== null && l.received_qty !== l.qty ? "font-medium text-amber-900" : "text-slate-700"}`}>
+                        {l.received_qty === null ? "—" : fmtQty(l.received_qty)}
+                        {l.received_note && <span className="block text-xs font-normal text-slate-500">{l.received_note}</span>}
+                      </td>
+                    )}
                     <td className="px-4 py-2 text-slate-600">{CATEGORY_LABELS[l.condition]}</td>
                     <td className={`px-4 py-2 text-slate-600 ${numClass}`}>{fmtDate(l.est_return_date)}</td>
                     <td className={`px-4 py-2 text-slate-600 ${numClass}`}>{l.official_no ?? "sin remito oficial"}</td>
@@ -188,7 +217,7 @@ export default async function RemitoDetailPage({ params }: { params: { id: strin
               )}
             </div>
           )}
-          {dispatch.status === "confirmado" && !dispatch.official_no && (
+          {dispatch.status === "confirmado" && !dispatch.official_no && CAN.armarDespachos(role) && (
             <p className="mt-3 text-xs text-slate-500">Este despacho todavía no tiene N° de remito oficial. Asignalo y subí la foto del remito firmado.</p>
           )}
         </Card>

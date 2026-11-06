@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import PageHeader from "@/components/ui/PageHeader";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
@@ -28,6 +29,8 @@ const KINDS = Object.keys(KIND_SHORT) as RemitoKind[];
 
 export default async function RemitosPage({ searchParams }: { searchParams: { estado?: string; tipo?: string } }) {
   const { supabase, role } = await requireRemitos();
+  // El pañolero de proyecto no arma despachos: su entrada es la recepción.
+  if (role === "panol_proyecto") redirect("/remitos/recepcion");
   const estado = STATUSES.find((s) => s === searchParams.estado);
   const tipo = KINDS.find((k) => k === searchParams.tipo);
 

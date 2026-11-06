@@ -14,5 +14,12 @@ export async function requireRemitos() {
   const { data } = await supabase.rpc("remito_role");
   const role = (data as RemitoRole | null) ?? null;
   if (!role) redirect("/dashboard");
-  return { profile, supabase, role };
+
+  // El pañolero de proyecto está ligado a un proyecto: se resuelve acá para todas las páginas.
+  let projectId: string | null = null;
+  if (role === "panol_proyecto") {
+    const { data: staff } = await supabase.from("remito_staff").select("project_id").eq("user_id", profile.id).maybeSingle();
+    projectId = (staff?.project_id as string | null) ?? null;
+  }
+  return { profile, supabase, role, projectId };
 }
