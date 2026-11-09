@@ -8,6 +8,12 @@ import { IconX } from "@/components/icons";
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+// Diálogos abiertos, el último es el de arriba: solo ese atiende Escape y Tab (una confirmación sobre un formulario
+// no cierra también el formulario) y el bloqueo de scroll del documento se suelta recién cuando se cierra el último.
+const openModals: HTMLElement[] = [];
+let scrollLocks = 0;
+let savedOverflow = "";
+
 // En celular se muestra como panel desde abajo (bottom-sheet) con scroll interno; desde 640 px, centrado.
 // `variant="bare"`: sin panel ni título visible (visor de imágenes); `title` queda solo como nombre accesible.
 // Para cambiar el ancho, pasar `className` con `sm:max-w-*`.
@@ -47,7 +53,9 @@ export default function Modal({
     if (!open) return;
     const previouslyFocused = document.activeElement as HTMLElement | null;
     const panel = panelRef.current;
-    const prevOverflow = document.body.style.overflow;
+    const overlay = overlayRef.current;
+    if (overlay) openModals.push(overlay);
+    if (scrollLocks++ === 0) savedOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     // Foco inicial dentro del diálogo.
@@ -56,6 +64,7 @@ export default function Modal({
     (focusables()[0] ?? panel)?.focus();
 
     const onKey = (e: KeyboardEvent) => {
+      if (overlay && openModals[openModals.length - 1] !== overlay) return;
       if (e.key === "Escape") {
         e.stopPropagation();
         onCloseRef.current();
@@ -81,7 +90,9 @@ export default function Modal({
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
+      const i = overlay ? openModals.indexOf(overlay) : -1;
+      if (i >= 0) openModals.splice(i, 1);
+      if (--scrollLocks === 0) document.body.style.overflow = savedOverflow;
       previouslyFocused?.focus?.();
     };
   }, [open]);
