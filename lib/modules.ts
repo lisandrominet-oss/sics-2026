@@ -14,7 +14,8 @@ export type ModuleKey =
   | "administracion"
   | "personal"
   | "roster"
-  | "remitos";
+  | "remitos"
+  | "calidad";
 
 export type ModuleDef = {
   key: ModuleKey;
@@ -82,6 +83,14 @@ export const MODULES: readonly ModuleDef[] = [
     group: "modulos",
     href: "/remitos",
     defaultRoles: ["admin"],
+  },
+  {
+    key: "calidad",
+    title: "Calidad",
+    description: "Avance de obra por proyecto y bahía: armado, soldadura, liberación, pintura, remito y en sitio.",
+    group: "modulos",
+    href: "/calidad",
+    defaultRoles: ["admin", "gerencia"],
   },
   {
     key: "recursos-humanos",
@@ -158,6 +167,7 @@ export function moduleForPath(path: string): ModuleKey | null {
   if (path === "/personal" || path.startsWith("/personal/")) return "personal";
   if (path === "/roster" || path.startsWith("/roster/")) return "roster";
   if (path === "/remitos" || path.startsWith("/remitos/")) return "remitos";
+  if (path === "/calidad" || path.startsWith("/calidad/")) return "calidad";
   if (path.startsWith("/modulos/")) {
     const slug = path.split("/")[2];
     return slug && isModuleKey(slug) ? slug : null;

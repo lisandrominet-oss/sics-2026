@@ -1,0 +1,40 @@
+/* Minuta de Calidad impresa: A4 horizontal, blanco y negro, igual en modo claro y oscuro. */
+html.dark body:has(.cal-root) { background: #fff; color: #000; }
+.cal-root { color: #000; background: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 9px; line-height: 1.2; }
+.cal-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 10px 16px; background: #222; color: #fff; font-size: 13px; }
+.cal-bar button { padding: 6px 16px; border-radius: 4px; border: 0; background: #fff; color: #000; font-size: 13px; cursor: pointer; }
+.cal-bar a { color: #fff; text-decoration: underline; }
+.cal-page { box-sizing: border-box; width: 277mm; margin: 12px auto; }
+.cal-head { width: 100%; border-collapse: collapse; margin-bottom: 2mm; }
+.cal-head td { border: 1px solid #000; padding: 2mm 3mm; vertical-align: middle; }
+.cal-head .logo { width: 60mm; font-weight: 700; font-size: 14px; letter-spacing: .02em; }
+.cal-head .reg { font-size: 11px; }
+.cal-head .reg strong { display: block; font-size: 15px; margin-top: 1mm; }
+.cal-head .cod { width: 55mm; text-align: center; font-size: 15px; }
+.cal-head .cod small { display: block; font-size: 10px; margin-top: 1mm; }
+.cal-main { width: 100%; border-collapse: collapse; }
+.cal-main > thead > tr > th { background: #ddd; border: 1px solid #000; padding: 1.5mm 2mm; font-size: 10px; }
+.cal-main > tbody > tr > td { border: 1px solid #000; padding: 1.5mm 2mm; vertical-align: top; }
+.cal-main .n { width: 14mm; text-align: center; }
+.cal-main .resp { width: 36mm; text-align: center; vertical-align: middle; }
+.cal-main .fecha { width: 26mm; text-align: center; }
+.cal-main > tbody > tr { break-inside: auto; }
+.cal-bay { font-size: 12px; font-weight: 700; margin: 0 0 1.5mm; }
+.cal-grp { text-align: center; font-weight: 700; text-decoration: underline; margin: 2mm 0 1mm; font-size: 10px; }
+.cal-tbl { width: 100%; border-collapse: collapse; margin-bottom: 2mm; break-inside: avoid; }
+.cal-tbl th, .cal-tbl td { border: 1px solid #000; padding: 0.7mm 1.2mm; text-align: center; }
+.cal-tbl th { font-size: 8px; }
+.cal-tbl th.l, .cal-tbl td.l { text-align: left; }
+.cal-tbl tfoot td { font-weight: 700; background: #eee; }
+.cal-tbl .done { font-weight: 700; }
+.cal-notes { margin: 1mm 0 0; padding: 0; list-style: none; font-size: 9px; }
+.cal-notes li { margin: 0.4mm 0; }
+.cal-foot { margin-top: 3mm; font-size: 8px; color: #444; }
+
+@page { size: A4 landscape; margin: 8mm; }
+@media print {
+  .cal-bar { display: none; }
+  .cal-page { margin: 0; width: auto; }
+  html, body { background: #fff !important; }
+  * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}

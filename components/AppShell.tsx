@@ -13,6 +13,7 @@ import {
   IconBadge,
   IconBarChart,
   IconBuilding,
+  IconClipboardCheck,
   IconFileText,
   IconFolder,
   IconGrid,
@@ -208,7 +209,7 @@ export default function AppShell({
             </>
           )}
 
-          {(modules.includes("personal") || modules.includes("roster") || modules.includes("remitos") || modules.includes("recursos-humanos") || modules.includes("logistica") || modules.includes("administracion")) && (
+          {(modules.includes("personal") || modules.includes("roster") || modules.includes("remitos") || modules.includes("calidad") || modules.includes("recursos-humanos") || modules.includes("logistica") || modules.includes("administracion")) && (
             <>
               <p className="!mt-5 px-2.5 pb-1 text-xs text-slate-500">Módulos</p>
               {modules.includes("personal") && (
@@ -219,6 +220,9 @@ export default function AppShell({
               )}
               {modules.includes("remitos") && (
                 <NavLink href="/remitos" label="Remitos" icon={<IconReceipt />} />
+              )}
+              {modules.includes("calidad") && (
+                <NavLink href="/calidad" label="Calidad" icon={<IconClipboardCheck />} />
               )}
               {modules.includes("recursos-humanos") && (
                 <NavLink href="/modulos/recursos-humanos" label="Recursos Humanos" icon={<IconBadge />} />
