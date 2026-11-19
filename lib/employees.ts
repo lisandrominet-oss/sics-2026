@@ -1,5 +1,6 @@
 import type { Database } from "@/lib/database.types";
 import type { BadgeTone } from "@/components/ui/Badge";
+import { parseCsv } from "@/lib/csv";
 
 export type Employee = Database["public"]["Tables"]["employees"]["Row"];
 export type EmployeeWithPlant = Employee & { plant: { name: string; prefix: string } | null };
@@ -150,51 +151,6 @@ function normalizeHeader(value: string) {
     .trim();
 }
 
-// Lee un CSV (separador coma, punto y coma o tabulación; comillas dobles; con o sin BOM).
-export function parseCsv(text: string): string[][] {
-  const src = text.replace(/^\uFEFF/, "");
-  const firstLine = src.split(/\r?\n/, 1)[0] ?? "";
-  const counts = { ";": 0, ",": 0, "\t": 0 };
-  let inQuotes = false;
-  for (const ch of firstLine) {
-    if (ch === '"') inQuotes = !inQuotes;
-    else if (!inQuotes && ch in counts) counts[ch as keyof typeof counts] += 1;
-  }
-  const delimiter = (Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0] || ";") as string;
-
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let field = "";
-  inQuotes = false;
-  for (let i = 0; i < src.length; i++) {
-    const ch = src[i];
-    if (inQuotes) {
-      if (ch === '"') {
-        if (src[i + 1] === '"') {
-          field += '"';
-          i += 1;
-        } else inQuotes = false;
-      } else field += ch;
-    } else if (ch === '"') {
-      inQuotes = true;
-    } else if (ch === delimiter) {
-      row.push(field);
-      field = "";
-    } else if (ch === "\n" || ch === "\r") {
-      if (ch === "\r" && src[i + 1] === "\n") i += 1;
-      row.push(field);
-      field = "";
-      rows.push(row);
-      row = [];
-    } else field += ch;
-  }
-  if (field !== "" || row.length > 0) {
-    row.push(field);
-    rows.push(row);
-  }
-  return rows.filter((r) => r.some((cell) => cell.trim() !== ""));
-}
-
 // 15/03/2020 o 15-3-2020 -> 2020-03-15. Lo que ya viene en formato ISO se respeta; lo que no se entiende
 // se devuelve tal cual para que la base lo rechace con su mensaje.
 export function toIsoDate(value: string): string {
@@ -260,14 +216,4 @@ export function importRowError(row: ImportRow): string | null {
 // Plantilla: solo el encabezado (sin datos de ejemplo, para que nadie importe una fila de muestra por error).
 export function csvTemplate() {
   return "\uFEFF" + CSV_TEMPLATE_HEADERS.join(";") + "\r\n";
-}
-
-// El CSV de Excel en español suele venir en Windows-1252; si no es UTF-8 válido, se reintenta con esa.
-export async function readCsvFile(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer();
-  try {
-    return new TextDecoder("utf-8", { fatal: true }).decode(buffer);
-  } catch {
-    return new TextDecoder("windows-1252").decode(buffer);
-  }
 }

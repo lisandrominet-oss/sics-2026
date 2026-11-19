@@ -15,9 +15,9 @@ import {
   formatCuil,
   formatDni,
   importRowError,
-  readCsvFile,
   type ImportRow,
 } from "@/lib/employees";
+import { readCsvFile } from "@/lib/csv";
 
 type ServerError = { row: number; message: string };
 type ImportResult = { ok: boolean; created: number; updated: number; unchanged: number; errors: ServerError[] };

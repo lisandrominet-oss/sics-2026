@@ -8,11 +8,17 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
+import ImportItemsModal from "@/components/ImportItemsModal";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
-import { PROJECT_TALLER, STATUS_LABELS, formatSqlDate, sanitizeFileName, type SicStatus } from "@/lib/constants";
+import { MAX_SIC_ITEMS, PROJECT_TALLER, STATUS_LABELS, formatSqlDate, sanitizeFileName, type SicStatus } from "@/lib/constants";
 
 type Plant = { id: string; name: string; prefix: string };
 type Project = { id: string; name: string };
+
+// Un artículo sin nada cargado (el que aparece de entrada): al importar se reemplaza en vez de quedar vacío.
+function isBlankItem(it: ItemDraft) {
+  return !it.description.trim() && !it.quantity.trim() && !it.specs.trim() && !it.referenceLink.trim() && !it.file && !it.requiresQualityCert;
+}
 
 export default function NuevaSicForm({
   plants,
@@ -42,6 +48,7 @@ export default function NuevaSicForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
   const [similar, setSimilar] = useState<{ id: string; code: string; status: SicStatus; description: string }[]>([]);
 
   // Aviso suave de posibles pedidos repetidos: busca SIC en curso de la misma área con un artículo parecido.
@@ -80,6 +87,20 @@ export default function NuevaSicForm({
   }, [itemsKey, plantId]);
 
   const selectedPlantName = plants.find((p) => p.id === plantId);
+  // Solo se descartan las tarjetas vacías del final: ItemsEditor recorta sus claves por el final,
+  // así cada tarjeta que queda conserva la suya (y su archivo adjunto).
+  let keep = items.length;
+  while (keep > 0 && isBlankItem(items[keep - 1])) keep -= 1;
+  const filledItems = items.slice(0, keep);
+
+  function handleImport(imported: ItemDraft[]) {
+    setItems([...filledItems, ...imported].slice(0, MAX_SIC_ITEMS));
+    setImportOpen(false);
+    notify.success(
+      imported.length === 1 ? "Se agregó 1 artículo" : `Se agregaron ${imported.length} artículos`,
+      "Revisalos antes de enviar la solicitud."
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -253,10 +274,21 @@ export default function NuevaSicForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-900">Artículos solicitados</label>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <label className="block text-sm font-medium text-slate-900">Artículos solicitados</label>
+          <Button variant="link" size="sm" onClick={() => setImportOpen(true)} disabled={filledItems.length >= MAX_SIC_ITEMS}>
+            Importar desde planilla
+          </Button>
+        </div>
         <div className="mt-2">
           <ItemsEditor items={items} onChange={setItems} catalog={catalog} />
         </div>
+        <ImportItemsModal
+          open={importOpen}
+          onClose={() => setImportOpen(false)}
+          onImport={handleImport}
+          freeSlots={MAX_SIC_ITEMS - filledItems.length}
+        />
       </div>
 
       {similar.length > 0 && (
