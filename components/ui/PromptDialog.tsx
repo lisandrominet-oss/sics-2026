@@ -14,7 +14,11 @@ export type PromptField = {
   placeholder?: string;
   required?: boolean;
   /** Teclado numérico en el celular (no restringe lo que se puede escribir). */
-  inputMode?: "text" | "decimal";
+  inputMode?: "text" | "decimal" | "numeric";
+  /** Tipo de campo (por defecto, texto). */
+  type?: "text" | "date";
+  /** Valor con el que arranca el campo (para editar un dato existente). */
+  defaultValue?: string;
   /** Devuelve el mensaje de error, o null si el valor es válido. Se llama solo con valores no vacíos. */
   validate?: (value: string) => string | null;
 };
@@ -57,7 +61,7 @@ function PromptForm({
   busy,
   setBusy,
 }: Omit<Props, "open" | "title"> & { onClose: () => void; busy: boolean; setBusy: (busy: boolean) => void }) {
-  const [values, setValues] = useState<Record<string, string>>(() => Object.fromEntries(fields.map((f) => [f.name, ""])));
+  const [values, setValues] = useState<Record<string, string>>(() => Object.fromEntries(fields.map((f) => [f.name, f.defaultValue ?? ""])));
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   async function handleSubmit(e: React.FormEvent) {
@@ -99,6 +103,7 @@ function PromptForm({
                 value={values[f.name] ?? ""}
                 onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
                 placeholder={f.placeholder}
+                type={f.type ?? "text"}
                 inputMode={f.inputMode}
                 autoComplete="off"
                 className={inputClass}

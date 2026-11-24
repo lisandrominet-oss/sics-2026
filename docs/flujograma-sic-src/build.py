@@ -2,7 +2,7 @@
 """Genera el flujograma completo de una SIC (HTML interactivo + SVG) y verifica colisiones."""
 import json, sys, html
 
-W, H = 2950, 2020
+W, H = 2950, 2048
 FONT = "-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 LANES = [  # nombre, líneas, y0, y1, tinte de carril, borde
@@ -235,7 +235,7 @@ def render_lanes():
 def render_bottom():
     y = 1730
     o = []
-    o.append(f'<rect x="40" y="{y}" width="860" height="268" rx="14" fill="#FFFFFF" stroke="#C9D0D6" stroke-width="1.6"/>')
+    o.append(f'<rect x="40" y="{y}" width="860" height="296" rx="14" fill="#FFFFFF" stroke="#C9D0D6" stroke-width="1.6"/>')
     o.append(f'<text x="64" y="{y+36}" font-size="20" font-weight="700" fill="#1B2631">Cómo leerlo</text>')
     items = [
       ('<rect x="0" y="0" width="64" height="30" rx="8" fill="#DDE8F6" stroke="#5B7BA6" stroke-width="2.4"/>', "Paso (el color es el carril de quien actúa)"),
@@ -255,7 +255,7 @@ def render_bottom():
         yy = y + 166 + i * 28
         o.append(f'<rect x="560" y="{yy}" width="64" height="22" rx="6" fill="{TAGFILL[kind]}" stroke="{TAGSTROKE[kind]}" stroke-width="1.4"/><g transform="translate(584,{yy+3}) scale(0.9)">{ICON[kind]}</g><text x="640" y="{yy+17}" font-size="17" fill="#37424D">{names[kind]}</text>')
     vx = 940
-    o.append(f'<rect x="{vx}" y="{y}" width="980" height="268" rx="14" fill="#FFFFFF" stroke="#C9D0D6" stroke-width="1.6"/>')
+    o.append(f'<rect x="{vx}" y="{y}" width="980" height="296" rx="14" fill="#FFFFFF" stroke="#C9D0D6" stroke-width="1.6"/>')
     o.append(f'<text x="{vx+24}" y="{y+36}" font-size="20" font-weight="700" fill="#1B2631">Quién ve la SIC</text>')
     vis = [
       ("Operativo", "Las de su área, sin montos. Ve cotización y monto de la suya al validarla."),
@@ -268,7 +268,7 @@ def render_bottom():
         yy = y + 76 + i * 34
         o.append(f'<text x="{vx+24}" y="{yy}" font-size="17" font-weight="600" fill="#1B2631">{esc(who)}</text><text x="{vx+250}" y="{yy}" font-size="17" fill="#46525E">{esc(what)}</text>')
     ax = 1960
-    o.append(f'<rect x="{ax}" y="{y}" width="950" height="268" rx="14" fill="#FFFFFF" stroke="#C9D0D6" stroke-width="1.6"/>')
+    o.append(f'<rect x="{ax}" y="{y}" width="950" height="296" rx="14" fill="#FFFFFF" stroke="#C9D0D6" stroke-width="1.6"/>')
     o.append(f'<text x="{ax+24}" y="{y+36}" font-size="20" font-weight="700" fill="#1B2631">Anulación y reglas generales</text>')
     o.append(f'<rect x="{ax+24}" y="{y+52}" width="130" height="38" rx="19" fill="#F7E1E1" stroke="#B04A4A" stroke-width="2.4"/><text x="{ax+89}" y="{y+78}" text-anchor="middle" font-size="19" font-weight="600" fill="#6B1F1F">Anulada</text>')
     rules = [
@@ -278,6 +278,7 @@ def render_bottom():
       "Servicio: Compras lo marca al emitir la orden y es quien lo recibe (no pasa por Pañol).",
       "Compra directa o cuenta corriente: Compras puede volver a compra normal hasta emitir la orden.",
       "Certificados de calidad: Compras los sube al llegar, incluso con la SIC cerrada.",
+      "Ítem de obra (opcional): si el proyecto tiene plan (módulo Obras, lo carga Ingeniería), la SIC se clasifica. No cambia el circuito.",
     ]
     for i, r in enumerate(rules):
         o.append(f'<text x="{ax+24}" y="{y+118+i*25}" font-size="17" fill="#46525E">• {esc(r)}</text>')

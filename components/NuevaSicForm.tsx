@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
 import ImportItemsModal from "@/components/ImportItemsModal";
+import ObraItemPicker from "@/components/obras/ObraItemPicker";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 import { MAX_SIC_ITEMS, PROJECT_TALLER, STATUS_LABELS, formatSqlDate, sanitizeFileName, type SicStatus } from "@/lib/constants";
 
@@ -26,12 +27,16 @@ export default function NuevaSicForm({
   defaultPlantId,
   canPickPlant,
   catalog,
+  initialProjectId = "",
+  initialNodeId = null,
 }: {
   plants: Plant[];
   projects: Project[];
   defaultPlantId: string | null;
   canPickPlant: boolean;
   catalog: string[];
+  initialProjectId?: string;
+  initialNodeId?: string | null;
 }) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -42,7 +47,8 @@ export default function NuevaSicForm({
   const [subject, setSubject] = useState("");
   const [neededByDate, setNeededByDate] = useState("");
   const [plantId, setPlantId] = useState(defaultPlantId ?? plants[0]?.id ?? "");
-  const [projectId, setProjectId] = useState("");
+  const [projectId, setProjectId] = useState(initialProjectId);
+  const [projectNodeId, setProjectNodeId] = useState<string | null>(initialNodeId);
   const [onBehalfOf, setOnBehalfOf] = useState("");
   const [items, setItems] = useState<ItemDraft[]>([{ ...EMPTY_ITEM }]);
   const [loading, setLoading] = useState(false);
@@ -140,6 +146,7 @@ export default function NuevaSicForm({
       p_plant_id: plantId || null,
       p_items: payloadItems,
       p_on_behalf_of: canPickPlant ? onBehalfOf || null : null,
+      p_project_node_id: projectNodeId,
     });
 
     if (createError || !sic) {
@@ -221,7 +228,10 @@ export default function NuevaSicForm({
           <label className="block text-sm font-medium text-slate-900">Seleccionar proyecto</label>
           <select
             value={projectId}
-            onChange={(e) => setProjectId(e.target.value)}
+            onChange={(e) => {
+              setProjectId(e.target.value);
+              setProjectNodeId(null);
+            }}
             required
             className={inputClass}
           >
@@ -235,6 +245,12 @@ export default function NuevaSicForm({
           </select>
         </div>
       </div>
+
+      <ObraItemPicker
+        projectId={projectId && projectId !== PROJECT_TALLER ? projectId : null}
+        value={projectNodeId}
+        onChange={setProjectNodeId}
+      />
 
       {canPickPlant && (
         <div>

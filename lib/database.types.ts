@@ -727,6 +727,7 @@ export type Database = {
           active: boolean
           created_at: string
           id: string
+          manages_obras: boolean
           name: string
           prefix: string
         }
@@ -734,6 +735,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          manages_obras?: boolean
           name: string
           prefix: string
         }
@@ -741,6 +743,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          manages_obras?: boolean
           name?: string
           prefix?: string
         }
@@ -796,24 +799,181 @@ export type Database = {
           },
         ]
       }
-      projects: {
+      project_node_changes: {
+        Row: {
+          actor_id: string | null
+          change_type: string
+          created_at: string
+          detail: string | null
+          id: string
+          new_end: string | null
+          new_start: string | null
+          node_id: string | null
+          old_end: string | null
+          old_start: string | null
+          origin: string
+          project_id: string
+          reason: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          change_type: string
+          created_at?: string
+          detail?: string | null
+          id?: string
+          new_end?: string | null
+          new_start?: string | null
+          node_id?: string | null
+          old_end?: string | null
+          old_start?: string | null
+          origin?: string
+          project_id: string
+          reason?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          change_type?: string
+          created_at?: string
+          detail?: string | null
+          id?: string
+          new_end?: string | null
+          new_start?: string | null
+          node_id?: string | null
+          old_end?: string | null
+          old_start?: string | null
+          origin?: string
+          project_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_node_changes_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_node_changes_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "project_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_node_changes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_nodes: {
         Row: {
           active: boolean
+          baseline_end: string | null
+          baseline_start: string | null
+          code: string
           created_at: string
+          current_end: string | null
+          current_start: string | null
+          depth: number
+          external_id: string
           id: string
+          kind: string
           name: string
+          parent_id: string | null
+          path: string[]
+          position: number
+          project_id: string
+          updated_at: string
         }
         Insert: {
           active?: boolean
+          baseline_end?: string | null
+          baseline_start?: string | null
+          code: string
           created_at?: string
+          current_end?: string | null
+          current_start?: string | null
+          depth?: number
+          external_id: string
           id?: string
+          kind: string
           name: string
+          parent_id?: string | null
+          path?: string[]
+          position?: number
+          project_id: string
+          updated_at?: string
         }
         Update: {
           active?: boolean
+          baseline_end?: string | null
+          baseline_start?: string | null
+          code?: string
+          created_at?: string
+          current_end?: string | null
+          current_start?: string | null
+          depth?: number
+          external_id?: string
+          id?: string
+          kind?: string
+          name?: string
+          parent_id?: string | null
+          path?: string[]
+          position?: number
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_nodes_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "project_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_nodes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          active: boolean
+          code: string | null
+          created_at: string
+          id: string
+          imported_at: string | null
+          imported_by: string | null
+          name: string
+          source: string
+        }
+        Insert: {
+          active?: boolean
+          code?: string | null
           created_at?: string
           id?: string
+          imported_at?: string | null
+          imported_by?: string | null
+          name: string
+          source?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string | null
+          created_at?: string
+          id?: string
+          imported_at?: string | null
+          imported_by?: string | null
           name?: string
+          source?: string
         }
         Relationships: []
       }
@@ -1967,6 +2127,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -1992,6 +2153,7 @@ export type Database = {
           plant_id: string
           po_number?: string | null
           project_id?: string | null
+          project_node_id?: string | null
           provider_id?: string | null
           purchase_type?: string
           requester_id: string
@@ -2017,6 +2179,7 @@ export type Database = {
           plant_id?: string
           po_number?: string | null
           project_id?: string | null
+          project_node_id?: string | null
           provider_id?: string | null
           purchase_type?: string
           requester_id?: string
@@ -2027,6 +2190,13 @@ export type Database = {
           year?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "sics_project_node_id_fkey"
+            columns: ["project_node_id"]
+            isOneToOne: false
+            referencedRelation: "project_nodes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sics_parent_sic_id_fkey"
             columns: ["parent_sic_id"]
@@ -2145,6 +2315,54 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage_obras: { Args: never; Returns: boolean }
+      can_view_obras: { Args: never; Returns: boolean }
+      obra_import: {
+        Args: { p_nodes: Json; p_project: Json; p_project_id?: string | null }
+        Returns: string
+      }
+      obra_node_create: {
+        Args: {
+          p_code: string
+          p_end: string | null
+          p_kind: string
+          p_name: string
+          p_parent_id: string | null
+          p_project_id: string
+          p_start: string | null
+        }
+        Returns: string
+      }
+      obra_node_rename: {
+        Args: { p_code: string; p_name: string; p_node_id: string }
+        Returns: undefined
+      }
+      obra_node_reschedule: {
+        Args: { p_end: string; p_node_id: string; p_reason: string; p_start: string }
+        Returns: undefined
+      }
+      obra_node_set_active: {
+        Args: { p_active: boolean; p_node_id: string; p_reason: string }
+        Returns: undefined
+      }
+      obra_node_shift: {
+        Args: { p_days: number; p_node_id: string; p_reason: string }
+        Returns: number
+      }
+      obra_plan_delete: { Args: { p_project_id: string }; Returns: undefined }
+      obra_reimport: {
+        Args: { p_nodes: Json; p_project_id: string; p_reason: string }
+        Returns: Json
+      }
+      obra_project_update: {
+        Args: { p_code: string | null; p_name: string; p_project_id: string }
+        Returns: undefined
+      }
+      obras_access: { Args: never; Returns: string | null }
+      set_sic_project_node: {
+        Args: { p_node_id: string | null; p_sic_id: string }
+        Returns: Database["public"]["Tables"]["sics"]["Row"]
+      }
       accept_installment_difference: {
         Args: { p_amount: number; p_installment_id: string; p_note: string }
         Returns: {
@@ -2244,6 +2462,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -2321,6 +2540,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -2360,6 +2580,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -2394,6 +2615,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -2432,6 +2654,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -2529,6 +2752,7 @@ export type Database = {
           p_on_behalf_of?: string
           p_plant_id?: string
           p_project_id: string
+          p_project_node_id?: string | null
           p_subject: string
         }
         Returns: {
@@ -2547,6 +2771,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -2586,6 +2811,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -2671,6 +2897,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -2709,6 +2936,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -2790,6 +3018,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -2971,6 +3200,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -3005,6 +3235,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -3479,6 +3710,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -3615,6 +3847,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -3649,6 +3882,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string
@@ -3806,6 +4040,8 @@ export type Database = {
           p_items: Json
           p_needed_by_date: string
           p_project_id: string
+          p_project_node_id?: string | null
+          p_set_project_node?: boolean
           p_sic_id: string
           p_subject: string
         }
@@ -3825,6 +4061,7 @@ export type Database = {
           plant_id: string
           po_number: string | null
           project_id: string | null
+          project_node_id: string | null
           provider_id: string | null
           purchase_type: string
           requester_id: string

@@ -284,3 +284,12 @@ export function IconCalendar({ className = "h-5 w-5" }: { className?: string }) 
     </svg>
   );
 }
+
+export function IconLayers({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className={className} aria-hidden="true">
+      <path d="M12 3.5 3.5 8 12 12.5 20.5 8 12 3.5Z" strokeLinejoin="round" />
+      <path d="M3.5 12 12 16.5 20.5 12M3.5 16 12 20.5 20.5 16" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

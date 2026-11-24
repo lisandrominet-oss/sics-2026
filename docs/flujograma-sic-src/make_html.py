@@ -9,7 +9,7 @@ e = html.escape
 
 ROWS = [
  ("1", "Emisión de la SIC", "Pendiente del jefe (si emite un operativo) · Enviada (si emite un jefe, Compras, Gerencia o admin)",
-  "Operativo o jefe de área (Pañol no emite: solo recibe)", "Asunto, proyecto, fecha límite y artículos (cantidad, especificaciones, link). Archivo de referencia por artículo (opcional). Marca de certificado de calidad por artículo.",
+  "Operativo o jefe de área (Pañol no emite: solo recibe)", "Asunto, proyecto, ítem de la obra (opcional: solo si el proyecto tiene plan, cargado por Ingeniería desde Primavera en el módulo Obras), fecha límite y artículos (cantidad, especificaciones, link). Archivo de referencia por artículo (opcional). Marca de certificado de calidad por artículo.",
   "Al jefe del área, o directo a Compras si no emite un operativo."),
  ("2", "Decisión del jefe", "Pendiente del jefe → Enviada · En observación · Rechazada por el jefe",
   "Cualquier jefe del área de la SIC (y admin)", "Aprobar, pedir corrección o rechazar la SIC entera, o revisar artículo por artículo (aprobar, observar o rechazar cada uno). El comentario es obligatorio al corregir o rechazar.",
@@ -36,11 +36,14 @@ ROWS = [
   "Compras", "Factura (obligatoria). En cuenta corriente: el monto de la compra, sin factura por SIC.",
   "Final correcto. En cuenta corriente: después, liquidación mensual (todavía no desarrollada)."),
  ("—", "Edición por el emisor", "Pendiente del jefe o Enviada (el estado no cambia)",
-  "Quien emitió la SIC (y admin), hasta que Compras la acepta", "Corregir asunto, proyecto, fecha, artículos y archivos de referencia, con confirmación antes de guardar. Antes de enviar, la SIC también pide confirmación.",
+  "Quien emitió la SIC (y admin), hasta que Compras la acepta", "Corregir asunto, proyecto, ítem de la obra, fecha, artículos y archivos de referencia, con confirmación antes de guardar. Antes de enviar, la SIC también pide confirmación.",
   "Queda en el recorrido como edición y el jefe o Compras vuelven a ver el aviso. El jefe no vuelve a aprobar."),
  ("—", "Anulación", "Cualquier estado → Anulada",
   "Quien emitió la SIC, hasta que Compras la acepta · Compras, en cualquier momento salvo si está cerrada", "Motivo obligatorio (queda en el historial).",
   "Final."),
+ ("—", "Cambio de ítem de obra", "Cualquier estado (el estado no cambia)",
+  "Compras, Ingeniería y admin · quien emitió la SIC, hasta que Compras la acepta", "Elegir otro ítem del plan de la obra o dejarla como General del proyecto.",
+  "Queda en el historial de la SIC. No dispara avisos ni cambia el circuito."),
 ]
 rows_html = "".join(f"<tr><td class='n'>{e(a)}</td><td><b>{e(t)}</b></td><td>{e(es)}</td><td>{e(w)}</td><td>{e(d)}</td><td>{e(nx)}</td></tr>" for a, t, es, w, d, nx in ROWS)
 

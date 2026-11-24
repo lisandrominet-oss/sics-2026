@@ -7,6 +7,9 @@ export type SicExportRow = {
   asunto: string;
   planta: string;
   proyecto: string;
+  /** Ítem de la obra ("B2.1 · Workshops…"), "General del proyecto" o "-" si la SIC no tiene proyecto. */
+  itemObra: string;
+  rutaWbs: string;
   solicitante: string;
   area: string;
   fechaNecesaria: string;
@@ -15,7 +18,7 @@ export type SicExportRow = {
   especificaciones: string;
 };
 
-const COLUMN_WIDTHS = [16, 30, 14, 18, 22, 18, 14, 34, 10, 32];
+const COLUMN_WIDTHS = [16, 30, 14, 18, 30, 24, 22, 18, 14, 34, 10, 32];
 
 export async function downloadSicsXlsx(rows: SicExportRow[], filename: string) {
   // Import dinámico: la librería (~90 kB) solo se baja al exportar, no al abrir la pantalla.
@@ -25,6 +28,8 @@ export async function downloadSicsXlsx(rows: SicExportRow[], filename: string) {
     Asunto: r.asunto,
     Planta: r.planta,
     Proyecto: r.proyecto,
+    "Ítem de obra": r.itemObra,
+    "Ruta WBS": r.rutaWbs,
     Solicitante: r.solicitante,
     "Área / Departamento": r.area,
     "Fecha necesaria": r.fechaNecesaria,

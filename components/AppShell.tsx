@@ -24,6 +24,7 @@ import {
   IconTruck,
   IconUsers,
   IconCalendar,
+  IconLayers,
   IconX,
 } from "@/components/icons";
 import { CAN_CREATE_SIC, ROLE_LABELS, type UserRole } from "@/lib/constants";
@@ -61,6 +62,7 @@ function NavLink({
 export default function AppShell({
   role,
   modules,
+  showObras,
   realRole,
   userId,
   actingAsRole,
@@ -70,6 +72,8 @@ export default function AppShell({
   role: UserRole;
   // Módulos habilitados para este usuario (rol + ajustes propios), ya resueltos por el servidor.
   modules: ModuleKey[];
+  /** Ingeniería, admin, Gerencia y Compras (lo resuelve obras_access() en la base). */
+  showObras: boolean;
   realRole: UserRole;
   userId: string;
   actingAsRole: UserRole | null;
@@ -192,6 +196,7 @@ export default function AppShell({
           {CAN_CREATE_SIC.includes(role) && (
             <NavLink href="/sic/nueva" label="Nueva SIC" icon={<IconPlusCircle />} />
           )}
+          {showObras && <NavLink href="/obras" label="Obras" icon={<IconLayers />} />}
 
           {(modules.includes("proveedores") || modules.includes("catalogo") || modules.includes("contratos")) && (
             <>

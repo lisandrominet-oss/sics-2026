@@ -29,6 +29,8 @@ import { eyebrowClass, numClass } from "@/lib/ui";
 import { NO_DEADLINE_STATUSES, deadlineText } from "@/lib/plazo";
 import { RecorridoPasos, textoRecorrido } from "@/components/ui/Recorrido";
 import { recorridoDe } from "@/lib/recorrido";
+import { fetchNodePaths, type NodePath } from "@/lib/obras";
+import SicObraItem from "@/components/obras/SicObraItem";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -123,6 +125,28 @@ export default async function SicDetailPage({
     ? ((await supabase.from("item_catalog").select("name").eq("active", true).order("uses_count", { ascending: false }).order("name").limit(1000)).data ?? []).map((c) => c.name)
     : [];
 
+  // Ítem de la obra: se muestra si la SIC tiene uno o si su proyecto tiene plan (para poder clasificarla).
+  let obraItem: NodePath | null = null;
+  let projectHasPlan = false;
+  let canChangeObraItem = false;
+  if (project) {
+    const { count: nodeCount } = await supabase
+      .from("project_nodes")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", project.id);
+    projectHasPlan = (nodeCount ?? 0) > 0;
+    if (sic.project_node_id) obraItem = (await fetchNodePaths(supabase, [sic.project_node_id])).get(sic.project_node_id) ?? null;
+    if (projectHasPlan) {
+      // Mismo criterio que set_sic_project_node en la base: Ingeniería, solo las SIC de su área.
+      const isAreaMember = (role === "area" || role === "operativo") && !!profile.plant_id && profile.plant_id === sic.plant_id;
+      canChangeObraItem =
+        role === "compras" ||
+        role === "admin" ||
+        (isRequester && REQUESTER_EDITABLE_STATUSES.includes(sic.status)) ||
+        (isAreaMember && !!(await supabase.rpc("can_manage_obras")).data);
+    }
+  }
+
   const requesterName = requester?.full_name ?? requester?.email ?? "-";
   const daysLeft = sic.needed_by_date && !NO_DEADLINE_STATUSES.includes(sic.status) ? daysUntilSqlDate(sic.needed_by_date) : null;
   const sicFiles = filesWithUrls.filter((f) => !f.item_id);
@@ -138,6 +162,8 @@ export default async function SicDetailPage({
     asunto: sic.subject,
     planta: plant ? `${plant.name} (${plant.prefix})` : "-",
     proyecto: project?.name ?? "-",
+    itemObra: obraItem?.label ?? (project ? "General del proyecto" : "-"),
+    rutaWbs: obraItem?.path ?? "",
     solicitante: requester?.full_name ?? requester?.email ?? "-",
     area: sic.department ?? "-",
     fechaNecesaria: sic.needed_by_date ? formatSqlDate(sic.needed_by_date) : "-",
@@ -237,6 +263,7 @@ export default async function SicDetailPage({
             editData={{
               subject: sic.subject,
               projectId: sic.project_id,
+              projectNodeId: sic.project_node_id,
               neededByDate: sic.needed_by_date,
               items: activeItems.map((it) => ({
                 id: it.id,
@@ -314,6 +341,19 @@ export default async function SicDetailPage({
                 {sic.po_number ?? "Sin emitir"}
               </p>
             </div>
+            {project && (projectHasPlan || obraItem) && (
+              <div className="min-w-0 max-w-sm">
+                <p className={eyebrowClass}>Ítem de obra</p>
+                <SicObraItem
+                  sicId={sic.id}
+                  projectId={project.id}
+                  nodeId={sic.project_node_id}
+                  label={obraItem?.label ?? null}
+                  path={obraItem?.path ?? ""}
+                  canChange={canChangeObraItem && !editing}
+                />
+              </div>
+            )}
           </div>
 
           <section className="text-sm">

@@ -6,17 +6,27 @@ import { sortOptionsFor, type UserRole } from "@/lib/constants";
 import { startNavProgress } from "@/lib/navProgress";
 import { IconSearch } from "@/components/icons";
 import Button from "@/components/ui/Button";
+import ObraItemPicker from "@/components/obras/ObraItemPicker";
+import { PROJECT_TALLER } from "@/lib/constants";
 
 export default function DashboardControls({
   defaultQuery,
   sort,
   dir,
   role,
+  projects = [],
+  projectId = "",
+  itemId = null,
 }: {
   defaultQuery: string;
   sort: string;
   dir: "asc" | "desc";
   role: UserRole;
+  projects?: { id: string; name: string }[];
+  /** Filtro por proyecto ("" = todos; PROJECT_TALLER = sin proyecto). */
+  projectId?: string;
+  /** Filtro por ítem de obra (incluye lo que cuelga de él). */
+  itemId?: string | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -72,6 +82,26 @@ export default function DashboardControls({
           className="min-h-11 w-full rounded-lg border border-slate-300 bg-sheet py-1.5 pl-9 pr-3 text-sm sm:min-h-8"
         />
       </div>
+
+      {projects.length > 0 && (
+        <select
+          value={projectId}
+          onChange={(e) => pushParams({ proyecto: e.target.value || null, item: null })}
+          aria-label="Filtrar por proyecto"
+          className="min-h-11 max-w-full rounded-lg border border-slate-300 bg-sheet px-3 py-1.5 text-sm text-slate-700 sm:min-h-8 sm:max-w-[14rem]"
+        >
+          <option value="">Todos los proyectos</option>
+          <option value={PROJECT_TALLER}>Taller (sin proyecto)</option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      )}
+      {projectId && projectId !== PROJECT_TALLER && (
+        <ObraItemPicker variant="filter" projectId={projectId} value={itemId} onChange={(id) => pushParams({ item: id })} />
+      )}
 
       <select
         value={sort}

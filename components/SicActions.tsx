@@ -9,6 +9,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { notify } from "@/lib/notify";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
+import ObraItemPicker from "@/components/obras/ObraItemPicker";
 import ItemsEditor, { EMPTY_ITEM, type ItemDraft } from "@/components/ItemsEditor";
 import EmptyState from "@/components/ui/EmptyState";
 import { DropOverlay } from "@/components/ui/FileDropzone";
@@ -49,6 +50,7 @@ type EditItem = {
 type EditData = {
   subject: string;
   projectId: string | null;
+  projectNodeId: string | null;
   neededByDate: string | null;
   items: EditItem[];
 };
@@ -877,6 +879,7 @@ function ObservacionEditor({
   const [confirming, setConfirming] = useState(false);
   const [subject, setSubject] = useState(editData.subject);
   const [projectId, setProjectId] = useState(editData.projectId ?? PROJECT_TALLER);
+  const [projectNodeId, setProjectNodeId] = useState<string | null>(editData.projectNodeId);
   const [neededByDate, setNeededByDate] = useState(editData.neededByDate ?? "");
   const [items, setItems] = useState<ItemDraft[]>(
     editData.items.length > 0
@@ -922,6 +925,9 @@ function ObservacionEditor({
       p_project_id: projects.length > 0 && projectId !== PROJECT_TALLER ? projectId || null : null,
       p_needed_by_date: neededByDate,
       p_items: payloadItems,
+      p_project_node_id: projectNodeId,
+      // Solo si se cambió: así una SIC cuyo ítem quedó dado de baja se puede seguir editando (la base lo conserva).
+      p_set_project_node: projectNodeId !== editData.projectNodeId,
     });
 
     if (updateError || !sic) {
@@ -1012,7 +1018,10 @@ function ObservacionEditor({
           <label className="block text-xs font-medium text-slate-700">Proyecto</label>
           <select
             value={projectId}
-            onChange={(e) => setProjectId(e.target.value)}
+            onChange={(e) => {
+              setProjectId(e.target.value);
+              setProjectNodeId(null);
+            }}
             required
             className={inputClass}
           >
@@ -1025,6 +1034,14 @@ function ObservacionEditor({
           </select>
         </div>
       )}
+
+      <div className="mt-3">
+        <ObraItemPicker
+          projectId={projectId && projectId !== PROJECT_TALLER ? projectId : null}
+          value={projectNodeId}
+          onChange={setProjectNodeId}
+        />
+      </div>
 
       <div className="mt-4">
         <ItemsEditor items={items} onChange={setItems} catalog={catalog} />

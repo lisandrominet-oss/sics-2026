@@ -10,18 +10,19 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { buttonClass } from "@/components/ui/Button";
 import { IconPlusCircle } from "@/components/icons";
 import { numClass } from "@/lib/ui";
-import { CAN_CREATE_SIC, CAN_SEE_AMOUNTS, HISTORY_STATUSES, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
+import { CAN_CREATE_SIC, CAN_SEE_AMOUNTS, HISTORY_STATUSES, PROJECT_TALLER, SORT_OPTIONS, effectiveRole } from "@/lib/constants";
 import { hasModule } from "@/lib/modules";
 import { PENDING_STATUSES_BY_ROLE, applyPendingFilter, getPendingSicsCount } from "@/lib/pendingSics";
 
 // Tope de filas del Tablero; si se alcanza, se avisa debajo de la lista.
 const LIST_LIMIT = 100;
 const SORT_COLUMNS = new Set(SORT_OPTIONS.map((o) => o.value));
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: { filter?: string; q?: string; sort?: string; dir?: string; vista?: string };
+  searchParams: { filter?: string; q?: string; sort?: string; dir?: string; vista?: string; proyecto?: string; item?: string };
 }) {
   const profile = await getCurrentProfile();
   if (!profile || !profile.role) redirect("/login");
@@ -44,6 +45,10 @@ export default async function DashboardPage({
   const requestedSort = SORT_COLUMNS.has(searchParams.sort ?? "") ? searchParams.sort! : "updated_at";
   const sortColumn = requestedSort === "final_amount" && !showAmounts ? "updated_at" : requestedSort;
   const sortDir: "asc" | "desc" = searchParams.dir === "asc" ? "asc" : "desc";
+  // Filtro por proyecto y por ítem de obra (el ítem incluye todo lo que cuelga de él, por la ruta de ancestros).
+  const projectFilter =
+    searchParams.proyecto === PROJECT_TALLER || UUID_RE.test(searchParams.proyecto ?? "") ? searchParams.proyecto! : "";
+  const itemFilter = projectFilter && projectFilter !== PROJECT_TALLER && UUID_RE.test(searchParams.item ?? "") ? searchParams.item! : null;
 
   const { data: certRows } = canSeeCerts
     ? await supabase.rpc("get_pending_quality_certificates")
@@ -52,10 +57,11 @@ export default async function DashboardPage({
 
   // El monto vive en sic_finance (con RLS por rol); solo se pide a quien puede verlo.
   const financeEmbed = showAmounts ? ", finance:sic_finance(final_amount)" : "";
+  const nodeEmbed = itemFilter ? ", project_node:project_nodes!inner(code, name, path)" : ", project_node:project_nodes(code, name)";
   let query = supabase
     .from("sics")
     .select(
-      `id, code, subject, status, currency, created_at, updated_at, needed_by_date, department, requester_id, on_behalf_of, purchase_type, plants(name, prefix), project:projects(name), requester:profiles!sics_requester_id_fkey(full_name, email)${financeEmbed}`
+      `id, code, subject, status, currency, created_at, updated_at, needed_by_date, department, requester_id, on_behalf_of, purchase_type, plants(name, prefix), project_id, project_node_id, project:projects(name), requester:profiles!sics_requester_id_fkey(full_name, email)${financeEmbed}${nodeEmbed}`
     )
     .order(sortColumn === "final_amount" ? "finance(final_amount)" : sortColumn, {
       ascending: sortDir === "asc",
@@ -72,6 +78,9 @@ export default async function DashboardPage({
   if (showMine) {
     query = query.eq("requester_id", profile.id);
   }
+  if (projectFilter === PROJECT_TALLER) query = query.is("project_id", null);
+  else if (projectFilter) query = query.eq("project_id", projectFilter);
+  if (itemFilter) query = query.contains("project_node.path", [itemFilter]);
   if (showPendingCerts) {
     query = query.in("id", certSicIds.length > 0 ? certSicIds : ["00000000-0000-0000-0000-000000000000"]);
   }
@@ -90,13 +99,14 @@ export default async function DashboardPage({
     }
   }
 
-  const [{ data: sics, error }, { count: totalCount }, pendingCount, { count: closedCount }, { count: historyCount }] =
+  const [{ data: sics, error }, { count: totalCount }, pendingCount, { count: closedCount }, { count: historyCount }, { data: projects }] =
     await Promise.all([
       query.limit(LIST_LIMIT),
       supabase.from("sics").select("*", { count: "exact", head: true }),
       getPendingSicsCount(supabase, role, profile.id),
       supabase.from("sics").select("*", { count: "exact", head: true }).eq("status", "cerrada"),
       supabase.from("sics").select("*", { count: "exact", head: true }).in("status", HISTORY_STATUSES),
+      supabase.from("projects").select("id, name").eq("active", true).order("name"),
     ]);
   const activeCount = Math.max(0, (totalCount ?? 0) - (historyCount ?? 0));
 
@@ -106,7 +116,7 @@ export default async function DashboardPage({
     if (params.vista) sp.set("vista", params.vista);
     if (params.filter) sp.set("filter", params.filter);
     if (params.keep) {
-      for (const key of ["q", "sort", "dir"] as const) {
+      for (const key of ["q", "sort", "dir", "proyecto", "item"] as const) {
         if (searchParams[key]) sp.set(key, searchParams[key]!);
       }
     }
@@ -198,7 +208,15 @@ export default async function DashboardPage({
           </div>
         }
       >
-        <DashboardControls defaultQuery={searchQuery} sort={sortColumn} dir={sortDir} role={role} />
+        <DashboardControls
+          defaultQuery={searchQuery}
+          sort={sortColumn}
+          dir={sortDir}
+          role={role}
+          projects={projects ?? []}
+          projectId={projectFilter}
+          itemId={itemFilter}
+        />
       </Suspense>
 
       {error && <p role="alert" className="animate-shake mt-4 text-sm text-red-600">{error.message}</p>}

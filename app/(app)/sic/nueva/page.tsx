@@ -5,7 +5,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import NuevaSicForm from "@/components/NuevaSicForm";
 import { CAN_CREATE_SIC, effectiveRole } from "@/lib/constants";
 
-export default async function NuevaSicPage() {
+export default async function NuevaSicPage({ searchParams }: { searchParams: { proyecto?: string; item?: string } }) {
   const profile = await getCurrentProfile();
   if (!profile || !profile.role) redirect("/login");
   const role = effectiveRole(profile)!;
@@ -20,6 +20,19 @@ export default async function NuevaSicPage() {
   ]);
 
   const canPickPlant = role === "compras" || role === "admin";
+  // Desde la pantalla de una obra ("Nueva SIC para este ítem") llegan el proyecto y el ítem ya elegidos.
+  const initialProjectId = (projects ?? []).some((p) => p.id === searchParams.proyecto) ? searchParams.proyecto! : "";
+  let initialNodeId: string | null = null;
+  if (initialProjectId && searchParams.item) {
+    const { data: node } = await supabase
+      .from("project_nodes")
+      .select("id")
+      .eq("id", searchParams.item)
+      .eq("project_id", initialProjectId)
+      .eq("active", true)
+      .maybeSingle();
+    initialNodeId = node?.id ?? null;
+  }
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -38,6 +51,8 @@ export default async function NuevaSicPage() {
           defaultPlantId={profile.plant_id}
           canPickPlant={canPickPlant}
           catalog={(catalog ?? []).map((c) => c.name)}
+          initialProjectId={initialProjectId}
+          initialNodeId={initialNodeId}
         />
         {/* Solo informa; mismo criterio que la descripción de arriba: operativo y pañol pasan primero por su jefe. */}
         <aside aria-labelledby="camino" className="hidden rounded-lg border border-slate-200 p-5 lg:sticky lg:top-16 lg:block">

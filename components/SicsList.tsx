@@ -14,6 +14,7 @@ import { NO_DEADLINE_STATUSES, deadlineText } from "@/lib/plazo";
 import { numClass } from "@/lib/ui";
 import { createClient } from "@/lib/supabase/client";
 import { downloadSicsXlsx, type SicExportRow } from "@/lib/exportSics";
+import { fetchNodePaths } from "@/lib/obras";
 import {
   CAN_CREATE_SIC,
   CAN_SEE_AMOUNTS,
@@ -40,7 +41,10 @@ export type SicRow = {
   on_behalf_of: string | null;
   purchase_type: string;
   plants: { name: string; prefix: string } | null;
+  project_id: string | null;
+  project_node_id: string | null;
   project: { name: string } | null;
+  project_node: { code: string; name: string } | null;
   requester: { full_name: string | null; email: string } | null;
 };
 
@@ -86,8 +90,15 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
         return;
       }
 
+      const chosen = sics.filter((s) => selected.has(s.id));
+      const nodePaths = await fetchNodePaths(
+        supabase,
+        chosen.map((s) => s.project_node_id).filter((id): id is string => !!id)
+      );
+
       const rows: SicExportRow[] = [];
-      for (const sic of sics.filter((s) => selected.has(s.id))) {
+      for (const sic of chosen) {
+        const node = sic.project_node_id ? nodePaths.get(sic.project_node_id) : undefined;
         const sicItems = (items ?? []).filter((it) => it.sic_id === sic.id);
         for (const it of sicItems) {
           rows.push({
@@ -95,6 +106,8 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
             asunto: sic.subject,
             planta: sic.plants ? `${sic.plants.name} (${sic.plants.prefix})` : "-",
             proyecto: sic.project?.name ?? "-",
+            itemObra: node?.label ?? (sic.project_id ? "General del proyecto" : "-"),
+            rutaWbs: node?.path ?? "",
             solicitante: sic.requester?.full_name ?? sic.requester?.email ?? "-",
             area: sic.department ?? "-",
             fechaNecesaria: sic.needed_by_date ? formatSqlDate(sic.needed_by_date) : "-",
@@ -170,6 +183,14 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                 )}
               </>
             );
+            // Ítem de la obra: el código, con el nombre completo al pasar el mouse.
+            const obraChip = sic.project_node && (
+              <span title={`Ítem de obra: ${sic.project_node.code} · ${sic.project_node.name}`} className="shrink-0">
+                <Badge tone="neutral" size="sm" className={numClass}>
+                  {sic.project_node.code}
+                </Badge>
+              </span>
+            );
             const checkbox = exportable && (
               <input
                 type="checkbox"
@@ -202,6 +223,7 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                       <p className={`flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-slate-900 ${numClass}`}>
                         {sic.code}
                         {typeBadges}
+                        {obraChip}
                       </p>
                       {sic.needed_by_date && (
                         <span className={`shrink-0 text-[13px] ${numClass} ${urgent ? "font-medium text-amber-800" : "text-slate-500"}`}>
@@ -242,6 +264,7 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
                     {requesterName && <Avatar nombre={requesterName} className="h-5 w-5 text-[10px]" />}
                     <span className="truncate">{[requesterName, sic.department].filter(Boolean).join(" · ")}</span>
                     {typeBadges}
+                    {obraChip}
                   </p>
                   {sic.on_behalf_of && <p className="truncate text-[13px] text-amber-800">A pedido de: {sic.on_behalf_of}</p>}
                 </div>
