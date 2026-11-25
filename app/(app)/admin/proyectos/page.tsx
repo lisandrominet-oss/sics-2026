@@ -19,7 +19,7 @@ export default async function ProyectosPage() {
       <PageHeader
         eyebrow="Sistema"
         title="Proyectos"
-        description="Lista global de proyectos para los que se puede pedir una compra. Si hay uno solo se selecciona automático; si hay más de uno, el jefe de área elige al crear la SIC."
+        info="Si hay un solo proyecto se selecciona automático; si hay más, el jefe de área elige al crear la SIC."
       />
       <div className="mt-6">
         <ProjectsManager projects={projects ?? []} />

@@ -26,7 +26,7 @@ export default async function NuevoDespachoPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader eyebrow="Remitos y Despachos" title="Nuevo despacho" description="Armado de camión: cabecera, carga y candados de salida." />
+      <PageHeader eyebrow="Remitos y Despachos" title="Nuevo despacho" />
       <RemitosTabs active="nuevo" role={role} />
       <RemitoDispatchEditor projects={(projects ?? []) as RemitoProject[]} items={(items ?? []).map(normItem)} />
     </div>

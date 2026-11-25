@@ -63,7 +63,6 @@ export default function SicObraItem({
       <Modal open={open} onClose={() => !saving && setOpen(false)} title="Ítem de la obra">
         <div className="mt-3 space-y-4">
           <ObraItemPicker projectId={projectId} value={value} onChange={setValue} />
-          <p className="text-xs text-slate-500">Queda registrado en el historial de la SIC. No cambia su estado ni el circuito.</p>
           <div className="flex flex-wrap justify-end gap-2">
             <Button variant="secondary" onClick={() => setOpen(false)} disabled={saving}>
               Cancelar

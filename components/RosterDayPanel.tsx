@@ -178,9 +178,7 @@ function DayTab({ person, day, today, cell, onDone }: { person: PanelPerson; day
             </p>
             {cell.is_holiday && <p className="text-red-700">Feriado: {cell.holiday_name}</p>}
           </>
-        ) : (
-          <p>Ese día la persona no tiene una asignación vigente.</p>
-        )}
+        ) : null}
         {person.crew && <p>Cuadrilla: {person.crew}.</p>}
       </div>
 

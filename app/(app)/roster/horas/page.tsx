@@ -40,7 +40,6 @@ export default async function RosterHorasPage({ searchParams }: { searchParams: 
       <PageHeader
         eyebrow="Módulos"
         title="Roster"
-        description="Horas y días trabajados por persona en un período, con recargos y costo: el insumo para liquidar."
       />
       <RosterTabs active="horas" />
       <div className="mt-6">

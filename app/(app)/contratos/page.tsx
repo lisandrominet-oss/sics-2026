@@ -50,7 +50,6 @@ export default async function ContratosPage({ searchParams }: { searchParams: { 
       <PageHeader
         eyebrow="Compras"
         title="Contratos"
-        description="Alquileres de máquinas, camionetas y herramientas: cuotas, vencimientos y control contra factura."
         actions={
           <Link href="/contratos/nuevo" className={buttonClass()}>
             <IconPlusCircle className="h-4 w-4" />

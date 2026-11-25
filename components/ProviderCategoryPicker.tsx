@@ -62,7 +62,7 @@ export default function ProviderCategoryPicker({
             </button>
           ))}
         {categories.filter((c) => c.active).length === 0 && (
-          <p className="text-xs text-slate-400">Todavía no hay categorías. Creá la primera acá abajo.</p>
+          <p className="text-xs text-slate-400">Todavía no hay categorías.</p>
         )}
       </div>
       <div className="mt-2 flex gap-2">

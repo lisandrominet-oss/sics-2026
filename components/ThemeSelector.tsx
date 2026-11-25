@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { IconMonitor, IconMoon, IconSun } from "@/components/icons";
 import { getStoredTheme, setStoredTheme, type ThemeChoice } from "@/lib/theme";
 
-const OPTIONS: { value: ThemeChoice; label: string; hint: string; icon: React.ReactNode }[] = [
-  { value: "light", label: "Claro", hint: "Fondo claro", icon: <IconSun /> },
-  { value: "dark", label: "Oscuro", hint: "Fondo oscuro", icon: <IconMoon /> },
+const OPTIONS: { value: ThemeChoice; label: string; hint?: string; icon: React.ReactNode }[] = [
+  { value: "light", label: "Claro", icon: <IconSun /> },
+  { value: "dark", label: "Oscuro", icon: <IconMoon /> },
   { value: "auto", label: "Automático", hint: "Sigue a tu dispositivo", icon: <IconMonitor /> },
 ];
 
@@ -43,7 +43,7 @@ export default function ThemeSelector() {
               {o.icon}
               {o.label}
             </span>
-            <span className="text-xs text-slate-500">{o.hint}</span>
+            {o.hint && <span className="text-xs text-slate-500">{o.hint}</span>}
           </button>
         );
       })}

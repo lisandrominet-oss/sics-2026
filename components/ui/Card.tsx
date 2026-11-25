@@ -1,5 +1,6 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import InfoTip from "./InfoTip";
 
 type Props = Omit<HTMLAttributes<HTMLDivElement>, "title"> & {
   /** Relleno interior. `none` para tarjetas que contienen tablas o listas a ras del borde. */
@@ -10,6 +11,8 @@ type Props = Omit<HTMLAttributes<HTMLDivElement>, "title"> & {
   interactive?: boolean;
   /** Título opcional de la sección. */
   title?: ReactNode;
+  /** Aclaración detrás del ícono (i), al lado del título. */
+  info?: ReactNode;
 };
 
 const PADDING = { none: "", md: "p-5", lg: "p-6" } as const;
@@ -32,6 +35,7 @@ export default function Card({
   elevated = false,
   interactive = false,
   title,
+  info,
   className,
   children,
   ...rest
@@ -46,7 +50,15 @@ export default function Card({
       )}
       {...rest}
     >
-      {title && <h2 className="text-balance text-base font-semibold text-slate-900">{title}</h2>}
+      {title &&
+        (info ? (
+          <div className="flex items-center gap-2">
+            <h2 className="text-balance text-base font-semibold text-slate-900">{title}</h2>
+            <InfoTip>{info}</InfoTip>
+          </div>
+        ) : (
+          <h2 className="text-balance text-base font-semibold text-slate-900">{title}</h2>
+        ))}
       {title ? <div className="mt-3">{children}</div> : children}
     </div>
   );

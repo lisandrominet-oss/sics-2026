@@ -260,7 +260,7 @@ export default function RemitoDispatchEditor({ projects, items, dispatch, lines:
     <div className="mt-5 space-y-6">
       <Card title="1 · Cabecera">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Field label="Tipo de remito *" hint={id ? undefined : "El número interno se asigna recién al confirmar la salida."}>
+          <Field label="Tipo de remito *">
             {(p) => (
               <select {...p} value={kind} onChange={(e) => changeKind(e.target.value as RemitoKind | "")} className={inputClass}>
                 <option value="">— elegir —</option>
@@ -289,8 +289,15 @@ export default function RemitoDispatchEditor({ projects, items, dispatch, lines:
         </div>
       </Card>
 
-      <Card title="2 · Armado del camión">
-        <Field label="Agregar ítem aprobado" hint={items.length === 0 ? "No hay ítems aprobados por Calidad todavía." : "Solo aparecen los ítems aprobados por Calidad."}>
+      <Card
+        title="2 · Armado del camión"
+        info="«N° rem. oficial» solo si el ítem salió con otro remito oficial distinto al del encabezado. La fecha de devolución es opcional."
+      >
+        <Field
+          label="Agregar ítem aprobado"
+          hint={items.length === 0 ? "No hay ítems aprobados por Calidad todavía." : undefined}
+          info={items.length === 0 ? undefined : "Solo aparecen los ítems aprobados por Calidad."}
+        >
           {(p) => <input {...p} type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por código o descripción" className={inputClass} />}
         </Field>
         {matches.length > 0 && (
@@ -312,7 +319,7 @@ export default function RemitoDispatchEditor({ projects, items, dispatch, lines:
 
         <h3 className="mt-6 text-sm font-semibold text-slate-900">Carga del camión</h3>
         {lines.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-500">Todavía no cargaste ítems. Elegilos del buscador.</p>
+          <p className="mt-2 text-sm text-slate-500">Todavía no cargaste ítems.</p>
         ) : (
           <ul className="mt-3 space-y-3">
             {lines.map((l, idx) => {
@@ -348,7 +355,6 @@ export default function RemitoDispatchEditor({ projects, items, dispatch, lines:
             })}
           </ul>
         )}
-        <p className="mt-3 text-xs text-slate-500">«N° rem. oficial» solo si ese ítem salió con otro remito oficial distinto al del encabezado. La fecha de devolución es opcional.</p>
       </Card>
 
       <Card title="3 · Candados de salida">
@@ -356,7 +362,7 @@ export default function RemitoDispatchEditor({ projects, items, dispatch, lines:
           <p className="text-sm text-slate-500">Guardá el borrador para cargar las fotos y la firma del chofer.</p>
         ) : (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <PhotoBlock title="Foto de la carga sobre el camión" hint="Al menos 1. Desde el celular abre la cámara." files={photosCarga} busy={busy === "upload"} onPick={(l) => uploadPhotos("carga", l)} onRemove={removePhoto} />
+            <PhotoBlock title="Foto de la carga sobre el camión" hint="Al menos 1." files={photosCarga} busy={busy === "upload"} onPick={(l) => uploadPhotos("carga", l)} onRemove={removePhoto} />
             <PhotoBlock title="Foto de patentes / seguridad" hint="Al menos 1 (patentes, estiba, precintos, EPP)." files={photosPat} busy={busy === "upload"} onPick={(l) => uploadPhotos("patentes", l)} onRemove={removePhoto} />
             <div className="lg:col-span-2">
               <h3 className="text-sm font-semibold text-slate-900">Firma del chofer</h3>
@@ -392,13 +398,11 @@ export default function RemitoDispatchEditor({ projects, items, dispatch, lines:
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-xs text-slate-500">Los ítems sin aprobación de Calidad no pueden cargarse en el camión. Las fotos y la firma se pueden completar luego desde el borrador.</p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button variant="secondary" loading={busy === "save"} onClick={onSave}>Guardar borrador</Button>
           <Button loading={busy === "confirm"} disabled={!id || !allOk} onClick={onConfirm}>Confirmar salida</Button>
           {id && <Button variant="danger-outline" loading={busy === "cancel"} onClick={onCancel}>Anular borrador</Button>}
         </div>
-        {!id && <p className="mt-2 text-xs text-slate-500">Para confirmar, primero guardá el borrador y cargá fotos y firma.</p>}
       </Card>
     </div>
   );

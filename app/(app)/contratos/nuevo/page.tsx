@@ -26,7 +26,6 @@ export default async function NuevoContratoPage() {
       <PageHeader
         eyebrow="Compras"
         title="Nuevo contrato"
-        description="Cargá el proveedor, las fechas y los equipos alquilados con su tarifa."
       />
       <div className="mt-6">
         <ContractForm providers={providers ?? []} plants={plants ?? []} projects={projects ?? []} />

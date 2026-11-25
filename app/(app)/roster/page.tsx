@@ -30,7 +30,6 @@ export default async function RosterPage({ searchParams }: { searchParams: { sit
       <PageHeader
         eyebrow="Módulos"
         title="Roster"
-        description="Calendario de rotaciones: quién está en sitio, quién de franco y cuándo suben y bajan."
       />
       <RosterTabs active="calendario" />
     </>
@@ -44,7 +43,6 @@ export default async function RosterPage({ searchParams }: { searchParams: { sit
         <div className="mt-6">
           <EmptyState
             title="Todavía no hay sitios cargados"
-            description="Empezá por Configuración: creá un sitio, un régimen de rotación (por ejemplo 14x14) y los puestos. Después asigná a las personas."
             action={
               <Link href="/roster/configuracion" className={buttonClass()}>
                 Ir a Configuración

@@ -145,7 +145,6 @@ export default function AssignmentsManager({
         {filtered.length === 0 ? (
           <EmptyState
             title="No hay asignaciones para mostrar"
-            description="Asigná personas a un sitio con un régimen y una fecha de inicio del ciclo para que aparezcan en el calendario."
             className="!border-0"
           />
         ) : (

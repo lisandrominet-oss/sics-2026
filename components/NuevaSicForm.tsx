@@ -2,6 +2,7 @@
 
 import { inputClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
+import InfoTip from "@/components/ui/InfoTip";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -254,16 +255,16 @@ export default function NuevaSicForm({
 
       {canPickPlant && (
         <div>
-          <label className="block text-sm font-medium text-slate-900">Solicita:</label>
+          <div className="flex items-center gap-1.5">
+            <label className="block text-sm font-medium text-slate-900">Solicita:</label>
+            <InfoTip>Completalo solo si cargás esta SIC por alguien que no puede ingresar con su propio mail.</InfoTip>
+          </div>
           <input
             value={onBehalfOf}
             onChange={(e) => setOnBehalfOf(e.target.value)}
-            placeholder="Ej: Martín Vargas (no tiene acceso a su mail)"
+            placeholder="Ej: Martín Vargas"
             className={inputClass}
           />
-          <p className="mt-1 text-xs text-slate-500">
-            Completalo solo si estás cargando esta SIC por un área que no puede ingresar con su propio mail.
-          </p>
         </div>
       )}
 
@@ -323,7 +324,6 @@ export default function NuevaSicForm({
               </li>
             ))}
           </ul>
-          <p className="mt-1 text-xs text-amber-700">Es solo un aviso: podés enviar la solicitud igual.</p>
         </div>
       )}
 

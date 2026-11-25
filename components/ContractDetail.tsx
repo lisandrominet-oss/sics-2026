@@ -1222,7 +1222,6 @@ function CuotasTab({
         open={voidFor !== null}
         onClose={() => setVoidFor(null)}
         title="Anular comprobante"
-        description="Queda registrado en el historial del contrato."
         fields={[{ name: "reason", label: "Motivo de la anulación", required: true }]}
         confirmLabel="Anular"
         destructive

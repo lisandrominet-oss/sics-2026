@@ -22,7 +22,7 @@ export default async function NuevoEmpleadoPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader eyebrow="Personal" title="Nuevo empleado" description="Cargá los datos base del legajo. Después se pueden editar." />
+      <PageHeader eyebrow="Personal" title="Nuevo empleado" />
       <div className="mt-6">
         <EmployeeForm plants={plants ?? []} suggestions={suggestions} />
       </div>

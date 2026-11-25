@@ -70,7 +70,14 @@ function PayRulesSection({ payRules, shiftHours }: { payRules: RosterPayRules; s
   return (
     <Section
       title="Reglas de pago y horas"
-      description="Cómo se reparten las horas de un día trabajado. Son valores de partida, no de ley: validalos con RRHH o el contador según el convenio que rija. Cada cambio queda registrado. Ojo: cambiar los recargos recalcula el costo de cualquier período, también de los cerrados (las horas guardadas no cambian)."
+      info={
+        <>
+          Cómo se reparten las horas de un día trabajado. Son valores de partida, no de ley: validalos con RRHH o el contador según el convenio que rija. Cada cambio queda registrado. Ojo: cambiar los recargos recalcula el costo de cualquier período, también de los cerrados (las horas guardadas no cambian).
+          <span className="mt-2 block">
+            Un día de trabajo de {shift || "?"} horas se reparte en hasta {normal || "?"} normales y el resto con recargo de día hábil. Se aplica al confirmar días como planificados y cuando dejás las horas en «auto». El horario nocturno es informativo: las horas nocturnas se cargan a mano o según el turno.
+          </span>
+        </>
+      }
     >
       <FormShell
         busy={busy}
@@ -145,9 +152,6 @@ function PayRulesSection({ payRules, shiftHours }: { payRules: RosterPayRules; s
           <input type="checkbox" checked={sunday} onChange={(e) => setSunday(e.target.checked)} className="h-4 w-4 rounded border-slate-300" />
           Tratar los domingos como feriados
         </label>
-        <p className="text-xs text-slate-500">
-          Un día de trabajo de {shift || "?"} horas se reparte en hasta {normal || "?"} normales y el resto con recargo de día hábil. Se aplica al confirmar días como planificados y cuando dejás las horas en «auto». El horario nocturno es informativo: las horas nocturnas se cargan a mano o según el turno.
-        </p>
       </FormShell>
     </Section>
   );
@@ -183,7 +187,6 @@ function HolidaysSection({ sites, holidays, year }: { sites: RosterSite[]; holid
   return (
     <Section
       title="Feriados"
-      description="Los días feriados se marcan en el calendario y cambian cómo se reparten las horas. Cargalos por año (nacionales, provinciales o de un sitio)."
       onNew={() => setEditing(null)}
       newLabel="Nuevo feriado"
     >
@@ -195,7 +198,7 @@ function HolidaysSection({ sites, holidays, year }: { sites: RosterSite[]; holid
         ))}
       </div>
       {editing === null && <HolidayForm sites={sites} defaultYear={year} onDone={done} onCancel={() => setEditing(undefined)} />}
-      {holidays.length === 0 && editing === undefined && <EmptyState size="sm" title={`No hay feriados cargados en ${year}.`} description="Se cargan a mano, uno por uno." />}
+      {holidays.length === 0 && editing === undefined && <EmptyState size="sm" title={`No hay feriados cargados en ${year}.`} />}
       <ul className="divide-y divide-slate-100">
         {holidays.map((h) => (
           <li key={h.id} className="py-3 first:pt-0 last:pb-0">
@@ -348,7 +351,7 @@ function RatesSection({ rates, categories, options }: { rates: RosterRateRow[]; 
   return (
     <Section
       title="Precios por hora"
-      description="Por categoría del empleado o por persona (la de la persona pisa a la de su categoría). Una tarifa nueva «desde» una fecha cierra la anterior el día previo: el historial no se pisa. Los ven y editan quienes tienen el módulo Roster."
+      info="Por categoría del empleado o por persona (la de la persona pisa a la de su categoría). Una tarifa nueva «desde» una fecha cierra la anterior el día previo: el historial no se pisa. Los ven y editan quienes tienen el módulo Roster."
       onNew={() => setCreating(true)}
       newLabel="Nueva tarifa"
     >

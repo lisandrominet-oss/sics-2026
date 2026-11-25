@@ -157,7 +157,7 @@ export default function RemitoItemsManager({ items, role }: { items: RemitoItem[
       </Card>
 
       {canManage && (
-        <Card title="Nuevo ítem">
+        <Card title="Nuevo ítem" info="Se crea en estado Pendiente: Calidad tiene que aprobarlo antes de poder despacharlo.">
           <form onSubmit={createItem} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="Código">{(p) => <input {...p} required value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} className={inputClass} />}</Field>
             <Field label="Descripción" className="lg:col-span-2">{(p) => <input {...p} required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputClass} />}</Field>
@@ -175,7 +175,6 @@ export default function RemitoItemsManager({ items, role }: { items: RemitoItem[
               <Button type="submit" loading={creating}>Crear ítem</Button>
             </div>
           </form>
-          <p className="mt-3 text-xs text-slate-500">Se crea en estado Pendiente: Calidad tiene que aprobarlo antes de poder despacharlo.</p>
         </Card>
       )}
 

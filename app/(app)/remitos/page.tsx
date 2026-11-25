@@ -49,7 +49,6 @@ export default async function RemitosPage({ searchParams }: { searchParams: { es
       <PageHeader
         eyebrow="Módulos"
         title="Remitos y Despachos"
-        description="Armado de camiones a obra: ítems aprobados por Calidad, fotos y firma de salida, remito impreso."
         actions={
           CAN.armarDespachos(role) && (
             <Link href="/remitos/nuevo" className={buttonClass()}>
@@ -75,10 +74,7 @@ export default async function RemitosPage({ searchParams }: { searchParams: { es
 
       <Card padding="none" className="mt-4 overflow-x-auto">
         {rows.length === 0 ? (
-          <EmptyState
-            title="Todavía no hay despachos"
-            description={CAN.armarDespachos(role) ? "Armá el primero desde «Nuevo despacho»." : "Cuando Logística confirme una salida va a aparecer acá."}
-          />
+          <EmptyState title="Todavía no hay despachos" />
         ) : (
           <table className="w-full min-w-[760px] text-sm">
             <thead>

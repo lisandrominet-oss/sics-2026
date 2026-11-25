@@ -396,11 +396,6 @@ export default function ContractsList({
         {filtered.length === 0 ? (
           <EmptyState
             title={inHistory ? "No hay contratos en el historial" : "No hay contratos para mostrar"}
-            description={
-              inHistory
-                ? "Cuando se devuelvan los equipos de un contrato o se anule uno, va a aparecer acá."
-                : "Probá con otro filtro o cargá un contrato nuevo."
-            }
             className="!border-0"
           />
         ) : (

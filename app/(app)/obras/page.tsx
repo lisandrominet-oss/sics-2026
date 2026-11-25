@@ -34,7 +34,6 @@ export default async function ObrasPage() {
     <div className="mx-auto max-w-5xl">
       <PageHeader
         title="Obras"
-        description="El plan de cada obra, importado desde Primavera. Al cargar una SIC se elige a qué ítem de la obra corresponde."
       />
       <ObrasList rows={rows} canEdit={(access as ObraAccess) === "editar"} />
     </div>

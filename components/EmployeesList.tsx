@@ -101,7 +101,6 @@ export default function EmployeesList({ employees, plants }: { employees: Employ
     return (
       <EmptyState
         title="Todavía no hay empleados cargados"
-        description="Podés importar el padrón completo desde un archivo CSV o cargar el primer empleado a mano."
         action={
           <div className="flex flex-wrap justify-center gap-2">
             <Link href="/personal/importar" className="text-sm font-medium text-slate-900 underline underline-offset-2 hover:no-underline">
@@ -173,7 +172,6 @@ export default function EmployeesList({ employees, plants }: { employees: Employ
         {filtered.length === 0 ? (
           <EmptyState
             title="No hay empleados para mostrar"
-            description="Probá con otra búsqueda o cambiá los filtros."
             className="!border-0"
           />
         ) : (

@@ -8,6 +8,7 @@ import { notify, reportResult } from "@/lib/notify";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import InfoTip from "@/components/ui/InfoTip";
 import { ROLE_LABELS, type UserRole } from "@/lib/constants";
 import type { Database } from "@/lib/database.types";
 
@@ -31,13 +32,12 @@ export default function ProvisioningManager({
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-6 py-5">
         <div className="min-w-[14rem] flex-1">
           <p className={eyebrowClass}>Accesos</p>
-          <h2 className="text-base font-semibold text-slate-900">
-            Usuarios habilitados (todavía sin iniciar sesión)
-          </h2>
-          <p className="mt-1 text-xs text-slate-500">
-            Cargá acá a la gente antes de que inicie sesión: apenas entren con esa cuenta de Google
-            corporativa, van a tener el rol y el cargo asignados automáticamente.
-          </p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold text-slate-900">
+              Usuarios habilitados (todavía sin iniciar sesión)
+            </h2>
+            <InfoTip>Apenas entren con su cuenta de Google corporativa, tienen el rol y el área asignados.</InfoTip>
+          </div>
         </div>
         <Button onClick={() => setShowForm((v) => !v)} className="shrink-0">
           {showForm ? "Cancelar" : "+ Añadir usuario"}

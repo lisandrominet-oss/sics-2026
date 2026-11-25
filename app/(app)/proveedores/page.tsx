@@ -44,7 +44,6 @@ export default async function ProveedoresPage() {
       <PageHeader
         eyebrow="Compras"
         title="Proveedores"
-        description="Tu agenda de proveedores: contacto, forma de pago, comentarios y documentos, organizados por rubro."
       />
       <div className="mt-6">
         <ProvidersManager

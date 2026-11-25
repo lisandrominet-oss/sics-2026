@@ -22,7 +22,6 @@ export default async function ConfigPage() {
       <PageHeader
         eyebrow="Sistema"
         title="Configuración"
-        description="Ajustá el monto tope para aprobación de Gerencia y los dominios de email habilitados para iniciar sesión."
       />
       <div className="mt-6">
         <ConfigForm threshold={threshold ?? 500000} domains={domains ?? []} />

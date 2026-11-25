@@ -3,6 +3,7 @@
 import { useId, useMemo, useRef, useState } from "react";
 import { inputClass } from "@/lib/ui";
 import { cn } from "@/lib/cn";
+import InfoTip from "./InfoTip";
 
 const MAX_SUGGESTIONS = 8;
 
@@ -147,7 +148,10 @@ export default function ArticleCombobox({
         )}
       </div>
       {isNew && (
-        <p className="mt-1 text-xs text-slate-400">Artículo nuevo: se agrega al catálogo al enviar la solicitud.</p>
+        <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
+          Artículo nuevo
+          <InfoTip>Se agrega al catálogo al enviar la solicitud.</InfoTip>
+        </p>
       )}
     </div>
   );

@@ -151,7 +151,7 @@ export default function ProvidersManager({
 
       <Card padding="none" className="overflow-hidden">
         {filtered.length === 0 ? (
-          <EmptyState title="No hay proveedores para mostrar" description="Probá con otro filtro o agregá un proveedor nuevo." className="!border-0" />
+          <EmptyState title="No hay proveedores para mostrar" className="!border-0" />
         ) : (
           <ul className="divide-y divide-slate-100">
             {filtered.map((p) => (

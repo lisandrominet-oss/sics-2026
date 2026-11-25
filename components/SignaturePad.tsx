@@ -124,7 +124,7 @@ const SignaturePad = forwardRef<SignaturePadHandle, { onChange?: (empty: boolean
         className="h-40 w-full touch-none rounded-lg border border-dashed border-slate-300 bg-white"
       />
       <div className="mt-2 flex items-center justify-between">
-        <p className="text-xs text-slate-500">{empty ? "Firmá con el dedo o el mouse." : "Firma lista para guardar."}</p>
+        <p className="text-xs text-slate-500">{empty ? "" : "Firma lista para guardar."}</p>
         <Button variant="link" size="sm" onClick={clear} disabled={empty || disabled}>Borrar firma</Button>
       </div>
     </div>

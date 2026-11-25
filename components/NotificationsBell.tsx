@@ -140,7 +140,6 @@ export default function NotificationsBell({
                   <IconCheck />
                 </span>
                 <p className="mt-3 text-sm font-medium text-slate-700">Estás al día</p>
-                <p className="mt-0.5 text-xs text-slate-500">No tenés pendientes por ahora.</p>
               </div>
             )}
             {items?.map((item) => (

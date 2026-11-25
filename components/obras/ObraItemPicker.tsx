@@ -228,12 +228,10 @@ export default function ObraItemPicker({
           </ul>
         )}
       </div>
-      {!isFilter && <p className="mt-1 text-xs text-slate-500">
-        {selected
-          ? [nodePathText(tree, selected.id), selectedStart && `Este ítem arranca el ${formatShortDate(selectedStart)}`].filter(Boolean).join(" · ") ||
-            "Ítem de la obra elegido."
-          : "Sin elegir, la SIC queda como General del proyecto."}
-        {selected && !selected.active && " Este ítem está dado de baja."}
+      {!isFilter && selected && <p className="mt-1 text-xs text-slate-500">
+        {[nodePathText(tree, selected.id), selectedStart && `Este ítem arranca el ${formatShortDate(selectedStart)}`].filter(Boolean).join(" · ") ||
+          "Ítem de la obra elegido."}
+        {!selected.active && " Este ítem está dado de baja."}
       </p>}
     </div>
   );

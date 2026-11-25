@@ -20,7 +20,7 @@ export default async function PreferenciasPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader title="Preferencias" description="Tu perfil y cómo querés ver el sistema." />
+      <PageHeader title="Preferencias" />
       <div className="mt-6">
         <ProfilePreferences
           userId={profile.id}

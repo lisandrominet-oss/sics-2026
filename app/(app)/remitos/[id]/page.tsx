@@ -76,7 +76,6 @@ export default async function RemitoDetailPage({ params }: { params: { id: strin
         <PageHeader
           eyebrow="Remitos y Despachos"
           title={<>Despacho en borrador <Badge tone={STATUS_TONES.borrador} dot className="ml-2 align-middle">{STATUS_LABELS.borrador}</Badge></>}
-          description="Completá la carga y los candados de salida. El número interno se asigna al confirmar."
         />
         <RemitosTabs active={null} role={role} />
         <RemitoDispatchEditor

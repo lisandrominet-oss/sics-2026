@@ -3,6 +3,7 @@
 import { inputClass, eyebrowClass } from "@/lib/ui";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import InfoTip from "@/components/ui/InfoTip";
 import { IconCheck } from "@/components/icons";
 import { useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -359,7 +360,7 @@ export default function SicActions({
           </Btn>
         </div>
         <p className="mt-2 text-xs text-slate-400">
-          Al aprobar, la SIC pasa a Compras. Rechazar es definitivo; para que la corrijan, usá "Pedir corrección".
+          Rechazar es definitivo.
         </p>
         {editData.items.length > 1 && (
           <ItemReviewPanel items={editData.items} sicId={sicId} stage="jefe" onDone={() => { notify.success("Revisión por ítem registrada"); router.refresh(); }} />
@@ -370,11 +371,7 @@ export default function SicActions({
 
   if (status === "pendiente_aprobacion_jefe" && isRequester) {
     return (
-      <ActionCard title="En revisión del jefe de área">
-        <p className="text-sm text-slate-500">
-          Tu solicitud está esperando la aprobación del jefe de tu área. Cuando la apruebe pasa a Compras.
-        </p>
-      </ActionCard>
+      <ActionCard title="En revisión del jefe de área" />
     );
   }
 
@@ -436,7 +433,6 @@ export default function SicActions({
   if (status === "pendiente_validacion_tecnica" && canValidateTechnically) {
     return (
       <ActionCard title="Validación técnica">
-        <p className="text-sm text-slate-500">Revisá la cotización y el monto antes de aprobar.</p>
         {NoteBox}
         <div className="mt-3 flex flex-wrap gap-2">
           <Btn onClick={() => run(() => supabase.rpc("technical_review", { p_sic_id: sicId, p_aprobar: true, p_note: note || null }))} loading={loading}>
@@ -483,20 +479,18 @@ export default function SicActions({
           onChange={(e) => setPoNumber(e.target.value)}
           className={inputClass}
         />
-        <label className="mt-3 flex items-start gap-2 text-sm text-slate-700">
-          <input
-            type="checkbox"
-            checked={poIsService}
-            onChange={(e) => setPoIsService(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-slate-900"
-          />
-          <span>
-            Es un servicio
-            <span className="block text-xs text-slate-500">
-              No pasa por Pañol: la recepción la registra Compras con el remito o la conformidad.
-            </span>
-          </span>
-        </label>
+        <div className="mt-3 flex items-center gap-2">
+          <label className="flex items-start gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              checked={poIsService}
+              onChange={(e) => setPoIsService(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-slate-900"
+            />
+            <span>Es un servicio</span>
+          </label>
+          <InfoTip>No pasa por Pañol: la recepción la registra Compras con el remito o la conformidad.</InfoTip>
+        </div>
         {NoteBox}
         <div className="mt-3 flex flex-wrap gap-2">
           <Btn
@@ -596,11 +590,8 @@ export default function SicActions({
   return (
     <div className="space-y-4">
       {isCurrentAccount && isCompras && ["orden_emitida", "recibida"].includes(status) && (
-        <ActionCard title="Monto de la compra (cuenta corriente)">
-          <p className="text-xs text-slate-500">
-            Cargalo con el remito en mano, sin IVA. Hace falta para poder cerrar la SIC y para la liquidación mensual.
-          </p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+        <ActionCard title="Monto de la compra, sin IVA (cuenta corriente)">
+          <div className="flex flex-wrap items-center gap-2">
             <input
               type="number"
               step="0.01"
@@ -626,10 +617,6 @@ export default function SicActions({
       {renderStatusPanel()}
       {canManageCerts && (
         <ActionCard title="Certificados de calidad">
-          <p className="mb-3 text-xs text-slate-500">
-            Se pueden subir en cualquier momento, aunque la SIC ya esté cerrada — no hace falta esperar a
-            que llegue el certificado para avanzar con el resto del pedido.
-          </p>
           <div className="space-y-2">
             {itemsRequiringCert.map((item) => (
               <MultiFileRow
@@ -646,10 +633,7 @@ export default function SicActions({
       )}
       {canEditBeforeCompras && (
         <ActionCard title="Editar solicitud">
-          <p className="text-sm text-slate-500">
-            Si algo quedó mal, podés corregir el pedido hasta que Compras lo tome. Cada cambio queda registrado en el recorrido.
-          </p>
-          <div className="mt-3">
+          <div>
             <Button variant="secondary" onClick={() => router.push(`${pathname}?editar=1`)}>
               Editar solicitud
             </Button>
@@ -701,11 +685,10 @@ function CancelSicCard({ sicId, onDone }: { sicId: string; onDone: () => void })
 
   return (
     <div className="rounded-xl border border-red-200 bg-red-50 p-5">
-      <h2 className="text-sm font-semibold text-red-800">Anular SIC</h2>
-      <p className="mt-1 text-xs text-red-700">
-        Usalo para dar de baja una SIC por error, duplicado u otro motivo. Queda registrada en el historial,
-        no se elimina.
-      </p>
+      <div className="flex items-center gap-2">
+        <h2 className="text-sm font-semibold text-red-800">Anular SIC</h2>
+        <InfoTip>Queda registrada en el historial, no se elimina.</InfoTip>
+      </div>
       <textarea
         value={reason}
         onChange={(e) => setReason(e.target.value)}
@@ -776,7 +759,14 @@ function RecepcionEditor({
   }
 
   return (
-    <ActionCard title={isService ? "Recepción del servicio" : "Recepción de mercadería"}>
+    <ActionCard
+      title={isService ? "Recepción del servicio" : "Recepción de mercadería"}
+      info={
+        isService
+          ? "El servicio se da por recibido completo: no hace falta cargar cantidades."
+          : "Si llega menos de lo pedido, cargá solo lo que llegó: la SIC queda abierta hasta recibir el resto."
+      }
+    >
       <MultiFileRow
         disabled={filesDisabled}
         label={isService ? "Remito o conformidad del servicio (obligatorio al menos uno)" : "Remitos (obligatorio al menos uno)"}
@@ -796,11 +786,7 @@ function RecepcionEditor({
         </div>
       )}
 
-      {isService ? (
-        <p className="mt-4 text-sm text-slate-600">
-          Al registrar la recepción, el servicio se da por recibido completo: no hace falta cargar cantidades.
-        </p>
-      ) : (
+      {isService ? null : (
       <div className="mt-4 space-y-2">
         <p className={eyebrowClass}>Cantidad recibida ahora, por artículo</p>
         {items.map((it) => {
@@ -845,12 +831,6 @@ function RecepcionEditor({
       {remitoFiles.length === 0 && (
         <p className="mt-2 text-xs text-amber-600">
           {isService ? "Subí el remito o la conformidad antes de registrar la recepción." : "Subí al menos un remito antes de registrar la recepción."}
-        </p>
-      )}
-      {!isService && (
-        <p className="mt-2 text-xs text-slate-400">
-          Si llega menos de lo pedido, dejá cargada solo la cantidad que llegó ahora — la SIC queda abierta hasta
-          recibir el resto.
         </p>
       )}
     </ActionCard>
@@ -987,9 +967,6 @@ function ObservacionEditor({
   return (
     <form onSubmit={handleSubmit} className="rounded-xl border border-amber-300 bg-amber-50 p-5">
       <h2 className="text-sm font-semibold text-slate-900">{mode === "edicion" ? "Editar solicitud" : "Corregir y reenviar"}</h2>
-      <p className="mt-1 text-xs text-slate-500">
-        Los archivos de referencia ya subidos se conservan. Adjuntá uno nuevo solo si querés reemplazar el anterior.
-      </p>
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
@@ -1149,9 +1126,6 @@ function ItemReviewPanel({
         <Button variant="link" onClick={() => setOpen(true)}>
           Revisar artículo por artículo
         </Button>
-        <p className="mt-1 text-xs text-slate-400">
-          Aprobá unos, observá otros y rechazá los que no correspondan, todo en una sola revisión.
-        </p>
       </div>
     );
   }
@@ -1222,9 +1196,9 @@ function ItemReviewPanel({
   );
 }
 
-function ActionCard({ title, children }: { title: string; children: React.ReactNode }) {
+function ActionCard({ title, info, children }: { title: string; info?: React.ReactNode; children?: React.ReactNode }) {
   return (
-    <Card title={title}>{children}</Card>
+    <Card title={title} info={info}>{children}</Card>
   );
 }
 

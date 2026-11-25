@@ -300,7 +300,6 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
             <li>
               <EmptyState
                 title="No hay solicitudes para mostrar"
-                description="Cuando haya solicitudes que coincidan con este filtro, van a aparecer acá."
                 className="!px-1"
                 action={
                   CAN_CREATE_SIC.includes(role) ? (

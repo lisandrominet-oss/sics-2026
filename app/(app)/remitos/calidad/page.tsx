@@ -38,13 +38,13 @@ export default async function CalidadPage() {
       <PageHeader
         eyebrow="Remitos y Despachos"
         title="Despachos esperando Calidad"
-        description="Lo que Logística cargó para enviar. Hasta que Calidad apruebe todos los ítems de un despacho no se puede confirmar la salida del camión."
+        info="Hasta que Calidad apruebe todos los ítems de un despacho no se puede confirmar la salida del camión."
       />
       <RemitosTabs active="calidad" role={role} />
 
       <div className="mt-5 space-y-4">
         {waiting.length === 0 ? (
-          <Card><EmptyState title="No hay despachos esperando aprobación de Calidad" description="Los ítems nuevos se liberan desde «Ítems y Calidad»." /></Card>
+          <Card><EmptyState title="No hay despachos esperando aprobación de Calidad" /></Card>
         ) : (
           waiting.map((d) => (
             <Card key={d.id} title={`${KIND_SHORT[d.kind]} · ${d.remito_projects?.name ?? "—"}`}>

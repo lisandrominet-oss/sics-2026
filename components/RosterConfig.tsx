@@ -17,6 +17,7 @@ import {
   type RosterPosition,
   type RosterSite,
 } from "@/lib/roster";
+import InfoTip from "@/components/ui/InfoTip";
 
 type Editing = { kind: "site" | "pattern" | "position" | "crew"; id: string | null } | null;
 
@@ -47,12 +48,11 @@ export default function RosterConfig({
     <div className="space-y-6">
       <Section
         title="Sitios"
-        description="Minas, plantas u obras donde rota el personal."
         onNew={() => setEditing({ kind: "site", id: null })}
         newLabel="Nuevo sitio"
       >
         {isEditing("site", null) && <SiteForm onDone={done} onCancel={() => setEditing(null)} />}
-        {sites.length === 0 && !editing && <EmptyState size="sm" title="Todavía no hay sitios." description="Creá el primero para poder armar el roster." />}
+        {sites.length === 0 && !editing && <EmptyState size="sm" title="Todavía no hay sitios." />}
         <ul className="divide-y divide-slate-100">
           {sites.map((s) => (
             <li key={s.id} className="py-3 first:pt-0 last:pb-0">
@@ -73,12 +73,12 @@ export default function RosterConfig({
 
       <Section
         title="Regímenes de rotación"
-        description="Días de trabajo y de franco, y cómo se cuentan los días de viaje (según el convenio). Un régimen en uso no cambia sus días: se crea otro."
+        info="Un régimen en uso no cambia sus días: se crea otro. Los días de viaje se cuentan según el convenio."
         onNew={() => setEditing({ kind: "pattern", id: null })}
         newLabel="Nuevo régimen"
       >
         {isEditing("pattern", null) && <PatternForm onDone={done} onCancel={() => setEditing(null)} />}
-        {patterns.length === 0 && !editing && <EmptyState size="sm" title="Todavía no hay regímenes." description="Por ejemplo 14x14 o 7x7." />}
+        {patterns.length === 0 && !editing && <EmptyState size="sm" title="Todavía no hay regímenes." />}
         <ul className="divide-y divide-slate-100">
           {patterns.map((p) => (
             <li key={p.id} className="py-3 first:pt-0 last:pb-0">
@@ -94,13 +94,13 @@ export default function RosterConfig({
 
       <Section
         title="Puestos y dotación requerida"
-        description="Cuántas personas tienen que estar trabajando a la vez en cada puesto y turno de un sitio."
+        info="Cuántas personas tienen que estar trabajando a la vez en cada puesto y turno de un sitio."
         onNew={() => setEditing({ kind: "position", id: null })}
         newLabel="Nuevo puesto"
         disabled={activeSites.length === 0}
       >
         {isEditing("position", null) && <PositionForm sites={activeSites} onDone={done} onCancel={() => setEditing(null)} />}
-        {positions.length === 0 && !editing && <EmptyState size="sm" title="Todavía no hay puestos." description="Se usan para asignar personas y, más adelante, para controlar la cobertura." />}
+        {positions.length === 0 && !editing && <EmptyState size="sm" title="Todavía no hay puestos." />}
         <ul className="divide-y divide-slate-100">
           {positions.map((p) => (
             <li key={p.id} className="py-3 first:pt-0 last:pb-0">
@@ -121,13 +121,12 @@ export default function RosterConfig({
 
       <Section
         title="Cuadrillas"
-        description="Agrupan personas de un sitio para asignarlas juntas y verlas agrupadas en el calendario."
         onNew={() => setEditing({ kind: "crew", id: null })}
         newLabel="Nueva cuadrilla"
         disabled={activeSites.length === 0}
       >
         {isEditing("crew", null) && <CrewForm sites={activeSites} onDone={done} onCancel={() => setEditing(null)} />}
-        {crews.length === 0 && !editing && <EmptyState size="sm" title="Todavía no hay cuadrillas." description="Por ejemplo «Cuadrilla A» y «Cuadrilla B» para rotar espejadas." />}
+        {crews.length === 0 && !editing && <EmptyState size="sm" title="Todavía no hay cuadrillas." />}
         <ul className="divide-y divide-slate-100">
           {crews.map((c) => (
             <li key={c.id} className="py-3 first:pt-0 last:pb-0">
@@ -146,14 +145,15 @@ export default function RosterConfig({
 
 export function Section({
   title,
-  description,
+  info,
   onNew,
   newLabel,
   disabled,
   children,
 }: {
   title: string;
-  description: string;
+  /** Aclaración detrás del ícono (i), al lado del título. */
+  info?: ReactNode;
   onNew?: () => void;
   newLabel?: string;
   disabled?: boolean;
@@ -162,9 +162,9 @@ export function Section({
   return (
     <Card>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="flex min-w-0 items-center gap-2">
           <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
-          <p className="mt-0.5 max-w-xl text-pretty text-xs text-slate-500">{description}</p>
+          {info && <InfoTip>{info}</InfoTip>}
         </div>
         {onNew && (
           <Button variant="secondary" size="sm" onClick={onNew} disabled={disabled} title={disabled ? "Primero creá un sitio" : undefined}>
@@ -338,15 +338,13 @@ function PatternForm({ pattern, onDone, onCancel }: { pattern?: RosterPattern; o
           <input type="number" min={0} max={3} value={tout} onChange={(e) => setTout(e.target.value)} required className={inputClass} />
         </div>
       </div>
-      <label className="flex items-start gap-2 text-sm text-slate-700">
-        <input type="checkbox" checked={inside} onChange={(e) => setInside(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-slate-300" />
-        <span>
-          Los días de viaje están dentro del bloque de trabajo
-          <span className="block text-xs text-slate-500">
-            Si no, se suman antes y después de los días de trabajo y alargan el ciclo (depende del convenio).
-          </span>
-        </span>
-      </label>
+      <div className="flex items-center gap-2">
+        <label className="flex items-start gap-2 text-sm text-slate-700">
+          <input type="checkbox" checked={inside} onChange={(e) => setInside(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-slate-300" />
+          <span>Los días de viaje están dentro del bloque de trabajo</span>
+        </label>
+        <InfoTip>Si no, se suman antes y después de los días de trabajo y alargan el ciclo (depende del convenio).</InfoTip>
+      </div>
       {pattern && <ActiveCheck value={active} onChange={setActive} />}
     </FormShell>
   );

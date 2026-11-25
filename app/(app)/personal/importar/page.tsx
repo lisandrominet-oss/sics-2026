@@ -17,7 +17,6 @@ export default async function ImportarPersonalPage() {
       <PageHeader
         eyebrow="Personal"
         title="Importar empleados"
-        description="Cargá el padrón completo desde un archivo CSV (en Excel: Guardar como → CSV)."
       />
       <div className="mt-6">
         <EmployeeImport />

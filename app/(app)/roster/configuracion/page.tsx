@@ -38,7 +38,7 @@ export default async function RosterConfiguracionPage({ searchParams }: { search
 
   return (
     <div className="mx-auto max-w-[96rem]">
-      <PageHeader eyebrow="Módulos" title="Roster" description="Sitios, regímenes de rotación, puestos, cuadrillas, feriados, reglas de pago y precios por hora." />
+      <PageHeader eyebrow="Módulos" title="Roster" />
       <RosterTabs active="configuracion" />
       <div className="mt-6 max-w-4xl">
         <RosterConfig

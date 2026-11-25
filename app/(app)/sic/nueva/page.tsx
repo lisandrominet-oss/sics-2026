@@ -35,16 +35,9 @@ export default async function NuevaSicPage({ searchParams }: { searchParams: { p
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <PageHeader
-        title="Nueva solicitud interna de compra"
-        description={
-          role === "operativo" || role === "panol"
-            ? "Completá los datos de tu solicitud. Primero la revisa el jefe de tu área y después pasa a Compras."
-            : "Completá los datos de tu solicitud. Compras la va a revisar y buscar cotizaciones."
-        }
-      />
-      <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_19rem]">
+    <div className="mx-auto max-w-3xl">
+      <PageHeader title="Nueva solicitud interna de compra" />
+      <div className="mt-6">
         <NuevaSicForm
           plants={plants ?? []}
           projects={projects ?? []}
@@ -54,32 +47,6 @@ export default async function NuevaSicPage({ searchParams }: { searchParams: { p
           initialProjectId={initialProjectId}
           initialNodeId={initialNodeId}
         />
-        {/* Solo informa; mismo criterio que la descripción de arriba: operativo y pañol pasan primero por su jefe. */}
-        <aside aria-labelledby="camino" className="hidden rounded-lg border border-slate-200 p-5 lg:sticky lg:top-16 lg:block">
-          <h2 id="camino" className="text-base font-semibold text-slate-900">
-            El recorrido de una SIC
-          </h2>
-          <ol className="mt-3 space-y-3 text-sm">
-            {(role === "operativo" || role === "panol"
-              ? [["Jefe de área", "Aprueba o pide una corrección."]]
-              : []
-            )
-              .concat([
-                ["Compras", "Revisa y cotiza."],
-                ["Gerencia", "Aprueba si el monto supera el tope."],
-                ["Pañol", "Recibe los bienes (los servicios, Compras)."],
-              ])
-              .map(([nombre, texto], i) => (
-                <li key={nombre} className="flex gap-3">
-                  <span aria-hidden="true" className={`mt-1 h-5 w-1.5 shrink-0 rounded-sm ${i === 0 ? "border border-ink/40 bg-brand dark:border-brand" : "bg-slate-200"}`} />
-                  <div>
-                    <p className="font-medium text-slate-900">{nombre}</p>
-                    <p className="text-[13px] text-slate-500">{texto}</p>
-                  </div>
-                </li>
-              ))}
-          </ol>
-        </aside>
       </div>
     </div>
   );

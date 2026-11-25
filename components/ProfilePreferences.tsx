@@ -11,6 +11,7 @@ import Button from "@/components/ui/Button";
 import { cardClass } from "@/components/ui/Card";
 import { DropOverlay } from "@/components/ui/FileDropzone";
 import { useFileDrop } from "@/lib/useFileDrop";
+import InfoTip from "@/components/ui/InfoTip";
 
 const MAX_INPUT_BYTES = 25 * 1024 * 1024;
 const AVATAR_SIZE = 256;
@@ -134,7 +135,10 @@ export default function ProfilePreferences({
   return (
     <div className="space-y-6">
       <section className={cardClass({ padding: "lg" })}>
-        <h2 className="text-sm font-semibold text-slate-900">Perfil</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-slate-900">Perfil</h2>
+          <InfoTip>Si tu nombre, área o cargo no son correctos, pedile a Gerencia que los corrija.</InfoTip>
+        </div>
         <div {...dropProps} className="relative mt-4 flex flex-wrap items-center gap-5 rounded-lg">
           {isDragging && <DropOverlay text="Soltá la foto acá" />}
           <UserAvatar userId={userId} fullName={fullName} size="h-24 w-24" text="text-2xl" />
@@ -160,7 +164,7 @@ export default function ProfilePreferences({
               )}
             </div>
             <p className="mt-2 text-xs text-slate-500">
-              Opcional. Desde el celular podés sacarla en el momento. Solo la ves vos.
+              Solo la ves vos.
             </p>
             {error && <p role="alert" className="animate-shake mt-2 text-sm text-red-600">{error}</p>}
           </div>
@@ -173,14 +177,10 @@ export default function ProfilePreferences({
           <InfoItem definition label="Área" value={plantName ?? "-"} />
           {department && <InfoItem definition label="Cargo" value={department} />}
         </dl>
-        <p className="mt-4 text-xs text-slate-400">
-          Si tu nombre, área o cargo no son correctos, pedile a Gerencia que los corrija.
-        </p>
       </section>
 
       <section className={cardClass({ padding: "lg" })}>
         <h2 className="text-sm font-semibold text-slate-900">Preferencias</h2>
-        <p className="mt-1 text-xs text-slate-500">Tema. Se guarda en este dispositivo.</p>
         <div className="mt-4">
           <ThemeSelector />
         </div>

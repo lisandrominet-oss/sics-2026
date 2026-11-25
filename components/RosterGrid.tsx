@@ -373,7 +373,6 @@ export default function RosterGrid({
       {people.length === 0 ? (
         <EmptyState
           title="No hay personas asignadas a este sitio en el período"
-          description="Asigná personas con su régimen y fecha de inicio del ciclo para que aparezcan en el calendario."
           action={
             <Link href="/roster/asignaciones" className="text-sm font-medium text-slate-900 underline underline-offset-2 hover:no-underline">
               Ir a Asignaciones
@@ -503,7 +502,7 @@ export default function RosterGrid({
       )}
 
       <p className="text-xs text-slate-500">
-        Del {formatSqlDate(from)} al {formatSqlDate(to)}. Tocá una celda para confirmar el día, cargar horas reales o un evento (vacaciones, licencia, bajada anticipada, extensión…); tocá un nombre para cambiar su puesto o cuadrilla.
+        Del {formatSqlDate(from)} al {formatSqlDate(to)}.
         {!planMode && " Atenuado: ya pasó y no está confirmado. Borde naranja: difiere del plan. *: extensión de ciclo."}
       </p>
 

@@ -25,7 +25,7 @@ export default async function CatalogoPage() {
       <PageHeader
         eyebrow="Compras"
         title="Catálogo de artículos"
-        description="Artículos que se sugieren mientras se escribe una solicitud. Se completa solo con lo que se va pidiendo; acá podés corregir nombres, agregar consumibles o desactivar los que no deban sugerirse."
+        info="Son los artículos que se sugieren al escribir una solicitud. Se completa solo con lo que se va pidiendo; acá se corrigen nombres o se desactivan sugerencias."
       />
       <div className="mt-6">
         <CatalogManager items={items ?? []} />

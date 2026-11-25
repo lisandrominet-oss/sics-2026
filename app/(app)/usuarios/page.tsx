@@ -27,7 +27,7 @@ export default async function UsuariosGerenciaPage() {
       <PageHeader
         eyebrow="Sistema"
         title="Usuarios"
-        description="Altas, bajas y cambios de la gente de la empresa: rol, cargo y área. Pausar a alguien le quita el acceso sin borrar su historial."
+        info="Pausar a alguien le quita el acceso sin borrar su historial."
       />
       <div className="mt-6">
         <StaffUsersManager

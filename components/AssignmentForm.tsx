@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Button from "@/components/ui/Button";
 import EmployeePicker from "@/components/ui/EmployeePicker";
+import InfoTip from "@/components/ui/InfoTip";
 import { notify } from "@/lib/notify";
 import { inputClass, labelClass } from "@/lib/ui";
 import {
@@ -229,7 +230,10 @@ export default function AssignmentForm({
 
       {references.length > 0 && (
         <div className="rounded-lg bg-slate-50 p-3">
-          <label className={labelClass}>Espejar a otra cuadrilla (opcional)</label>
+          <div className="flex items-center gap-1.5">
+            <label className={labelClass}>Espejar a otra cuadrilla (opcional)</label>
+            <InfoTip>Copia el régimen y el turno, y sugiere una fecha ancla para que esta cuadrilla suba cuando termina la otra: así siempre hay una en sitio.</InfoTip>
+          </div>
           <select defaultValue="" onChange={(e) => e.target.value && mirrorFrom(e.target.value)} className={inputClass}>
             <option value="">Elegí la cuadrilla de referencia…</option>
             {references.map((r) => (
@@ -238,9 +242,6 @@ export default function AssignmentForm({
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-slate-500">
-            Copia el régimen y el turno, y sugiere una fecha ancla para que esta cuadrilla suba cuando termina la otra: así siempre hay una en sitio.
-          </p>
         </div>
       )}
 
@@ -293,7 +294,12 @@ export default function AssignmentForm({
           </div>
         )}
         <div>
-          <label className={labelClass}>Fecha ancla (primer día del ciclo)</label>
+          <div className="flex items-center gap-1.5">
+            <label className={labelClass}>Fecha ancla (primer día del ciclo)</label>
+            <InfoTip>
+              {changing ? "Si no la tocás, se mantiene (o arranca en la fecha del cambio si cambiás el régimen)." : "Si la dejás vacía, es la fecha de inicio."}
+            </InfoTip>
+          </div>
           <input
             type="date"
             value={anchor}
@@ -303,9 +309,6 @@ export default function AssignmentForm({
             }}
             className={inputClass}
           />
-          <p className="mt-1 text-xs text-slate-500">
-            {changing ? "Si no la tocás, se mantiene (o arranca en la fecha del cambio si cambiás el régimen)." : "Si la dejás vacía, es la fecha de inicio."}
-          </p>
         </div>
       </div>
 

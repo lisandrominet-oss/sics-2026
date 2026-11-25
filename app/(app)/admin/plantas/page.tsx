@@ -19,7 +19,7 @@ export default async function PlantasPage() {
       <PageHeader
         eyebrow="Sistema"
         title="Plantas / Empresas"
-        description="Cada planta tiene un prefijo único que se usa para numerar las SICs (ej. SIC-TAMET-2026-0001)."
+        info="Cada planta tiene un prefijo único que se usa para numerar las SIC (ej. SIC-TAMET-2026-0001)."
       />
       <div className="mt-6">
         <PlantsManager plants={plants ?? []} />

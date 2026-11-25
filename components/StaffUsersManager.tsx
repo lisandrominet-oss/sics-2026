@@ -8,6 +8,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { notify } from "@/lib/notify";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import InfoTip from "@/components/ui/InfoTip";
 import UserModulesButton from "@/components/UserModulesButton";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 import {
@@ -45,7 +46,6 @@ export default function StaffUsersManager({
       <Card padding="none" className="overflow-x-auto">
         <div className="border-b border-slate-100 px-6 py-4">
           <h2 className="text-base font-semibold text-slate-900">Usuarios de la empresa</h2>
-          <p className="mt-1 text-xs text-slate-500">Los que ya iniciaron sesión.</p>
         </div>
         {users.length === 0 ? (
           <EmptyState title="No hay usuarios para mostrar" className="!border-0 py-8" />
@@ -73,11 +73,10 @@ export default function StaffUsersManager({
       <Card padding="none">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-6 py-4">
           <div className="min-w-[14rem] flex-1">
-            <h2 className="text-base font-semibold text-slate-900">Accesos pendientes</h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Gente cargada antes de su primer ingreso: apenas entren con su cuenta de Google corporativa, tienen el
-              rol y el área asignados.
-            </p>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold text-slate-900">Accesos pendientes</h2>
+              <InfoTip>Apenas entren con su cuenta de Google corporativa, tienen el rol y el área asignados.</InfoTip>
+            </div>
           </div>
           <Button onClick={() => setShowForm((v) => !v)} className="shrink-0">
             {showForm ? "Cancelar" : "+ Añadir usuario"}

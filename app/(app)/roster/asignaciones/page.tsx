@@ -32,7 +32,6 @@ export default async function RosterAsignacionesPage({ searchParams }: { searchP
       <PageHeader
         eyebrow="Módulos"
         title="Roster"
-        description="Quién rota en cada sitio, con qué régimen, desde qué fecha de inicio del ciclo y en qué turno."
       />
       <RosterTabs active="asignaciones" />
       <div className="mt-6 max-w-5xl">

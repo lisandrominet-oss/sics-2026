@@ -70,7 +70,6 @@ export default async function UsuariosPage() {
       <PageHeader
         eyebrow="Sistema"
         title="Usuarios"
-        description="Asigná rol, área/departamento y planta a cada usuario que inició sesión."
       />
       <div className="mt-6">
         <UsersTable profiles={profiles ?? []} plants={plants ?? []} currentUserId={profile.id} />
@@ -84,9 +83,6 @@ export default async function UsuariosPage() {
         <div className="border-b border-slate-100 px-6 py-4">
           <p className={eyebrowClass}>Auditoría</p>
           <h2 className="text-base font-semibold text-slate-900">Registro de cambios de usuarios</h2>
-          <p className="mt-1 text-xs text-slate-500">
-            Altas, ediciones, pausas y bajas hechas por Gerencia. Solo lo ve el administrador.
-          </p>
         </div>
         {(changeLog ?? []).length === 0 ? (
           <EmptyState size="sm" className="px-6 py-6 text-center" title="Todavía no hay cambios registrados." />

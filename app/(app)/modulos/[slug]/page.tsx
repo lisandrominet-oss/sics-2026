@@ -16,7 +16,7 @@ export default async function ModulePage({ params }: { params: { slug: string } 
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader eyebrow="Módulos" title={mod.title} description={mod.description} />
+      <PageHeader eyebrow="Módulos" title={mod.title} />
       <div className="mt-6">
         <ModuleSections sections={mod.sections} />
       </div>

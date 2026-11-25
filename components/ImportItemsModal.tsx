@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
+import InfoTip from "@/components/ui/InfoTip";
 import FileDropzone from "@/components/ui/FileDropzone";
 import type { ItemDraft } from "@/components/ItemsEditor";
 import { inputClass, numClass } from "@/lib/ui";
@@ -125,8 +126,10 @@ export default function ImportItemsModal({
           </div>
 
           <div>
-            <p className="font-medium text-slate-900">O subí la planilla descargada como CSV</p>
-            <p className="text-xs text-slate-500">En Google Sheets: Archivo → Descargar → Valores separados por comas (.csv).</p>
+            <div className="flex items-center gap-1.5">
+              <p className="font-medium text-slate-900">O subí la planilla descargada como CSV</p>
+              <InfoTip>En Google Sheets: Archivo → Descargar → Valores separados por comas (.csv).</InfoTip>
+            </div>
             <FileDropzone
               className="mt-2"
               compact
@@ -157,7 +160,7 @@ export default function ImportItemsModal({
           <p className="text-slate-600">
             {items.length} {items.length === 1 ? "fila" : "filas"}
             {loadedCount > 0 && ` · ${loadedCount} ya ${loadedCount === 1 ? "tiene" : "tienen"} SIC`}
-            {errorCount > 0 && ` · ${errorCount} con error`}. Marcá las que van en esta solicitud.
+            {errorCount > 0 && ` · ${errorCount} con error`}.
           </p>
           {result.ignoredColumns.length > 0 && (
             <p className="text-xs text-slate-500">No se usan estas columnas: {result.ignoredColumns.join(", ")}.</p>
@@ -207,7 +210,7 @@ export default function ImportItemsModal({
                         </span>
                       )}
                       {it.warning && <span className="block text-xs text-amber-700">{it.warning}.</span>}
-                      {it.error && <span className="block text-xs text-red-600">{it.error}: corregilo en la planilla o cargalo a mano.</span>}
+                      {it.error && <span className="block text-xs text-red-600">{it.error}</span>}
                       {!it.error && it.sicCode && (
                         <span className="block text-xs text-slate-500">Ya anotada como cargada: {it.sicCode}</span>
                       )}

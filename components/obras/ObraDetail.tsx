@@ -19,6 +19,7 @@ import { notify } from "@/lib/notify";
 import { formatDate, type SicStatus } from "@/lib/constants";
 import { eyebrowClass, filterClass, numClass } from "@/lib/ui";
 import { cn } from "@/lib/cn";
+import InfoTip from "@/components/ui/InfoTip";
 import {
   CHANGE_LABELS,
   buildObraTree,
@@ -322,9 +323,7 @@ export default function ObraDetail({
   const dialogDescription =
     dialog?.kind === "plazo"
       ? "La línea base no cambia: queda para comparar contra lo planificado."
-      : dialog?.kind === "correr"
-        ? "Mueve las fechas vigentes de este ítem y de todo lo que cuelga de él."
-        : dialog?.kind === "baja" && dialog.node.active
+      : dialog?.kind === "baja" && dialog.node.active
           ? "No se ofrece más al cargar una SIC (tampoco lo que cuelga de él). Las SIC que ya lo tienen lo conservan."
           : undefined;
 
@@ -340,7 +339,7 @@ export default function ObraDetail({
         description={
           hasPlan
             ? `${nodes.filter((n) => n.active).length} ítems${project.imported_at ? ` · importada de Primavera el ${formatDate(project.imported_at)}` : ""} · ${sics.length} SIC`
-            : "Este proyecto todavía no tiene plan de obra."
+            : undefined
         }
         actions={
           canEdit ? (
@@ -368,11 +367,6 @@ export default function ObraDetail({
         <EmptyState
           className="mt-6"
           title="Sin plan de obra"
-          description={
-            canEdit
-              ? "Importá el proyecto desde Primavera para que las SIC se puedan clasificar por ítem."
-              : "Ingeniería carga el plan de la obra desde Primavera."
-          }
         />
       ) : (
         <>
@@ -393,7 +387,6 @@ export default function ObraDetail({
                 ))}
               </ul>
               {lateSics.length > 10 && <p className="mt-1 text-xs text-amber-800">Y {lateSics.length - 10} más.</p>}
-              <p className="mt-1 text-xs text-amber-800">Es solo un aviso para Ingeniería y Compras: la SIC sigue su circuito.</p>
             </div>
           )}
 
@@ -532,18 +525,24 @@ export default function ObraDetail({
         {openNode && (
           <div className="mt-2 space-y-4 text-sm">
             {nodePathText(tree, openNode.id) && <p className={eyebrowClass}>{nodePathText(tree, openNode.id)}</p>}
+            {!openNode.active && (
+              <Badge tone="muted" size="sm">
+                De baja
+              </Badge>
+            )}
             <dl className="grid grid-cols-[8rem_minmax(0,1fr)] gap-x-3 gap-y-1.5">
-              <dt className="text-slate-500">Plazo vigente</dt>
+              <dt className="flex items-center gap-1.5 text-slate-500">
+                Plazo vigente
+                {!openNode.current_start && !openNode.current_end && (dates.get(openNode.id)?.current.start || dates.get(openNode.id)?.current.end) && (
+                  <InfoTip>Las fechas son el rango de lo que cuelga de este ítem.</InfoTip>
+                )}
+              </dt>
               <dd className={numClass}>{formatRange(dates.get(openNode.id)?.current ?? { start: null, end: null })}</dd>
               <dt className="text-slate-500">Línea base</dt>
               <dd className={numClass}>{formatRange(dates.get(openNode.id)?.baseline ?? { start: null, end: null })}</dd>
               <dt className="text-slate-500">Desvío</dt>
               <dd>{delayDays(dates.get(openNode.id)) === null ? "-" : delayText(delayDays(dates.get(openNode.id))!)}</dd>
-              {!openNode.current_start && !openNode.current_end && (dates.get(openNode.id)?.current.start || dates.get(openNode.id)?.current.end) && (
-                <dd className="col-span-2 text-xs text-slate-500">Las fechas son el rango de lo que cuelga de este ítem.</dd>
-              )}
             </dl>
-            {!openNode.active && <p className="rounded-lg bg-slate-100 px-3 py-2 text-slate-700">Dado de baja: no se ofrece al cargar una SIC.</p>}
 
             <div className="flex flex-wrap gap-2">
               {canCreateSic && openNode.active && (

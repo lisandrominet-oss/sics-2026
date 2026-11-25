@@ -40,11 +40,6 @@ export default function ObrasList({ rows, canEdit }: { rows: ObraRow[]; canEdit:
         <EmptyState
           className="mt-4"
           title="Todavía no hay obras con plan"
-          description={
-            canEdit
-              ? "Importá el proyecto desde Primavera para que las SIC se puedan clasificar por ítem de obra."
-              : "Ingeniería carga el plan de cada obra desde Primavera."
-          }
         />
       ) : (
         <ul className="mt-4 divide-y divide-slate-200 rounded-xl border border-slate-200">
@@ -67,7 +62,6 @@ export default function ObrasList({ rows, canEdit }: { rows: ObraRow[]; canEdit:
       {withoutPlan.length > 0 && (
         <div className="mt-8">
           <h2 className="text-sm font-medium text-slate-900">Proyectos sin plan</h2>
-          <p className="mt-0.5 text-xs text-slate-500">Sus SIC se cargan sin ítem de obra.{canEdit && " Se les puede importar el plan."}</p>
           <ul className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200">
             {withoutPlan.map((r) => (
               <li key={r.id}>

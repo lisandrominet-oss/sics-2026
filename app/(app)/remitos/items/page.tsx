@@ -21,7 +21,7 @@ export default async function RemitoItemsPage() {
       <PageHeader
         eyebrow="Remitos y Despachos"
         title="Ítems y liberación de Calidad"
-        description="Solo los ítems aprobados pueden cargarse en un camión. Calidad libera o rechaza desde acá."
+        info="Solo los ítems aprobados por Calidad pueden cargarse en un camión."
       />
       <RemitosTabs active="items" role={role} />
       <RemitoItemsManager items={(data ?? []).map(normItem)} role={role} />

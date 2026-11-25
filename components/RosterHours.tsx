@@ -9,6 +9,7 @@ import Badge from "@/components/ui/Badge";
 import Button, { buttonClass } from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import EmptyState from "@/components/ui/EmptyState";
+import InfoTip from "@/components/ui/InfoTip";
 import PromptDialog from "@/components/ui/PromptDialog";
 import { useConfirm } from "@/components/ui/ConfirmProvider";
 import { notify } from "@/lib/notify";
@@ -244,6 +245,9 @@ export default function RosterHours({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-600">
           Del {formatSqlDate(from)} al {formatSqlDate(to)} · {siteName(siteId || null)} · máximo 62 días por vez.{" "}
+          <InfoTip label="Cómo se calcula el costo">
+            Solo cuentan los días confirmados. El costo = precio por hora × (horas normales + extra 50% × (1 + recargo hábil) + extra 100% × (1 + recargo de feriado) + horas de viaje), con los recargos de Configuración; no incluye adicionales (nocturnidad, viáticos). Los parámetros son editables y deben validarse con RRHH o el contador según el convenio.
+          </InfoTip>{" "}
           {coveredBy ? <Badge tone="muted">Período cerrado</Badge> : null}
         </p>
         <div className="flex flex-wrap gap-2">
@@ -283,7 +287,7 @@ export default function RosterHours({
       )}
 
       {rows.length === 0 ? (
-        <EmptyState title="No hay personas asignadas en el período" description="Cuando haya asignaciones que toquen estas fechas, acá aparece el resumen." />
+        <EmptyState title="No hay personas asignadas en el período" />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-sheet">
           <table className="min-w-full border-separate border-spacing-0 text-xs">
@@ -362,13 +366,11 @@ export default function RosterHours({
         </div>
       )}
 
-      <p className="text-xs text-slate-500">
-        Solo cuentan los días confirmados. El costo = precio por hora × (horas normales + extra 50% × (1 + recargo hábil) + extra 100% × (1 + recargo de feriado) + horas de viaje), con los recargos de Configuración; no incluye adicionales (nocturnidad, viáticos). Los parámetros son editables y deben validarse con RRHH o el contador según el convenio.
-      </p>
-
       <Card>
-        <h2 className="text-sm font-semibold text-slate-900">Períodos cerrados</h2>
-        <p className="mt-0.5 text-xs text-slate-500">Un período cerrado no admite cambios de días, excepciones, asignaciones ni tarifas que lo toquen hasta reabrirlo (queda registrado con el motivo). Ojo: las reglas de pago y los feriados no se congelan; cambiarlos recalcula el costo de períodos cerrados (las horas guardadas no cambian).</p>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-slate-900">Períodos cerrados</h2>
+          <InfoTip>Un período cerrado no admite cambios de días, excepciones, asignaciones ni tarifas que lo toquen hasta reabrirlo (queda registrado con el motivo). Ojo: las reglas de pago y los feriados no se congelan; cambiarlos recalcula el costo de períodos cerrados (las horas guardadas no cambian).</InfoTip>
+        </div>
         {closures.length === 0 ? (
           <p className="mt-3 text-sm text-slate-500">Todavía no se cerró ningún período.</p>
         ) : (

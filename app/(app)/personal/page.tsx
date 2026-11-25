@@ -29,7 +29,6 @@ export default async function PersonalPage() {
       <PageHeader
         eyebrow="Módulos"
         title="Personal"
-        description="Base de datos de los empleados de la empresa: altas, bajas, licencias e importación desde Excel."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/personal/importar" className={buttonClass({ variant: "secondary" })}>
