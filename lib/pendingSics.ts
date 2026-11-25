@@ -13,15 +13,23 @@ export const PENDING_STATUSES_BY_ROLE: Partial<Record<UserRole, SicStatus[]>> = 
   operativo: ["pendiente_validacion_tecnica", "en_observacion"],
 };
 
-// Aplica el filtro de "pendientes de mi acción" según el rol. La lectura por área ya la limita la
-// base (RLS): el jefe solo ve las SIC de su área, así que acá no hace falta filtrar por planta.
+// Aplica el filtro de "pendientes de mi acción" según el rol. Se filtra por área aunque la base (RLS)
+// limite la lectura: con el permiso "Ver todas las SIC" el jefe lee las de todas las áreas, pero solo
+// aprueba las de la suya (mismo criterio que get_pending_notifications en la base).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function applyPendingFilter<Q extends { in: any; eq: any; or: any }>(query: Q, role: UserRole, profileId: string): Q {
+export function applyPendingFilter<Q extends { in: any; eq: any; or: any }>(
+  query: Q,
+  role: UserRole,
+  profileId: string,
+  plantId: string | null
+): Q {
   const statuses = PENDING_STATUSES_BY_ROLE[role] ?? [];
   if (role === "area") {
-    // Jefe: lo que espera su aprobación (de toda el área) + lo suyo que está pendiente.
+    // Jefe: lo que espera su aprobación (de su área) + lo suyo que está pendiente.
+    // Sin área solo queda el admin con "Ver como": ahí no hay área que filtrar.
+    const bossClause = plantId ? `and(status.eq.pendiente_aprobacion_jefe,plant_id.eq.${plantId})` : "status.eq.pendiente_aprobacion_jefe";
     return query.or(
-      `status.eq.pendiente_aprobacion_jefe,and(requester_id.eq.${profileId},status.in.(pendiente_validacion_tecnica,en_observacion))`
+      `${bossClause},and(requester_id.eq.${profileId},status.in.(pendiente_validacion_tecnica,en_observacion))`
     );
   }
   if (role === "panol") {
@@ -41,7 +49,8 @@ export function applyPendingFilter<Q extends { in: any; eq: any; or: any }>(quer
 export async function getPendingSicsCount(
   supabase: SupabaseClient<Database>,
   role: UserRole,
-  profileId: string
+  profileId: string,
+  plantId: string | null
 ): Promise<number> {
   const statuses = PENDING_STATUSES_BY_ROLE[role];
   if (!statuses || statuses.length === 0) return 0;
@@ -49,7 +58,8 @@ export async function getPendingSicsCount(
   const { count } = await applyPendingFilter(
     supabase.from("sics").select("*", { count: "exact", head: true }),
     role,
-    profileId
+    profileId,
+    plantId
   );
   return count ?? 0;
 }
@@ -66,6 +76,7 @@ export async function getPendingSicsList(
   supabase: SupabaseClient<Database>,
   role: UserRole,
   profileId: string,
+  plantId: string | null,
   limit = 8
 ): Promise<PendingSicSummary[]> {
   const statuses = PENDING_STATUSES_BY_ROLE[role];
@@ -74,7 +85,8 @@ export async function getPendingSicsList(
   const { data } = await applyPendingFilter(
     supabase.from("sics").select("id, code, subject, status, updated_at").order("updated_at", { ascending: false }).limit(limit),
     role,
-    profileId
+    profileId,
+    plantId
   );
   return data ?? [];
 }

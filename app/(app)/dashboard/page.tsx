@@ -35,7 +35,8 @@ export default async function DashboardPage({
   const showPending = !showHistory && searchParams.filter === "mia";
   const isAreaRole = role === "area" || role === "operativo";
   const canHaveOwn = isAreaRole;
-  const showAmounts = CAN_SEE_AMOUNTS.includes(role);
+  // Con el permiso "Ver todas las SIC" también ve montos (aunque sea operativo).
+  const showAmounts = CAN_SEE_AMOUNTS.includes(role) || hasModule(profile, "ver-todas-sic");
   const showMine = searchParams.filter === "mias" && canHaveOwn;
   const showPendingCerts = !showHistory && searchParams.filter === "certificados" && canSeeCerts;
   const pendingStatuses = PENDING_STATUSES_BY_ROLE[role] ?? [];
@@ -61,7 +62,7 @@ export default async function DashboardPage({
   let query = supabase
     .from("sics")
     .select(
-      `id, code, subject, status, currency, created_at, updated_at, needed_by_date, department, requester_id, on_behalf_of, purchase_type, plants(name, prefix), project_id, project_node_id, project:projects(name), requester:profiles!sics_requester_id_fkey(full_name, email)${financeEmbed}${nodeEmbed}`
+      `id, code, subject, status, currency, created_at, updated_at, needed_by_date, department, requester_id, on_behalf_of, purchase_type, plant_id, plants(name, prefix), project_id, project_node_id, project:projects(name), requester:profiles!sics_requester_id_fkey(full_name, email)${financeEmbed}${nodeEmbed}`
     )
     .order(sortColumn === "final_amount" ? "finance(final_amount)" : sortColumn, {
       ascending: sortDir === "asc",
@@ -73,7 +74,7 @@ export default async function DashboardPage({
     query = showHistory ? query.in("status", HISTORY_STATUSES) : query.not("status", "in", `(${HISTORY_STATUSES.join(",")})`);
   }
   if (showPending && pendingStatuses.length > 0) {
-    query = applyPendingFilter(query, role, profile.id);
+    query = applyPendingFilter(query, role, profile.id, profile.plant_id ?? null);
   }
   if (showMine) {
     query = query.eq("requester_id", profile.id);
@@ -103,7 +104,7 @@ export default async function DashboardPage({
     await Promise.all([
       query.limit(LIST_LIMIT),
       supabase.from("sics").select("*", { count: "exact", head: true }),
-      getPendingSicsCount(supabase, role, profile.id),
+      getPendingSicsCount(supabase, role, profile.id, profile.plant_id ?? null),
       supabase.from("sics").select("*", { count: "exact", head: true }).eq("status", "cerrada"),
       supabase.from("sics").select("*", { count: "exact", head: true }).in("status", HISTORY_STATUSES),
       supabase.from("projects").select("id, name").eq("active", true).order("name"),
@@ -225,7 +226,12 @@ export default async function DashboardPage({
         {searchQuery && (
           <p className="border-b border-slate-200 py-2 text-[13px] text-slate-500">Buscando en SIC activas e historial.</p>
         )}
-        <SicsList sics={(sics ?? []) as unknown as SicRow[]} role={role} />
+        <SicsList
+          sics={(sics ?? []) as unknown as SicRow[]}
+          role={role}
+          plantId={profile.plant_id ?? null}
+          canSeeAllSics={hasModule(profile, "ver-todas-sic")}
+        />
         {(sics?.length ?? 0) >= LIST_LIMIT && (
           <p className="border-t border-slate-200 py-3 text-sm text-slate-500">
             Mostrando las primeras {LIST_LIMIT} solicitudes de esta vista. Para encontrar otras, afiná con el buscador o los filtros.

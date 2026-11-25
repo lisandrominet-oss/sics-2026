@@ -263,6 +263,7 @@ def render_bottom():
       ("Pañol", "Solo recibe: bienes con orden emitida en adelante, sin montos ni cotizaciones."),
       ("Compras y Gerencia", "Todas las SIC de la empresa, con montos y cotizaciones."),
       ("Administrador", "Todo, además de la configuración del sistema."),
+      ("Ver todas las SIC", "Permiso por persona: lee todas, con montos. Solo actúa sobre las suyas."),
     ]
     for i, (who, what) in enumerate(vis):
         yy = y + 76 + i * 34

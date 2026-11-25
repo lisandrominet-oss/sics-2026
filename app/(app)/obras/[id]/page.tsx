@@ -42,7 +42,7 @@ export default async function ObraPage({ params }: { params: { id: string } }) {
     if (!data || data.length < PAGE) break;
   }
 
-  // Solo las SIC que este usuario puede ver (la base filtra por rol y área).
+  // Solo las SIC que este usuario puede ver (la base filtra por rol y área, salvo el permiso "Ver todas las SIC").
   const sics: ObraSic[] = [];
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await supabase

@@ -31,6 +31,7 @@ import { RecorridoPasos, textoRecorrido } from "@/components/ui/Recorrido";
 import { recorridoDe } from "@/lib/recorrido";
 import { fetchNodePaths, type NodePath } from "@/lib/obras";
 import SicObraItem from "@/components/obras/SicObraItem";
+import { hasModule } from "@/lib/modules";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -103,6 +104,7 @@ export default async function SicDetailPage({
   // técnicamente su propia SIC (la base se lo entrega solo entonces). Pañol nunca: así "Ver como" muestra lo que vería de verdad.
   const showAmount =
     CAN_SEE_AMOUNTS.includes(role) ||
+    hasModule(profile, "ver-todas-sic") ||
     (role === "operativo" && isRequester && sic.status === "pendiente_validacion_tecnica" && finance !== null);
   const isAreaBoss = role === "area" && !!profile.plant_id && profile.plant_id === sic.plant_id;
   // Aviso "te toca aprobar": mantener junto con las condiciones de SicActions.renderStatusPanel (aprobación del jefe, validación técnica y Gerencia).

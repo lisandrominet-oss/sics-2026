@@ -18,7 +18,7 @@ ROWS = [
   "Compras", "Aceptar, pedir corrección o rechazar, con comentario. Elige el tipo de compra: normal, directa (monto obligatorio, proveedor opcional) o cuenta corriente (proveedor habilitado).",
   "Normal: cotización. Directa: compara el monto con el tope. Cuenta corriente: directo a aprobada. Corrección: vuelve al operativo, que reenvía al jefe (si la emitió un jefe, vuelve a Compras). Rechazo: final. Compras también puede revisar artículo por artículo, con la misma regla: los observados pasan a una SIC nueva y los rechazados no se compran."),
  ("4", "Cotización", "En cotización → Pendiente de validación técnica",
-  "Compras", "Monto final (obligatorio). Cotizaciones y comparación de precios: opcionales. Montos y cotizaciones los ven solo Compras, Gerencia, admin y el jefe del área.",
+  "Compras", "Monto final (obligatorio). Cotizaciones y comparación de precios: opcionales. Montos y cotizaciones los ven solo Compras, Gerencia, admin, el jefe del área y quien tenga el permiso «Ver todas las SIC» (solo lectura).",
   "Validación técnica."),
  ("5", "Validación técnica", "Pendiente de validación → Aprobada · Pendiente Gerencia · En cotización",
   "Quien emitió la SIC o un jefe de su área (y admin)", "Aprobar o pedir corrección, con comentario. Al operativo solicitante se le muestran la cotización y el monto solo en este paso.",

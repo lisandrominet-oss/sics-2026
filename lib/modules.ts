@@ -14,7 +14,8 @@ export type ModuleKey =
   | "administracion"
   | "personal"
   | "roster"
-  | "remitos";
+  | "remitos"
+  | "ver-todas-sic";
 
 export type ModuleDef = {
   key: ModuleKey;
@@ -58,6 +59,16 @@ export const MODULES: readonly ModuleDef[] = [
     group: "tablero",
     href: null,
     defaultRoles: ["compras", "admin"],
+  },
+  {
+    // Solo lectura: abre la lectura de todas las SIC (con montos) en la base; las acciones siguen
+    // limitadas a lo que la persona emite o le toca aprobar.
+    key: "ver-todas-sic",
+    title: "Ver todas las SIC",
+    description: "Lectura de las SIC de todas las áreas, con montos. Solo actúa sobre las suyas.",
+    group: "tablero",
+    href: null,
+    defaultRoles: ["admin"],
   },
   {
     key: "personal",

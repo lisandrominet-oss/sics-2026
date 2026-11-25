@@ -40,6 +40,7 @@ export type SicRow = {
   department: string | null;
   on_behalf_of: string | null;
   purchase_type: string;
+  plant_id: string | null;
   plants: { name: string; prefix: string } | null;
   project_id: string | null;
   project_node_id: string | null;
@@ -50,18 +51,30 @@ export type SicRow = {
 
 // Marca visual de "esto te espera a vos" (borde amarillo y "Revisar"). Es conservadora a propósito: el filtro
 // "Pendientes de mi acción" del Tablero (lib/pendingSics) es la fuente de verdad; acá solo se marcan los casos sin ambigüedad.
-function needsMyAction(role: UserRole, status: SicStatus) {
-  if (role === "area") return status === "pendiente_aprobacion_jefe";
+// El jefe solo aprueba las de su área (con "Ver todas las SIC" lee también las de otras áreas).
+function needsMyAction(role: UserRole, status: SicStatus, isMyPlant: boolean) {
+  if (role === "area") return status === "pendiente_aprobacion_jefe" && isMyPlant;
   if (role === "gerencia") return status === "pendiente_aprobacion_gerencia";
   if (role === "compras") return (PENDING_STATUSES_BY_ROLE.compras ?? []).includes(status);
   return false;
 }
 
-export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRole }) {
+export default function SicsList({
+  sics,
+  role,
+  plantId,
+  canSeeAllSics,
+}: {
+  sics: SicRow[];
+  role: UserRole;
+  plantId: string | null;
+  // Permiso "Ver todas las SIC": también ve montos aunque su rol no los vea.
+  canSeeAllSics: boolean;
+}) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState(false);
   const canExport = role === "compras" || role === "admin";
-  const showAmount = CAN_SEE_AMOUNTS.includes(role);
+  const showAmount = CAN_SEE_AMOUNTS.includes(role) || canSeeAllSics;
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -164,7 +177,8 @@ export default function SicsList({ sics, role }: { sics: SicRow[]; role: UserRol
         <ul>
           {sics.map((sic, index) => {
             const exportable = canExport;
-            const pending = needsMyAction(role, sic.status);
+            // Sin área (admin con "Ver como") se marca como antes: no hay área con qué comparar.
+            const pending = needsMyAction(role, sic.status, !plantId || sic.plant_id === plantId);
             const days = sic.needed_by_date && !NO_DEADLINE_STATUSES.includes(sic.status) ? daysUntilSqlDate(sic.needed_by_date) : null;
             const urgent = days !== null && (days < 0 || (pending && days <= 2));
             const requesterName = sic.requester?.full_name ?? sic.requester?.email ?? null;
